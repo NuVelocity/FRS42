@@ -5,6 +5,7 @@ add_executable(
     MainMenuScene.cpp
     MainMenuScene.h
 )
+add_subdirectory(game)
 
 target_compile_definitions(
     frs42 PUBLIC
