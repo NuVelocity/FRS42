@@ -2,9 +2,9 @@ add_executable(
     frs42
     App.cpp
     App.h
-    MainMenuScene.cpp
-    MainMenuScene.h
 )
+
+add_subdirectory(scenes)
 add_subdirectory(game)
 
 target_compile_definitions(

@@ -1,18 +1,19 @@
-#include <SDL3/SDL.h>
 #include <Game.h>
+#include <SDL3/SDL.h>
 
 #include "MainMenuScene.h"
 
 namespace nuvelocity::frs42
 {
     MainMenuScene::MainMenuScene()
-        : Scene()
+            : Scene()
     {
     }
 
     void MainMenuScene::Load(Game* aGame)
     {
-        mBackgroundFrame = aGame->mAsset->LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");
+        mBackgroundFrame =
+            aGame->mAsset->LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");
         auto asset = aGame->mAsset->Load("Music/Rock/Rockfast.ogg");
         aGame->mAudio->AssignBgm("Rock Fast", asset);
         asset = aGame->mAsset->Load("Music/Infinity/Infinity Fast.ogg");
@@ -21,8 +22,9 @@ namespace nuvelocity::frs42
         // asset = aGame->mAsset->Load("Sounds/Lost Ball.ogg");
         // aGame->mAudio->AssignSfx("Lost Ball", asset);
         // aGame->mAsset->DumpPropertyFile("Affiliate.txt");
-        aGame->mAsset->DumpPropertyFile("Resources/ModuleInfo/TheGame.modinfo");
-        aGame->mAsset->DumpPropertyFile("Resources/Interface/Main Menu Extreme.txt");
+        // aGame->mAsset->DumpPropertyFile("Resources/ModuleInfo/TheGame.modinfo");
+        // aGame->mAsset->DumpPropertyFile("Resources/Interface/Main Menu Extreme.txt");
+        aGame->mAsset->DumpPropertyFile("Resources/Arena/Score Board Frame.txt");
     }
 
     void MainMenuScene::Update(Game* aGame)
@@ -60,12 +62,8 @@ namespace nuvelocity::frs42
                 float texWidth, texHeight;
                 SDL_GetTextureSize(texture, &texWidth, &texHeight);
 
-                SDL_FRect destRect = {
-                    (winWidth - texWidth) / 2.0f,
-                    (winHeight - texHeight) / 2.0f,
-                    texWidth,
-                    texHeight
-                };
+                SDL_FRect destRect = {(winWidth - texWidth) / 2.0f, (winHeight - texHeight) / 2.0f,
+                                      texWidth, texHeight};
 
                 SDL_RenderTexture(aGame->mRenderer, texture, nullptr, &destRect);
             }

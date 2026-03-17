@@ -1,4 +1,5 @@
 #include <Scene.h>
+#include <StandAloneFrame.h>
 
 namespace nuvelocity::frs42
 {
@@ -6,7 +7,7 @@ namespace nuvelocity::frs42
     {
     private:
         StandAloneFrame* mBackgroundFrame;
-        
+
     public:
         MainMenuScene();
         void Load(Game* aGame) override;
