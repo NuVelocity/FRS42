@@ -1,3 +1,7 @@
 {
-    "autoHide.autoHideAuxiliaryBar": false
+    "autoHide.autoHideAuxiliaryBar": false,
+    "editor.formatOnSave": true,
+    "git.detectSubmodulesLimit": 1,
+    "files.trimTrailingWhitespace": true,
+    "diffEditor.ignoreTrimWhitespace": false
 }
