@@ -1,19 +1,23 @@
 #define SDL_MAIN_USE_CALLBACKS
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_init.h>
-#include <StandAloneFrame.h>
-#include <Game.h>
 #include "MainMenuScene.h"
+#include <Game.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_main.h>
+#include <StandAloneFrame.h>
 
 using namespace nuvelocity;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
+#if DEBUG
+    SDL_SetLogPriorities(SDL_LOG_PRIORITY_DEBUG);
+#endif
     auto* game = new Game("FreeRS42");
     *appstate = game;
-    if (game->Initialize(argv)) {
+    if (game->Initialize(argv))
+    {
         game->SetScene(new frs42::MainMenuScene());
         return SDL_APP_CONTINUE;
     }
@@ -32,7 +36,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void* appstate) 
+SDL_AppResult SDL_AppIterate(void* appstate)
 {
     auto* game = (Game*)appstate;
     game->Update();
@@ -43,8 +47,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
     auto* game = (Game*)appstate;
-    if (game) {
-        delete game;
-    }
+    delete game;
     SDL_Quit();
 }
