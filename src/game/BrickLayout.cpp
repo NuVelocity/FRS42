@@ -7,7 +7,7 @@ namespace nuvelocity::frs42
             , mAuthor("")
             , mBackgroundType("Environments/!None")
             , mBrickPalette({})
-            , mRowOffsets({})
+            , mRowsOffsets({})
             , mUseDefaultPowerUpWeights(true)
             , mWeightingComment("")
             , mPowerUpWeights({})

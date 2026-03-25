@@ -21,7 +21,7 @@ namespace nuvelocity::frs42
             AddProperty(aInfo, "Author", &BrickLayout::mAuthor);
             AddProperty(aInfo, "Background Type", &BrickLayout::mBackgroundType);
             AddProperty(aInfo, "Brick Palette", &BrickLayout::mBrickPalette, "Brick Type");
-            AddProperty(aInfo, "Row Offsets", &BrickLayout::mRowOffsets, "X Offset");
+            AddProperty(aInfo, "Rows Offsets", &BrickLayout::mRowsOffsets, "X Offset");
             AddProperty(aInfo, "Use Default Power Up Weights",
                         &BrickLayout::mUseDefaultPowerUpWeights);
             AddProperty(aInfo, "Weighting Comment", &BrickLayout::mWeightingComment);
@@ -35,7 +35,7 @@ namespace nuvelocity::frs42
         std::string mAuthor;
         std::string mBackgroundType;
         std::vector<std::string> mBrickPalette;
-        std::vector<int> mRowOffsets;
+        std::vector<int> mRowsOffsets;
         bool mUseDefaultPowerUpWeights;
         std::string mWeightingComment;
         std::map<std::string, int> mPowerUpWeights;
