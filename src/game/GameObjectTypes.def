@@ -1,0 +1,4 @@
+NVE_REGISTER_TYPE(BrickLayout)
+NVE_REGISTER_TYPE(CheckPointDefinition)
+NVE_REGISTER_TYPE(FloatingBrick)
+NVE_REGISTER_TYPE(RoundSet)

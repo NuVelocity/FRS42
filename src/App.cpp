@@ -5,23 +5,15 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_main.h>
-#include <StandAloneFrame.h>
 
-#include "BrickLayout.h"
-#include "CheckPointDefinition.h"
-#include "FloatingBrick.h"
-#include "RoundSet.h"
+#include "GameObjectRegistration.h"
 
 using namespace nuvelocity;
 using namespace frs42;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-    // FIXME: This should not be here.
-    ObjectRegistry::Get().Register(BrickLayout::GetClassInfo());
-    ObjectRegistry::Get().Register(CheckPointDefinition::GetClassInfo());
-    ObjectRegistry::Get().Register(FloatingBrick::GetClassInfo());
-    ObjectRegistry::Get().Register(RoundSet::GetClassInfo());
+    nuvelocity::frs42::RegisterGameObjectTypes();
 
 #if DEBUG
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_DEBUG);
