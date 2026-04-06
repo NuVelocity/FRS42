@@ -1,15 +1,54 @@
 #define SDL_MAIN_USE_CALLBACKS
 
 #include "MainMenuScene.h"
+#include "SplashScene.h"
+#include <FontBitmap.h>
 #include <Game.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_main.h>
 
+#include <array>
+#include <memory>
+
 #include "GameObjectRegistration.h"
 
 using namespace nuvelocity;
 using namespace frs42;
+
+static void RegisterGameFonts(Game* game)
+{
+    if (game == nullptr || game->mAsset == nullptr || game->mFont == nullptr)
+    {
+        return;
+    }
+
+    constexpr std::array<std::pair<const char*, const char*>, 12> kBitmapFonts = {
+        std::pair{"Big White", "Fonts/Big White"},
+        std::pair{"Med Gold", "Fonts/Med Gold"},
+        std::pair{"Megovision", "Fonts/Megovision"},
+        std::pair{"Numbers Blue", "Fonts/Numbers Blue"},
+        std::pair{"OCR", "Fonts/OCR"},
+        std::pair{"Sell", "Fonts/Sell"},
+        std::pair{"Small Blue", "Fonts/Small Blue"},
+        std::pair{"Small Gold", "Fonts/Small Gold"},
+        std::pair{"WebLarge Blue", "Fonts/WebLarge Blue"},
+        std::pair{"WebSmall Black", "Fonts/WebSmall Black"},
+        std::pair{"Yellow Header", "Fonts/Yellow Header"},
+        std::pair{"Yellow Large Header", "Fonts/Yellow Large Header"},
+    };
+
+    for (const auto& [name, path] : kBitmapFonts)
+    {
+        FontBitmap* bitmapFont = AssetManager::LoadFontBitmap(path);
+        if (bitmapFont == nullptr)
+        {
+            continue;
+        }
+
+        game->mFont->RegisterFont(name, std::unique_ptr<Font>(static_cast<Font*>(bitmapFont)));
+    }
+}
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -20,9 +59,16 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 #endif
     auto* game = new Game("FreeRS42");
     *appstate = game;
+    game->SetMouseCursor("Resources/Interface/MouseCursor");
+    game->SetModuleInfo("Resources/ModuleInfo/TheGame.modinfo");
     if (game->Initialize(argv))
     {
-        game->SetScene(new frs42::MainMenuScene());
+        RegisterGameFonts(game);
+
+        // Load main menu music early.
+        auto* asset = game->mAsset->Load("Music/Rock/Rockfast.ogg");
+        game->mAudio->AssignBgm("Rock Fast", asset);
+        game->SetScene(new frs42::SplashScene());
         return SDL_APP_CONTINUE;
     }
     return SDL_APP_FAILURE;
@@ -31,6 +77,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
     auto* ctx = static_cast<Game*>(appstate);
+    ctx->HandleEvent(*event);
 
     if (event->type == SDL_EVENT_QUIT)
     {
@@ -45,6 +92,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     auto* game = static_cast<Game*>(appstate);
     game->Update();
     game->Draw();
+    game->EndFrame();
     return game->mAppResult;
 }
 

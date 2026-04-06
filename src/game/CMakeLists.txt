@@ -33,6 +33,18 @@ target_sources(
     frs42 PRIVATE
     BrickLayout.cpp
     BrickLayout.h
+    BrickInfo.h
+    BrickType.h
+    Brick.cpp
+    Brick.h
+    Ball.cpp
+    Ball.h
+    MenuBarrier.cpp
+    MenuBarrier.h
+    GameBoard.cpp
+    GameBoard.h
+    DebugPrinter.cpp
+    DebugPrinter.h
     GameObjectTypes.def
     ${NVE_GAME_OBJECT_REGISTRATION_CPP}
     CheckPointDefinition.cpp
