@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <Sequence.h>
 #include <system/AssetManager.h>
+#include <cmath>
 
 namespace nuvelocity::frs42
 {
@@ -45,11 +46,47 @@ namespace nuvelocity::frs42
 
         void SetVelocity(const SDL_FPoint& vel)
         {
-            mVelocity = vel;
+            const float len = std::sqrt(vel.x * vel.x + vel.y * vel.y);
+            if (len > 0.0001f)
+            {
+                mDirection = {vel.x / len, vel.y / len};
+                mSpeed = len;
+            }
+            else
+            {
+                mDirection = {0.0f, 0.0f};
+                mSpeed = 0.0f;
+            }
         }
-        const SDL_FPoint& GetVelocity() const
+        SDL_FPoint GetVelocity() const
         {
-            return mVelocity;
+            return {mDirection.x * mSpeed, mDirection.y * mSpeed};
+        }
+
+        void SetSpeed(float speed)
+        {
+            mSpeed = speed;
+        }
+        float GetSpeed() const
+        {
+            return mSpeed;
+        }
+
+        void SetDirection(const SDL_FPoint& direction)
+        {
+            const float len = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+            if (len > 0.0001f)
+            {
+                mDirection = {direction.x / len, direction.y / len};
+            }
+            else
+            {
+                mDirection = {0.0f, 0.0f};
+            }
+        }
+        const SDL_FPoint& GetDirection() const
+        {
+            return mDirection;
         }
 
         float GetRadius() const
@@ -59,8 +96,8 @@ namespace nuvelocity::frs42
 
         void Update(float deltaTime)
         {
-            mPosition.x += mVelocity.x * deltaTime;
-            mPosition.y += mVelocity.y * deltaTime;
+            mPosition.x += mDirection.x * mSpeed * deltaTime;
+            mPosition.y += mDirection.y * mSpeed * deltaTime;
         }
 
         void Draw(Game* game) const;
@@ -68,7 +105,8 @@ namespace nuvelocity::frs42
     private:
         Sequence* mSequence = nullptr;
         SDL_FPoint mPosition = {0.0f, 0.0f};
-        SDL_FPoint mVelocity = {0.0f, 0.0f};
+        SDL_FPoint mDirection = {0.0f, 0.0f};
+        float mSpeed = 0.0f;
         uint64_t mAnimationStartTick = 0;
     };
 } // namespace nuvelocity::frs42

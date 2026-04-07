@@ -120,109 +120,124 @@ namespace nuvelocity::frs42
     {
         for (auto& ball : mBalls)
         {
-            ball->Update(deltaTime);
-
-            SDL_FPoint pos = ball->GetPosition();
-            float radius = ball->GetRadius();
-            SDL_FPoint vel = ball->GetVelocity();
-
-            // Screen boundary checks (Bounce)
-            if (pos.x - radius < 0)
+            const float maxStepDist = std::max(1.0f, ball->GetRadius() * 0.5f);
+            const float speed = ball->GetSpeed();
+            const float moveDist = speed * deltaTime;
+            int numSteps = static_cast<int>(std::ceil(moveDist / maxStepDist));
+            if (numSteps < 1)
             {
-                pos.x = radius;
-                vel.x = std::abs(vel.x);
-                ball->SetVelocity(vel);
-                ball->SetPosition(pos);
-            }
-            else if (pos.x + radius > static_cast<float>(game->mWindowWidth))
-            {
-                pos.x = static_cast<float>(game->mWindowWidth) - radius;
-                vel.x = -std::abs(vel.x);
-                ball->SetVelocity(vel);
-                ball->SetPosition(pos);
+                numSteps = 1;
             }
 
-            if (pos.y - radius < 0)
+            const float dt = deltaTime / static_cast<float>(numSteps);
+
+            for (int step = 0; step < numSteps; ++step)
             {
-                pos.y = radius;
-                vel.y = std::abs(vel.y);
-                ball->SetVelocity(vel);
-                ball->SetPosition(pos);
-            }
-            else if (pos.y + radius > static_cast<float>(game->mWindowHeight))
-            {
-                pos.y = static_cast<float>(game->mWindowHeight) - radius;
-                vel.y = -std::abs(vel.y);
-                ball->SetVelocity(vel);
-                ball->SetPosition(pos);
-            }
+                ball->Update(dt);
 
-            // Sync values for brick collision logic below
-            pos = ball->GetPosition();
-            vel = ball->GetVelocity();
+                SDL_FPoint pos = ball->GetPosition();
+                float radius = ball->GetRadius();
+                SDL_FPoint vel = ball->GetVelocity();
 
-            for (auto& brick : mBricks)
-            {
-                if (brick->IsDestroyed())
-                    continue;
-
-                std::vector<SDL_FPoint> poly = brick->GetCollisionPolygon();
-                SDL_FPoint brickPos = brick->GetPosition();
-
-                // Offset polygon to world space
-                for (auto& p : poly)
+                // Screen boundary checks (Bounce)
+                if (pos.x - radius < 0)
                 {
-                    p.x += brickPos.x;
-                    p.y += brickPos.y;
+                    pos.x = radius;
+                    vel.x = std::abs(vel.x);
+                    ball->SetVelocity(vel);
+                    ball->SetPosition(pos);
+                }
+                else if (pos.x + radius > static_cast<float>(game->mWindowWidth))
+                {
+                    pos.x = static_cast<float>(game->mWindowWidth) - radius;
+                    vel.x = -std::abs(vel.x);
+                    ball->SetVelocity(vel);
+                    ball->SetPosition(pos);
                 }
 
-                if (poly.empty())
-                    continue;
-
-                SDL_FPoint normal{0, 0};
-                float penetration = 0.0f;
-                bool collided = false;
-
-                const size_t segmentCount =
-                    brick->IsClosedPolygon() ? poly.size() : (poly.size() - 1);
-                for (size_t i = 0; i < segmentCount; ++i)
+                if (pos.y - radius < 0)
                 {
-                    size_t next = (i + 1) % poly.size();
-                    SDL_FPoint segNormal{0, 0};
-                    float segPenetration = 0.0f;
-                    if (CircleToSegmentCollision(
-                            pos, radius, poly[i], poly[next], segNormal, segPenetration))
+                    pos.y = radius;
+                    vel.y = std::abs(vel.y);
+                    ball->SetVelocity(vel);
+                    ball->SetPosition(pos);
+                }
+                else if (pos.y + radius > static_cast<float>(game->mWindowHeight))
+                {
+                    pos.y = static_cast<float>(game->mWindowHeight) - radius;
+                    vel.y = -std::abs(vel.y);
+                    ball->SetVelocity(vel);
+                    ball->SetPosition(pos);
+                }
+
+                // Sync values for brick collision logic below
+                pos = ball->GetPosition();
+                vel = ball->GetVelocity();
+
+                for (auto& brick : mBricks)
+                {
+                    if (brick->IsDestroyed())
+                        continue;
+
+                    std::vector<SDL_FPoint> poly = brick->GetCollisionPolygon();
+                    SDL_FPoint brickPos = brick->GetPosition();
+
+                    // Offset polygon to world space
+                    for (auto& p : poly)
                     {
-                        // Keep the most penetrating segment — gives correct corner normals
-                        if (segPenetration > penetration)
+                        p.x += brickPos.x;
+                        p.y += brickPos.y;
+                    }
+
+                    if (poly.empty())
+                        continue;
+
+                    SDL_FPoint normal{0, 0};
+                    float penetration = 0.0f;
+                    bool collided = false;
+
+                    const size_t segmentCount =
+                        brick->IsClosedPolygon() ? poly.size() : (poly.size() - 1);
+                    for (size_t i = 0; i < segmentCount; ++i)
+                    {
+                        size_t next = (i + 1) % poly.size();
+                        SDL_FPoint segNormal{0, 0};
+                        float segPenetration = 0.0f;
+                        if (CircleToSegmentCollision(
+                                pos, radius, poly[i], poly[next], segNormal, segPenetration))
                         {
-                            penetration = segPenetration;
-                            normal = segNormal;
-                            collided = true;
+                            // Keep the most penetrating segment — gives correct corner normals
+                            if (segPenetration > penetration)
+                            {
+                                penetration = segPenetration;
+                                normal = segNormal;
+                                collided = true;
+                            }
                         }
                     }
-                }
 
-                if (collided)
-                {
-                    // Reflection: v' = v - 2 * (v . n) * n
-                    float dot = vel.x * normal.x + vel.y * normal.y;
-                    if (dot < 0) // Only reflect if moving toward the surface
+                    if (collided)
                     {
-                        vel.x -= 2.0f * dot * normal.x;
-                        vel.y -= 2.0f * dot * normal.y;
-                        ball->SetVelocity(vel);
+                        // Reflection: v' = v - 2 * (v . n) * n
+                        float dot = vel.x * normal.x + vel.y * normal.y;
+                        if (dot < 0) // Only reflect if moving toward the surface
+                        {
+                            vel.x -= 2.0f * dot * normal.x;
+                            vel.y -= 2.0f * dot * normal.y;
+                            ball->SetVelocity(vel);
+                        }
+
+                        // Push out by exact penetration depth + small epsilon to guarantee
+                        // separation
+                        constexpr float kPushEpsilon = 0.5f;
+                        pos.x += normal.x * (penetration + kPushEpsilon);
+                        pos.y += normal.y * (penetration + kPushEpsilon);
+                        ball->SetPosition(pos);
+
+                        brick->Hit();
                     }
-
-                    // Push out by exact penetration depth + small epsilon to guarantee separation
-                    constexpr float kPushEpsilon = 0.5f;
-                    pos.x += normal.x * (penetration + kPushEpsilon);
-                    pos.y += normal.y * (penetration + kPushEpsilon);
-                    ball->SetPosition(pos);
-
-                    brick->Hit();
                 }
-            }
+            } // End of sub-step loop
         }
 
         // Potential brick update logic
