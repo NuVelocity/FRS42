@@ -8,7 +8,8 @@ namespace nuvelocity::frs42
 {
     void MenuBarrier::Update(Game* game, float deltaTime)
     {
-        // Menu barrier is usually static
+        // Track mouse position for gravity effect.
+        mMousePosition = game->mInput->GetMousePosition();
     }
 
     void MenuBarrier::Draw(Game* game) const
@@ -77,36 +78,54 @@ namespace nuvelocity::frs42
         return mHoveredSegment >= 0;
     }
 
-    void MenuBarrier::AttractBall(Ball* ball) const
+    void
+    MenuBarrier::ApplyGravityEffect(Ball* ball, const SDL_FPoint& mousePos, float deltaTime) const
     {
-        if (ball == nullptr || mVertices.size() < 2)
+        if (ball == nullptr)
+        {
             return;
-
-        SDL_FPoint target = mPosition;
-        if (mVertices.size() == 2)
-        {
-            // Attract to midpoint for line segments
-            target.x += (mVertices[0].x + mVertices[1].x) * 0.5f;
-            target.y += (mVertices[0].y + mVertices[1].y) * 0.5f;
         }
 
-        // Vector from ball to target
-        float dx = target.x - ball->GetPosition().x;
-        float dy = target.y - ball->GetPosition().y;
-        float dist = std::sqrt(dx * dx + dy * dy);
+        const SDL_FPoint pos = ball->GetPosition();
+        const float dx = mousePos.x - pos.x;
+        const float dy = mousePos.y - pos.y;
+        const float distSq = dx * dx + dy * dy;
+        const float dist = std::sqrt(distSq);
 
-        if (dist > 0.001f)
+        if (dist < 0.0001f)
         {
-            float speed = 150.0f; // Force speed toward target
-            ball->SetVelocity(SDL_FPoint{(dx / dist) * speed, (dy / dist) * speed});
+            return;
         }
-    }
 
-    void MenuBarrier::OnClick(const std::vector<Ball*>& balls) const
-    {
-        for (auto* ball : balls)
+        const SDL_FPoint dir = {dx / dist, dy / dist};
+
+        // Gravity parameters
+        constexpr float kGravityStrength = 600.0f;
+        constexpr float kMinSafeDist = 5.0f;
+        constexpr float kDrag = 0.8f;
+
+        SDL_FPoint velocity = ball->GetVelocity();
+
+        float force = 0.0f;
+        if (dist > kMinSafeDist)
         {
-            AttractBall(ball);
+            // Attraction force
+            force = kGravityStrength;
         }
+        else
+        {
+            // Repulsion force to prevent convergence
+            const float t = 1.0f - (dist / kMinSafeDist);
+            force = -kGravityStrength * t * 3.0f;
+        }
+
+        velocity.x += dir.x * force * deltaTime;
+        velocity.y += dir.y * force * deltaTime;
+
+        // Apply drag to keep movement manageable
+        velocity.x *= (1.0f - kDrag * deltaTime);
+        velocity.y *= (1.0f - kDrag * deltaTime);
+
+        ball->SetVelocity(velocity);
     }
 } // namespace nuvelocity::frs42

@@ -51,7 +51,7 @@ namespace nuvelocity::frs42
         }
 
         bool Intersects(const SDL_FPoint& point); // non-const: updates mHoveredSegment
-        void AttractBall(Ball* ball) const;
+        void ApplyGravityEffect(Ball* ball, const SDL_FPoint& mousePos, float deltaTime) const;
 
         void Hit() override {} // MenuBarrier is indestructible — never mark as destroyed
 
@@ -76,9 +76,8 @@ namespace nuvelocity::frs42
             mHoverColor = color;
         }
 
-        void OnClick(const std::vector<Ball*>& balls) const;
-
     private:
+        SDL_FPoint mMousePosition;
         std::vector<SDL_FPoint> mVertices;
         int mHoveredSegment = -1; // index of hovered edge, -1 = none
         bool mShowHoverEffect = true;

@@ -238,26 +238,11 @@ namespace nuvelocity::frs42
             mFocusContainer->SetFocusFromMouseClickCheck(clickedOnButton);
         }
 
-        // Handle Barriers Interaction
-        bool isClickInput = aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT);
-        std::vector<Ball*> ballPtrs;
-        if (isClickInput)
-        {
-            for (const auto& ball : mGameBoard.GetBalls())
-            {
-                ballPtrs.push_back(ball.get());
-            }
-        }
-
+        // Handle Barriers Hover State
         for (auto* barrier : mMenuBarriers)
         {
-            bool hoveredOnBarrier = !hoveredOnButton && barrier->Intersects(mousePosition);
+            const bool hoveredOnBarrier = !hoveredOnButton && barrier->Intersects(mousePosition);
             barrier->SetHovered(hoveredOnBarrier);
-
-            if (hoveredOnBarrier && isClickInput)
-            {
-                barrier->OnClick(ballPtrs);
-            }
         }
     }
 
@@ -275,8 +260,7 @@ namespace nuvelocity::frs42
 
         mFocusContainer->UpdateFocusNavigation(aGame->mInput);
         UpdateMenuFocusFromMouse(aGame);
-
-        mGameBoard.Update(aGame, deltaTime);
+        UpdateGameBoard(aGame, deltaTime);
 
         const std::size_t focusedIndex = mFocusContainer->GetFocusedIndex();
         const bool hasFocus = mFocusContainer->HasFocus();
@@ -287,6 +271,31 @@ namespace nuvelocity::frs42
             button->SetFocused(hasFocus && index == focusedIndex);
             button->Update(*aGame->mInput, aGame->mWindowWidth, now);
         }
+    }
+
+    void MainMenuScene::UpdateGameBoard(nuvelocity::Game* aGame, float deltaTime)
+    {
+        // Apply gravity-like follow behavior if any barrier is hovered
+        const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
+        bool anyBarrierHovered = false;
+        for (auto* barrier : mMenuBarriers)
+        {
+            if (barrier->IsHovered())
+            {
+                anyBarrierHovered = true;
+                break;
+            }
+        }
+
+        if (anyBarrierHovered && !mMenuBarriers.empty())
+        {
+            for (auto& ball : mGameBoard.GetBalls())
+            {
+                mMenuBarriers[0]->ApplyGravityEffect(ball.get(), mousePosition, deltaTime);
+            }
+        }
+
+        mGameBoard.Update(aGame, deltaTime);
     }
 
     void MainMenuScene::Draw(Game* aGame)

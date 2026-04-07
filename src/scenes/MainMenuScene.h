@@ -47,6 +47,7 @@ namespace nuvelocity::frs42
         MainMenuScene() = default;
         void Load(Game* aGame) override;
         void Update(Game* aGame) override;
+        void UpdateGameBoard(nuvelocity::Game* aGame, float deltaTime);
         void Draw(Game* aGame) override;
         void Unload(Game* aGame) override {};
         std::string GetName() const override;
