@@ -3,10 +3,13 @@
 
 #include "Ball.h"
 #include "Brick.h"
-#include <vector>
 #include <memory>
+#include <vector>
 
-namespace nuvelocity { class Game; }
+namespace nuvelocity
+{
+    class Game;
+}
 
 namespace nuvelocity::frs42
 {
@@ -19,13 +22,28 @@ namespace nuvelocity::frs42
         void Update(float deltaTime, int windowWidth, int windowHeight);
         void Draw(Game* game) const;
 
-        void SetDebugDrawCollisions(bool enabled) { mDebugDrawCollisions = enabled; }
+        void SetDebugDrawCollisions(bool enabled)
+        {
+            mDebugDrawCollisions = enabled;
+        }
 
-        void AddBall(std::unique_ptr<Ball> ball) { mBalls.push_back(std::move(ball)); }
-        void AddBrick(std::unique_ptr<Brick> brick) { mBricks.push_back(std::move(brick)); }
+        void AddBall(std::unique_ptr<Ball> ball)
+        {
+            mBalls.push_back(std::move(ball));
+        }
+        void AddBrick(std::unique_ptr<Brick> brick)
+        {
+            mBricks.push_back(std::move(brick));
+        }
 
-        const std::vector<std::unique_ptr<Ball>>& GetBalls() const { return mBalls; }
-        const std::vector<std::unique_ptr<Brick>>& GetBricks() const { return mBricks; }
+        const std::vector<std::unique_ptr<Ball>>& GetBalls() const
+        {
+            return mBalls;
+        }
+        const std::vector<std::unique_ptr<Brick>>& GetBricks() const
+        {
+            return mBricks;
+        }
 
     private:
         std::vector<std::unique_ptr<Ball>> mBalls;

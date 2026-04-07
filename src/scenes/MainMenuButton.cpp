@@ -132,7 +132,8 @@ namespace nuvelocity
 
     void MainMenuButton::Draw(Game* game) const
     {
-        if (!IsVisible() || game == nullptr || game->mSpriteBatch == nullptr || game->mFont == nullptr)
+        if (!IsVisible() || game == nullptr || game->mSpriteBatch == nullptr ||
+            game->mFont == nullptr)
         {
             return;
         }

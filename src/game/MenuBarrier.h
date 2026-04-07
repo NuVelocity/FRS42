@@ -12,7 +12,7 @@ namespace nuvelocity::frs42
     {
     public:
         MenuBarrier(const BrickInfo& info)
-            : Brick(info)
+                : Brick(info)
         {
             mVertices = info.GetCollisionPolygon();
             // Force type to Indestructible
@@ -20,13 +20,13 @@ namespace nuvelocity::frs42
         }
 
         MenuBarrier(const BrickInfo& info, const SDL_FPoint& p1, const SDL_FPoint& p2)
-            : Brick(info)
+                : Brick(info)
         {
             SetLine(p1, p2);
         }
 
         MenuBarrier(const BrickInfo& info, std::vector<SDL_FPoint> vertices)
-            : Brick(info)
+                : Brick(info)
         {
             mVertices = std::move(vertices);
         }
@@ -40,10 +40,16 @@ namespace nuvelocity::frs42
 
         void Update(float deltaTime) override;
         void Draw(Game* game) const override;
-        
-        std::vector<SDL_FPoint> GetCollisionPolygon() const override { return mVertices; }
-        bool IsClosedPolygon() const override { return mVertices.size() > 2; }
-        
+
+        std::vector<SDL_FPoint> GetCollisionPolygon() const override
+        {
+            return mVertices;
+        }
+        bool IsClosedPolygon() const override
+        {
+            return mVertices.size() > 2;
+        }
+
         bool Intersects(const SDL_FPoint& point); // non-const: updates mHoveredSegment
         void AttractBall(Ball* ball) const;
 
@@ -51,17 +57,30 @@ namespace nuvelocity::frs42
 
         // SetHovered(false) clears the highlight; SetHovered(true) is a no-op
         // (Intersects already wrote the correct segment index)
-        void SetHovered(bool hovered) { if (!hovered) mHoveredSegment = -1; }
-        bool IsHovered() const { return mHoveredSegment >= 0; }
+        void SetHovered(bool hovered)
+        {
+            if (!hovered)
+                mHoveredSegment = -1;
+        }
+        bool IsHovered() const
+        {
+            return mHoveredSegment >= 0;
+        }
 
-        void SetShowHoverEffect(bool show) { mShowHoverEffect = show; }
-        void SetHoverColor(SDL_Color color) { mHoverColor = color; }
+        void SetShowHoverEffect(bool show)
+        {
+            mShowHoverEffect = show;
+        }
+        void SetHoverColor(SDL_Color color)
+        {
+            mHoverColor = color;
+        }
 
         void OnClick(const std::vector<Ball*>& balls) const;
 
     private:
         std::vector<SDL_FPoint> mVertices;
-        int mHoveredSegment = -1;   // index of hovered edge, -1 = none
+        int mHoveredSegment = -1; // index of hovered edge, -1 = none
         bool mShowHoverEffect = true;
         SDL_Color mHoverColor = {255, 255, 255, 255};
     };

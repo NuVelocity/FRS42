@@ -4,9 +4,9 @@
 #include "BrickType.h"
 #include "model/Model.h"
 #include <SDL3/SDL.h>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
 
 namespace nuvelocity::frs42
 {
@@ -33,20 +33,56 @@ namespace nuvelocity::frs42
             AddProperty(aInfo, "Collision Polygon", &BrickInfo::mCollisionPolygonStr);
         }
 
-        BrickType GetBrickType() const { return StringToBrickType(mBrickTypeStr); }
-        const std::string& GetPrimarySequencePath() const { return mPrimarySequencePath; }
-        const std::string& GetSequence2Path() const { return mSequence2Path; }
-        const std::string& GetSequence3Path() const { return mSequence3Path; }
-        const std::string& GetDestroyedSeqPath() const { return mDestroyedSeqPath; }
-        const std::string& GetDestroyedSoundPath() const { return mDestroyedSoundPath; }
-        const std::string& GetIndestructibleSoundPath() const { return mIndestructibleSoundPath; }
-        const std::string& GetDamagedSoundPath() const { return mDamagedSoundPath; }
-        int GetScoreValue() const { return mScoreValue; }
-        const std::string& GetBreakParticleGenPath() const { return mBreakParticleGenPath; }
-        const std::vector<std::string>& GetBreakParticleTypes() const { return mBreakParticleTypes; }
+        BrickType GetBrickType() const
+        {
+            return StringToBrickType(mBrickTypeStr);
+        }
+        const std::string& GetPrimarySequencePath() const
+        {
+            return mPrimarySequencePath;
+        }
+        const std::string& GetSequence2Path() const
+        {
+            return mSequence2Path;
+        }
+        const std::string& GetSequence3Path() const
+        {
+            return mSequence3Path;
+        }
+        const std::string& GetDestroyedSeqPath() const
+        {
+            return mDestroyedSeqPath;
+        }
+        const std::string& GetDestroyedSoundPath() const
+        {
+            return mDestroyedSoundPath;
+        }
+        const std::string& GetIndestructibleSoundPath() const
+        {
+            return mIndestructibleSoundPath;
+        }
+        const std::string& GetDamagedSoundPath() const
+        {
+            return mDamagedSoundPath;
+        }
+        int GetScoreValue() const
+        {
+            return mScoreValue;
+        }
+        const std::string& GetBreakParticleGenPath() const
+        {
+            return mBreakParticleGenPath;
+        }
+        const std::vector<std::string>& GetBreakParticleTypes() const
+        {
+            return mBreakParticleTypes;
+        }
 
-        void SetCollisionPolygonStr(const std::string& poly) { mCollisionPolygonStr = poly; }
-        
+        void SetCollisionPolygonStr(const std::string& poly)
+        {
+            mCollisionPolygonStr = poly;
+        }
+
         std::vector<SDL_FPoint> GetCollisionPolygon() const
         {
             std::vector<SDL_FPoint> points;
@@ -56,16 +92,19 @@ namespace nuvelocity::frs42
 
             while (std::getline(ss, segment, ','))
             {
-                try {
+                try
+                {
                     coords.push_back(std::stof(segment));
-                } catch (...) {
+                }
+                catch (...)
+                {
                     // Ignore non-numeric segments
                 }
             }
 
             for (size_t i = 0; i + 1 < coords.size(); i += 2)
             {
-                points.push_back(SDL_FPoint{coords[i], coords[i+1]});
+                points.push_back(SDL_FPoint{coords[i], coords[i + 1]});
             }
 
             return points;

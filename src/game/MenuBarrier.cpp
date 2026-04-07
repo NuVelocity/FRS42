@@ -1,8 +1,8 @@
 #include "MenuBarrier.h"
 #include "Ball.h"
 #include <Game.h>
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 
 namespace nuvelocity::frs42
 {
@@ -13,8 +13,8 @@ namespace nuvelocity::frs42
 
     void MenuBarrier::Draw(Game* game) const
     {
-        if (game == nullptr || game->mSpriteBatch == nullptr ||
-            !mShowHoverEffect || mHoveredSegment < 0 || mVertices.size() < 2)
+        if (game == nullptr || game->mSpriteBatch == nullptr || !mShowHoverEffect ||
+            mHoveredSegment < 0 || mVertices.size() < 2)
         {
             return;
         }
@@ -22,10 +22,11 @@ namespace nuvelocity::frs42
         const size_t i = static_cast<size_t>(mHoveredSegment);
         const size_t next = (i + 1) % mVertices.size();
 
-        game->mSpriteBatch->DrawLine(
-            mPosition.x + mVertices[i].x,    mPosition.y + mVertices[i].y,
-            mPosition.x + mVertices[next].x, mPosition.y + mVertices[next].y,
-            mHoverColor);
+        game->mSpriteBatch->DrawLine(mPosition.x + mVertices[i].x,
+                                     mPosition.y + mVertices[i].y,
+                                     mPosition.x + mVertices[next].x,
+                                     mPosition.y + mVertices[next].y,
+                                     mHoverColor);
     }
 
     bool MenuBarrier::Intersects(const SDL_FPoint& point)
@@ -55,10 +56,11 @@ namespace nuvelocity::frs42
             const float dx = b.x - a.x;
             const float dy = b.y - a.y;
             const float lenSq = dx * dx + dy * dy;
-            if (lenSq < 0.0001f) continue;
+            if (lenSq < 0.0001f)
+                continue;
 
-            const float t = std::max(0.0f, std::min(1.0f,
-                ((px - a.x) * dx + (py - a.y) * dy) / lenSq));
+            const float t =
+                std::max(0.0f, std::min(1.0f, ((px - a.x) * dx + (py - a.y) * dy) / lenSq));
 
             const float cx = a.x + t * dx;
             const float cy = a.y + t * dy;
@@ -77,7 +79,8 @@ namespace nuvelocity::frs42
 
     void MenuBarrier::AttractBall(Ball* ball) const
     {
-        if (ball == nullptr || mVertices.size() < 2) return;
+        if (ball == nullptr || mVertices.size() < 2)
+            return;
 
         SDL_FPoint target = mPosition;
         if (mVertices.size() == 2)
@@ -95,7 +98,7 @@ namespace nuvelocity::frs42
         if (dist > 0.001f)
         {
             float speed = 150.0f; // Force speed toward target
-            ball->SetVelocity(SDL_FPoint{ (dx / dist) * speed, (dy / dist) * speed });
+            ball->SetVelocity(SDL_FPoint{(dx / dist) * speed, (dy / dist) * speed});
         }
     }
 

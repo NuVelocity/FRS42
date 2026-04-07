@@ -22,8 +22,8 @@ namespace nuvelocity::frs42
             AddProperty(aInfo, "Range 1", &FloatingBrick::mRange1);
             AddProperty(aInfo, "Range 2", &FloatingBrick::mRange2);
             AddProperty(aInfo, "Direction", &FloatingBrick::mDirection);
-            AddProperty(aInfo, "Can Move Through Other Bricks",
-                        &FloatingBrick::mCanMoveThroughOtherBricks);
+            AddProperty(
+                aInfo, "Can Move Through Other Bricks", &FloatingBrick::mCanMoveThroughOtherBricks);
             AddProperty(aInfo, "Palette Index", &FloatingBrick::mPaletteIndex);
             AddProperty(aInfo, "Brick To Change From", &FloatingBrick::mBrickToChangeFrom);
             AddProperty(aInfo, "Brick To Change To", &FloatingBrick::mBrickToChangeTo);
