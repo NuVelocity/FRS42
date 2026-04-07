@@ -19,7 +19,7 @@ namespace nuvelocity::frs42
         GameBoard();
         virtual ~GameBoard();
 
-        void Update(float deltaTime, int windowWidth, int windowHeight);
+        void Update(Game* game, float deltaTime);
         void Draw(Game* game) const;
 
         void SetDebugDrawCollisions(bool enabled)

@@ -6,7 +6,7 @@
 
 namespace nuvelocity::frs42
 {
-    void MenuBarrier::Update(float deltaTime)
+    void MenuBarrier::Update(Game* game, float deltaTime)
     {
         // Menu barrier is usually static
     }

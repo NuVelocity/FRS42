@@ -38,7 +38,7 @@ namespace nuvelocity::frs42
             mVertices = {p1, p2};
         }
 
-        void Update(float deltaTime) override;
+        void Update(Game* game, float deltaTime) override;
         void Draw(Game* game) const override;
 
         std::vector<SDL_FPoint> GetCollisionPolygon() const override

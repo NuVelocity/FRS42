@@ -54,7 +54,7 @@ namespace nuvelocity::frs42
             // Indestructible does nothing
         }
 
-        virtual void Update(float deltaTime) {}
+        virtual void Update(Game* game, float deltaTime) {}
         virtual void Draw(Game* game) const;
 
         virtual std::vector<SDL_FPoint> GetCollisionPolygon() const;

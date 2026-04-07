@@ -116,7 +116,7 @@ namespace nuvelocity::frs42
         return false;
     }
 
-    void GameBoard::Update(float deltaTime, int windowWidth, int windowHeight)
+    void GameBoard::Update(Game* game, float deltaTime)
     {
         for (auto& ball : mBalls)
         {
@@ -134,9 +134,9 @@ namespace nuvelocity::frs42
                 ball->SetVelocity(vel);
                 ball->SetPosition(pos);
             }
-            else if (pos.x + radius > static_cast<float>(windowWidth))
+            else if (pos.x + radius > static_cast<float>(game->mWindowWidth))
             {
-                pos.x = static_cast<float>(windowWidth) - radius;
+                pos.x = static_cast<float>(game->mWindowWidth) - radius;
                 vel.x = -std::abs(vel.x);
                 ball->SetVelocity(vel);
                 ball->SetPosition(pos);
@@ -149,9 +149,9 @@ namespace nuvelocity::frs42
                 ball->SetVelocity(vel);
                 ball->SetPosition(pos);
             }
-            else if (pos.y + radius > static_cast<float>(windowHeight))
+            else if (pos.y + radius > static_cast<float>(game->mWindowHeight))
             {
-                pos.y = static_cast<float>(windowHeight) - radius;
+                pos.y = static_cast<float>(game->mWindowHeight) - radius;
                 vel.y = -std::abs(vel.y);
                 ball->SetVelocity(vel);
                 ball->SetPosition(pos);
@@ -228,7 +228,7 @@ namespace nuvelocity::frs42
         // Potential brick update logic
         for (auto& brick : mBricks)
         {
-            brick->Update(deltaTime);
+            brick->Update(game, deltaTime);
         }
     }
 } // namespace nuvelocity::frs42

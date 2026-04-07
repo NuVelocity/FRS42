@@ -276,7 +276,7 @@ namespace nuvelocity::frs42
         mFocusContainer->UpdateFocusNavigation(aGame->mInput);
         UpdateMenuFocusFromMouse(aGame);
 
-        mGameBoard.Update(deltaTime, aGame->mWindowWidth, aGame->mWindowHeight);
+        mGameBoard.Update(aGame, deltaTime);
 
         const std::size_t focusedIndex = mFocusContainer->GetFocusedIndex();
         const bool hasFocus = mFocusContainer->HasFocus();
