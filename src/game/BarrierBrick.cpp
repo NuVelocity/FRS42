@@ -24,10 +24,10 @@ namespace nuvelocity::frs42
         const size_t next = (i + 1) % mVertices.size();
 
         aGame->mSpriteBatch->DrawLine(mPosition.x + mVertices[i].x,
-                                     mPosition.y + mVertices[i].y,
-                                     mPosition.x + mVertices[next].x,
-                                     mPosition.y + mVertices[next].y,
-                                     mHoverColor);
+                                      mPosition.y + mVertices[i].y,
+                                      mPosition.x + mVertices[next].x,
+                                      mPosition.y + mVertices[next].y,
+                                      mHoverColor);
     }
 
     bool BarrierBrick::Intersects(const SDL_FPoint& point)
