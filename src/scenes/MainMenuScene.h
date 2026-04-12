@@ -35,7 +35,6 @@ namespace nuvelocity::frs42
         GameBoard mGameBoard;
         std::vector<BarrierBrick*> mBarriers;
 
-        void UpdateMenuFocusFromMouse(Game* aGame);
         void OnPlayClick();
         void OnStatsClick();
         void OnFriendClick();

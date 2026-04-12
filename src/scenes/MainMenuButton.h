@@ -2,7 +2,6 @@
 #define FRS42_MAIN_MENU_BUTTON_H
 
 #include <Game.h>
-#include <GameComponent.h>
 #include <SDL3/SDL.h>
 #include <Sequence.h>
 #include <ui/Button.h>
@@ -22,7 +21,7 @@ namespace nuvelocity
         Sequence* panelPressed = nullptr;
     };
 
-    class MainMenuButton : public Button, public GameComponent
+    class MainMenuButton : public Button
     {
     public:
         struct Style

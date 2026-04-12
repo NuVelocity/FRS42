@@ -178,44 +178,6 @@ namespace nuvelocity::frs42
         mEntryFadeStartTick = nowTick;
     }
 
-    void MainMenuScene::UpdateMenuFocusFromMouse(Game* aGame)
-    {
-        if (aGame->mInput == nullptr || mFocusContainer == nullptr)
-        {
-            return;
-        }
-
-        const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
-        bool clickedOnButton = false;
-        bool hoveredOnButton = false;
-
-        for (std::size_t index = 0; index < mMenuButtonPointers.size(); ++index)
-        {
-            MainMenuButton* button = static_cast<MainMenuButton*>(mMenuButtonPointers[index]);
-            if (button->Intersects(mousePosition))
-            {
-                hoveredOnButton = true;
-                if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
-                {
-                    mFocusContainer->SetFocused(index, true);
-                    clickedOnButton = true;
-                }
-                break;
-            }
-        }
-
-        if (aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
-        {
-            mFocusContainer->SetFocusFromMouseClickCheck(clickedOnButton);
-        }
-
-        // Handle Barriers Hover State
-        for (auto* barrier : mBarriers)
-        {
-            const bool hoveredOnBarrier = !hoveredOnButton && barrier->Intersects(mousePosition);
-            barrier->SetHovered(hoveredOnBarrier);
-        }
-    }
 
     void MainMenuScene::Update(Game* aGame)
     {
@@ -224,18 +186,14 @@ namespace nuvelocity::frs42
             return;
         }
 
-        mFocusContainer->UpdateFocusNavigation(aGame->mInput);
-        UpdateMenuFocusFromMouse(aGame);
+        const bool hoveredOnButton = mFocusContainer->Update(aGame);
         UpdateGameBoard(aGame);
 
-        const std::size_t focusedIndex = mFocusContainer->GetFocusedIndex();
-        const bool hasFocus = mFocusContainer->HasFocus();
-
-        for (std::size_t index = 0; index < mMenuButtonPointers.size(); ++index)
+        const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
+        for (auto* barrier : mBarriers)
         {
-            MainMenuButton* button = static_cast<MainMenuButton*>(mMenuButtonPointers[index]);
-            button->SetFocused(hasFocus && index == focusedIndex);
-            button->Update(aGame);
+            const bool hoveredOnBarrier = !hoveredOnButton && barrier->Intersects(mousePosition);
+            barrier->SetHovered(hoveredOnBarrier);
         }
     }
 
@@ -286,11 +244,7 @@ namespace nuvelocity::frs42
 
         mGameBoard.Draw(aGame);
 
-        for (std::size_t index = 0; index < mMenuButtonPointers.size(); ++index)
-        {
-            MainMenuButton* button = static_cast<MainMenuButton*>(mMenuButtonPointers[index]);
-            button->Draw(aGame);
-        }
+        mFocusContainer->Draw(aGame);
 
         if (mEntryFadeStartTick != 0)
         {

@@ -132,7 +132,7 @@ namespace nuvelocity
         }
 
         SetRect(mCurrentBounds);
-        Button::Update(*aGame->mInput, SDL_FPoint{.x = 0.0F, .y = 0.0F});
+        Button::Update(aGame);
     }
 
     void MainMenuButton::Draw(Game* aGame)
