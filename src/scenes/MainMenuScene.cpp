@@ -9,6 +9,7 @@
 
 #include "BrickInfo.h"
 #include "MainMenuScene.h"
+#include "MathUtils.h"
 
 namespace nuvelocity::frs42
 {
@@ -105,49 +106,7 @@ namespace nuvelocity::frs42
             button->ResetAnimation(nowTick, kMenuButtonRevealDelayMs * index);
         }
 
-        // Initialize GameBoard barriers — outer playfield boundary + inner button-area box
-        BrickInfo barrierInfo;
-
-        {
-            auto barrier = std::make_unique<BarrierBrick>(std::vector<SDL_FPoint>{{49, 51},
-                                                                                 {49, 414},
-                                                                                 {130, 414},
-                                                                                 {130, 260},
-                                                                                 {197, 260},
-                                                                                 {197, 414},
-                                                                                 {275, 414},
-                                                                                 {275, 275},
-                                                                                 {213, 232},
-                                                                                 {275, 190},
-                                                                                 {275, 100},
-                                                                                 {214, 51}});
-            barrier->AttachBrickInfo(aGame, barrierInfo);
-            barrier->SetPosition({0.0f, 0.0f});
-            barrier->SetHoverColor({120, 124, 120, 255}); // #787c78
-            barrier->SetAttractionEnabled(true);
-            mBarriers.push_back(barrier.get());
-            mGameBoard.AddBrick(std::move(barrier));
-        }
-
-        {
-            // Inner box: top-left (129,107), size 71x93
-            auto barrier = std::make_unique<BarrierBrick>(
-                std::vector<SDL_FPoint>{{129, 107}, {200, 107}, {200, 200}, {129, 200}});
-            barrier->AttachBrickInfo(aGame, barrierInfo);
-            barrier->SetPosition({0.0f, 0.0f});
-            barrier->SetShowHoverEffect(false);
-            mBarriers.push_back(barrier.get());
-            mGameBoard.AddBrick(std::move(barrier));
-        }
-
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        // Spawn range tightly matches the outer polygon bounding box
-        std::uniform_real_distribution<float> disX(50.0f, 274.0f);
-        std::uniform_real_distribution<float> disY(52.0f, 413.0f);
-        std::uniform_real_distribution<float> disV(-200.0f, 200.0f);
-
-        // Outer boundary polygon vertices (must match kBarrierLines outer ring)
+        // Geography and spawn constants (shared between barriers and spawning logic)
         static constexpr SDL_FPoint kSpawnPolygon[] = {{49, 51},
                                                        {49, 414},
                                                        {130, 414},
@@ -162,44 +121,55 @@ namespace nuvelocity::frs42
                                                        {214, 51}};
         constexpr int kSpawnPolyCount = static_cast<int>(SDL_arraysize(kSpawnPolygon));
         constexpr SDL_FRect kInnerBox = {129, 107, 71, 93};
+        const std::vector<SDL_FRect> excludeRects = {kInnerBox};
 
-        // Ray-casting point-in-polygon test
-        auto pointInPolygon = [](const SDL_FPoint& p) -> bool
+        // Initialize GameBoard barriers — outer playfield boundary + inner button-area box
+        BrickInfo barrierInfo;
+
         {
-            bool inside = false;
-            for (int i = 0, j = kSpawnPolyCount - 1; i < kSpawnPolyCount; j = i++)
-            {
-                if (((kSpawnPolygon[i].y > p.y) != (kSpawnPolygon[j].y > p.y)) &&
-                    (p.x < (kSpawnPolygon[j].x - kSpawnPolygon[i].x) * (p.y - kSpawnPolygon[i].y) /
-                                   (kSpawnPolygon[j].y - kSpawnPolygon[i].y) +
-                               kSpawnPolygon[i].x))
-                {
-                    inside = !inside;
-                }
-            }
-            return inside;
-        };
+            auto barrier = std::make_unique<BarrierBrick>(
+                std::vector<SDL_FPoint>(kSpawnPolygon, kSpawnPolygon + kSpawnPolyCount));
+            barrier->AttachBrickInfo(aGame, barrierInfo);
+            barrier->SetPosition({0.0f, 0.0f});
+            barrier->SetHoverColor({120, 124, 120, 255}); // #787c78
+            barrier->SetAttractionEnabled(true);
+            mBarriers.push_back(barrier.get());
+            mGameBoard.AddBrick(std::move(barrier));
+        }
 
-        auto pointInRect = [](const SDL_FPoint& p, const SDL_FRect& r) -> bool
-        { return p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h; };
+        {
+            // Inner box derived from kInnerBox
+            auto barrier = std::make_unique<BarrierBrick>(
+                std::vector<SDL_FPoint>{{kInnerBox.x, kInnerBox.y},
+                                        {kInnerBox.x + kInnerBox.w, kInnerBox.y},
+                                        {kInnerBox.x + kInnerBox.w, kInnerBox.y + kInnerBox.h},
+                                        {kInnerBox.x, kInnerBox.y + kInnerBox.h}});
+            barrier->AttachBrickInfo(aGame, barrierInfo);
+            barrier->SetPosition({0.0f, 0.0f});
+            barrier->SetShowHoverEffect(false);
+            mBarriers.push_back(barrier.get());
+            mGameBoard.AddBrick(std::move(barrier));
+        }
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> disV(-150.0f, 150.0f);
+
+        const SDL_FRect spawnBounds{50.0f, 52.0f, 224.0f, 361.0f}; // Covers (50,52) to (274,413)
 
         auto* menuBallSequence = aGame->mAsset->LoadSequence("Resources/Ball/Menu Ball");
 
         for (int i = 0; i < 8; ++i)
         {
-            SDL_FPoint spawnPos{130.0f, 276.0f}; // safe fallback
-            for (int attempt = 0; attempt < 100; ++attempt)
-            {
-                SDL_FPoint candidate{disX(gen), disY(gen)};
-                if (pointInPolygon(candidate) && !pointInRect(candidate, kInnerBox))
-                {
-                    spawnPos = candidate;
-                    break;
-                }
-            }
-
             auto ball = std::make_unique<Ball>();
             ball->AttachSequence(aGame, menuBallSequence);
+            const float ballRadius = ball->GetRadius();
+
+            SDL_FPoint spawnPos =
+                MathUtils::GetRandomPointInPolygon(
+                    gen, kSpawnPolygon, kSpawnPolyCount, spawnBounds, ballRadius, excludeRects)
+                    .value_or(SDL_FPoint{130.0f, 276.0f});
+
             ball->SetPosition(spawnPos);
             ball->SetVelocity({disV(gen), disV(gen)});
             mGameBoard.AddBall(std::move(ball));

@@ -1,6 +1,7 @@
 #include "GameBoard.h"
 #include "Ball.h"
 #include "Brick.h"
+#include "MathUtils.h"
 #include <Game.h>
 #include <algorithm>
 #include <cmath>
@@ -69,52 +70,6 @@ namespace nuvelocity::frs42
                 }
             }
         }
-    }
-
-    // Basic Circle-to-Line collision helper
-    // Returns true if colliding; outNormal is the separation normal, outPenetration is how far in
-    bool CircleToSegmentCollision(const SDL_FPoint& center,
-                                  float radius,
-                                  const SDL_FPoint& p1,
-                                  const SDL_FPoint& p2,
-                                  SDL_FPoint& outNormal,
-                                  float& outPenetration)
-    {
-        float dx = p2.x - p1.x;
-        float dy = p2.y - p1.y;
-        float lenSq = dx * dx + dy * dy;
-        if (lenSq < 0.0001f)
-            return false;
-
-        float t = ((center.x - p1.x) * dx + (center.y - p1.y) * dy) / lenSq;
-        // Clamp t to [0, 1] to stay on the segment
-        t = std::max(0.0f, std::min(1.0f, t));
-
-        float closestX = p1.x + t * dx;
-        float closestY = p1.y + t * dy;
-
-        float distDx = center.x - closestX;
-        float distDy = center.y - closestY;
-        float distSq = distDx * distDx + distDy * distDy;
-
-        if (distSq < radius * radius)
-        {
-            float dist = std::sqrt(distSq);
-            outPenetration = radius - dist;
-            if (dist > 0.0001f)
-            {
-                outNormal.x = distDx / dist;
-                outNormal.y = distDy / dist;
-            }
-            else
-            {
-                // Degenerate case: center exactly on segment, use segment perpendicular
-                outNormal.x = -dy / std::sqrt(lenSq);
-                outNormal.y = dx / std::sqrt(lenSq);
-            }
-            return true;
-        }
-        return false;
     }
 
     void GameBoard::Update(Game* aGame)
@@ -209,7 +164,7 @@ namespace nuvelocity::frs42
                         size_t next = (i + 1) % poly.size();
                         SDL_FPoint segNormal{0, 0};
                         float segPenetration = 0.0f;
-                        if (CircleToSegmentCollision(
+                        if (MathUtils::CircleToSegmentCollision(
                                 pos, radius, poly[i], poly[next], segNormal, segPenetration))
                         {
                             // Keep the most penetrating segment — gives correct corner normals

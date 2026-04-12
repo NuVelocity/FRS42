@@ -41,6 +41,8 @@ target_sources(
     Ball.h
     BarrierBrick.cpp
     BarrierBrick.h
+    MathUtils.cpp
+    MathUtils.h
     GameBoard.cpp
     GameBoard.h
     DebugPrinter.cpp
