@@ -178,7 +178,6 @@ namespace nuvelocity::frs42
         mEntryFadeStartTick = nowTick;
     }
 
-
     void MainMenuScene::Update(Game* aGame)
     {
         if (mFocusContainer == nullptr || aGame->mInput == nullptr)
@@ -186,15 +185,8 @@ namespace nuvelocity::frs42
             return;
         }
 
-        const bool hoveredOnButton = mFocusContainer->Update(aGame);
+        mFocusContainer->Update(aGame);
         UpdateGameBoard(aGame);
-
-        const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
-        for (auto* barrier : mBarriers)
-        {
-            const bool hoveredOnBarrier = !hoveredOnButton && barrier->Intersects(mousePosition);
-            barrier->SetHovered(hoveredOnBarrier);
-        }
     }
 
     void MainMenuScene::UpdateGameBoard(nuvelocity::Game* aGame)

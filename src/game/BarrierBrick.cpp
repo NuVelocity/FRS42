@@ -8,8 +8,9 @@ namespace nuvelocity::frs42
 {
     void BarrierBrick::Update(Game* aGame)
     {
-        // Track mouse position for gravity effect.
+        // Track mouse position for gravity effect and hover state.
         mMousePosition = aGame->mInput->GetMousePosition();
+        Intersects(mMousePosition);
     }
 
     void BarrierBrick::Draw(Game* aGame)
