@@ -45,7 +45,7 @@ namespace nuvelocity::frs42
 
         for (SplashFrame& splashFrame : mFrames)
         {
-            auto* frame = AssetManager::LoadStandAloneFrame(splashFrame.assetPath);
+            auto* frame = aGame->mAsset->LoadStandAloneFrame(splashFrame.assetPath);
             if (frame != nullptr)
             {
                 splashFrame.image = Image(*frame);

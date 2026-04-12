@@ -40,7 +40,7 @@ static void RegisterGameFonts(Game* game)
 
     for (const auto& [name, path] : kBitmapFonts)
     {
-        FontBitmap* bitmapFont = AssetManager::LoadFontBitmap(path);
+        FontBitmap* bitmapFont = game->mAsset->LoadFontBitmap(path);
         if (bitmapFont == nullptr)
         {
             continue;

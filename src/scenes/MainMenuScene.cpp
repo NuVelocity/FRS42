@@ -36,24 +36,24 @@ namespace nuvelocity::frs42
         aGame->mAudio->PlayBgm("Rock Fast");
 
         auto* backgroundFrame =
-            AssetManager::LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");
+            aGame->mAsset->LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");
         if (backgroundFrame != nullptr)
         {
             mBackgroundImage = Image(*backgroundFrame);
         }
 
         mMenuAssets.armNormal =
-            AssetManager::LoadSequence("Resources/Interface/Main Menu Button/Arm Normal");
+            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Arm Normal");
         mMenuAssets.armHover =
-            AssetManager::LoadSequence("Resources/Interface/Main Menu Button/Arm Hover");
+            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Arm Hover");
         mMenuAssets.panelFlip =
-            AssetManager::LoadSequence("Resources/Interface/Main Menu Button/Panel Flip");
+            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Flip");
         mMenuAssets.panelNormal =
-            AssetManager::LoadSequence("Resources/Interface/Main Menu Button/Panel Normal");
+            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Normal");
         mMenuAssets.panelHover =
-            AssetManager::LoadSequence("Resources/Interface/Main Menu Button/Panel Hover");
+            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Hover");
         mMenuAssets.panelPressed =
-            AssetManager::LoadSequence("Resources/Interface/Main Menu Button/Panel Pressed");
+            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Pressed");
 
         // Initialization helper for each button
         auto initButton = [&](MainMenuButton& button, const char* caption, auto clickHandler)
@@ -182,7 +182,7 @@ namespace nuvelocity::frs42
         auto pointInRect = [](const SDL_FPoint& p, const SDL_FRect& r) -> bool
         { return p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h; };
 
-        auto* menuBallSequence = AssetManager::LoadSequence("Resources/Ball/Menu Ball");
+        auto* menuBallSequence = aGame->mAsset->LoadSequence("Resources/Ball/Menu Ball");
 
         for (int i = 0; i < 8; ++i)
         {
