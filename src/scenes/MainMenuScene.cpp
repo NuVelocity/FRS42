@@ -109,7 +109,7 @@ namespace nuvelocity::frs42
         BrickInfo barrierInfo;
 
         {
-            auto barrier = std::make_unique<MenuBarrier>(std::vector<SDL_FPoint>{{49, 51},
+            auto barrier = std::make_unique<BarrierBrick>(std::vector<SDL_FPoint>{{49, 51},
                                                                                  {49, 414},
                                                                                  {130, 414},
                                                                                  {130, 260},
@@ -124,18 +124,19 @@ namespace nuvelocity::frs42
             barrier->AttachBrickInfo(aGame, barrierInfo);
             barrier->SetPosition({0.0f, 0.0f});
             barrier->SetHoverColor({120, 124, 120, 255}); // #787c78
-            mMenuBarriers.push_back(barrier.get());
+            barrier->SetAttractionEnabled(true);
+            mBarriers.push_back(barrier.get());
             mGameBoard.AddBrick(std::move(barrier));
         }
 
         {
             // Inner box: top-left (129,107), size 71x93
-            auto barrier = std::make_unique<MenuBarrier>(
+            auto barrier = std::make_unique<BarrierBrick>(
                 std::vector<SDL_FPoint>{{129, 107}, {200, 107}, {200, 200}, {129, 200}});
             barrier->AttachBrickInfo(aGame, barrierInfo);
             barrier->SetPosition({0.0f, 0.0f});
             barrier->SetShowHoverEffect(false);
-            mMenuBarriers.push_back(barrier.get());
+            mBarriers.push_back(barrier.get());
             mGameBoard.AddBrick(std::move(barrier));
         }
 
@@ -239,7 +240,7 @@ namespace nuvelocity::frs42
         }
 
         // Handle Barriers Hover State
-        for (auto* barrier : mMenuBarriers)
+        for (auto* barrier : mBarriers)
         {
             const bool hoveredOnBarrier = !hoveredOnButton && barrier->Intersects(mousePosition);
             barrier->SetHovered(hoveredOnBarrier);
@@ -273,7 +274,7 @@ namespace nuvelocity::frs42
         // Apply gravity-like follow behavior if any barrier is hovered
         const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
         bool anyBarrierHovered = false;
-        for (auto* barrier : mMenuBarriers)
+        for (auto* barrier : mBarriers)
         {
             if (barrier->IsHovered())
             {
@@ -282,11 +283,17 @@ namespace nuvelocity::frs42
             }
         }
 
-        if (anyBarrierHovered && !mMenuBarriers.empty())
+        if (anyBarrierHovered)
         {
-            for (auto& ball : mGameBoard.GetBalls())
+            for (auto* barrier : mBarriers)
             {
-                mMenuBarriers[0]->ApplyGravityEffect(aGame, ball.get(), mousePosition);
+                if (barrier->IsAttractionEnabled())
+                {
+                    for (auto& ball : mGameBoard.GetBalls())
+                    {
+                        barrier->ApplyAttraction(aGame, ball.get(), mousePosition);
+                    }
+                }
             }
         }
 

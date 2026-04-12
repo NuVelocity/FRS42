@@ -1,5 +1,5 @@
-#ifndef NVE_MENU_BARRIER_H
-#define NVE_MENU_BARRIER_H
+#ifndef NVE_BARRIER_BRICK_H
+#define NVE_BARRIER_BRICK_H
 
 #include "Brick.h"
 #include <vector>
@@ -8,22 +8,22 @@ namespace nuvelocity::frs42
 {
     class Ball;
 
-    class MenuBarrier : public Brick
+    class BarrierBrick : public Brick
     {
     public:
-        MenuBarrier() = default;
+        BarrierBrick() = default;
 
-        MenuBarrier(const SDL_FPoint& p1, const SDL_FPoint& p2)
+        BarrierBrick(const SDL_FPoint& p1, const SDL_FPoint& p2)
         {
             SetLine(p1, p2);
         }
 
-        MenuBarrier(std::vector<SDL_FPoint> vertices)
+        BarrierBrick(std::vector<SDL_FPoint> vertices)
                 : mVertices(std::move(vertices))
         {
         }
 
-        virtual ~MenuBarrier() = default;
+        virtual ~BarrierBrick() = default;
 
         void AttachBrickInfo(Game* game, const BrickInfo& info) override
         {
@@ -52,9 +52,9 @@ namespace nuvelocity::frs42
         }
 
         bool Intersects(const SDL_FPoint& point); // non-const: updates mHoveredSegment
-        void ApplyGravityEffect(Game* aGame, Ball* ball, const SDL_FPoint& mousePos) const;
+        void ApplyAttraction(Game* aGame, Ball* ball, const SDL_FPoint& mousePos) const;
 
-        void Hit() override {} // MenuBarrier is indestructible — never mark as destroyed
+        void Hit() override {} // BarrierBrick is indestructible — never mark as destroyed
 
         // SetHovered(false) clears the highlight; SetHovered(true) is a no-op
         // (Intersects already wrote the correct segment index)
@@ -77,13 +77,23 @@ namespace nuvelocity::frs42
             mHoverColor = color;
         }
 
+        void SetAttractionEnabled(bool enabled)
+        {
+            mAttractionEnabled = enabled;
+        }
+        bool IsAttractionEnabled() const
+        {
+            return mAttractionEnabled;
+        }
+
     private:
         SDL_FPoint mMousePosition;
         std::vector<SDL_FPoint> mVertices;
         int mHoveredSegment = -1; // index of hovered edge, -1 = none
         bool mShowHoverEffect = true;
         SDL_Color mHoverColor = {255, 255, 255, 255};
+        bool mAttractionEnabled = false;
     };
 } // namespace nuvelocity::frs42
 
-#endif // NVE_MENU_BARRIER_H
+#endif // NVE_BARRIER_BRICK_H

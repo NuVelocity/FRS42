@@ -1,4 +1,4 @@
-#include "MenuBarrier.h"
+#include "BarrierBrick.h"
 #include "Ball.h"
 #include <Game.h>
 #include <algorithm>
@@ -6,13 +6,13 @@
 
 namespace nuvelocity::frs42
 {
-    void MenuBarrier::Update(Game* aGame)
+    void BarrierBrick::Update(Game* aGame)
     {
         // Track mouse position for gravity effect.
         mMousePosition = aGame->mInput->GetMousePosition();
     }
 
-    void MenuBarrier::Draw(Game* aGame)
+    void BarrierBrick::Draw(Game* aGame)
     {
         if (aGame == nullptr || aGame->mSpriteBatch == nullptr || !mShowHoverEffect ||
             mHoveredSegment < 0 || mVertices.size() < 2)
@@ -30,7 +30,7 @@ namespace nuvelocity::frs42
                                      mHoverColor);
     }
 
-    bool MenuBarrier::Intersects(const SDL_FPoint& point)
+    bool BarrierBrick::Intersects(const SDL_FPoint& point)
     {
         if (mVertices.size() < 2)
         {
@@ -78,9 +78,9 @@ namespace nuvelocity::frs42
         return mHoveredSegment >= 0;
     }
 
-    void MenuBarrier::ApplyGravityEffect(Game* aGame, Ball* ball, const SDL_FPoint& mousePos) const
+    void BarrierBrick::ApplyAttraction(Game* aGame, Ball* ball, const SDL_FPoint& mousePos) const
     {
-        if (ball == nullptr || aGame == nullptr)
+        if (!mAttractionEnabled || ball == nullptr || aGame == nullptr)
         {
             return;
         }

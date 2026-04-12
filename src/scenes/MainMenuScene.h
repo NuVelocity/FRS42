@@ -11,7 +11,7 @@
 
 #include "GameBoard.h"
 #include "MainMenuButton.h"
-#include "MenuBarrier.h"
+#include "BarrierBrick.h"
 
 namespace nuvelocity::frs42
 {
@@ -33,7 +33,7 @@ namespace nuvelocity::frs42
         uint64_t mEntryFadeStartTick = 0;
 
         GameBoard mGameBoard;
-        std::vector<MenuBarrier*> mMenuBarriers;
+        std::vector<BarrierBrick*> mBarriers;
 
         void UpdateMenuFocusFromMouse(Game* aGame);
         void OnPlayClick();

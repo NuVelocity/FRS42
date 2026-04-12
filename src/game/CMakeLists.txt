@@ -39,8 +39,8 @@ target_sources(
     Brick.h
     Ball.cpp
     Ball.h
-    MenuBarrier.cpp
-    MenuBarrier.h
+    BarrierBrick.cpp
+    BarrierBrick.h
     GameBoard.cpp
     GameBoard.h
     DebugPrinter.cpp
