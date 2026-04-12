@@ -21,7 +21,7 @@ namespace nuvelocity::frs42
             ball->Draw(game);
         }
 
-        if (mDebugDrawCollisions && game != nullptr && game->mSpriteBatch != nullptr)
+        if (game != nullptr && game->mArgs.get<bool>("--debug-collisions") && game->mSpriteBatch != nullptr)
         {
             constexpr SDL_Color kWireColor{0, 220, 160, 200};
             for (const auto& brick : mBricks)

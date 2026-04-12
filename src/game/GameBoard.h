@@ -22,11 +22,6 @@ namespace nuvelocity::frs42
         void Update(Game* game, float deltaTime);
         void Draw(Game* game) const;
 
-        void SetDebugDrawCollisions(bool enabled)
-        {
-            mDebugDrawCollisions = enabled;
-        }
-
         void AddBall(std::unique_ptr<Ball> ball)
         {
             mBalls.push_back(std::move(ball));
@@ -48,7 +43,6 @@ namespace nuvelocity::frs42
     private:
         std::vector<std::unique_ptr<Ball>> mBalls;
         std::vector<std::unique_ptr<Brick>> mBricks;
-        bool mDebugDrawCollisions = false;
     };
 } // namespace nuvelocity::frs42
 

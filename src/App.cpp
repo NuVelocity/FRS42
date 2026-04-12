@@ -59,9 +59,15 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 #endif
     auto* game = new Game("FreeRS42");
     *appstate = game;
+
+    game->GetArgs().add_argument("--debug-collisions")
+        .help("Enable debug collision drawing")
+        .default_value(false)
+        .implicit_value(true);
+
     game->SetMouseCursor("Resources/Interface/MouseCursor");
     game->SetModuleInfo("Resources/ModuleInfo/TheGame.modinfo");
-    if (game->Initialize(argv))
+    if (game->Initialize(argc, argv))
     {
         RegisterGameFonts(game);
 
