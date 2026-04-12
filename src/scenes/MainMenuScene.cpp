@@ -109,8 +109,7 @@ namespace nuvelocity::frs42
         BrickInfo barrierInfo;
 
         {
-            auto barrier = std::make_unique<MenuBarrier>(barrierInfo,
-                                                         std::vector<SDL_FPoint>{{49, 51},
+            auto barrier = std::make_unique<MenuBarrier>(std::vector<SDL_FPoint>{{49, 51},
                                                                                  {49, 414},
                                                                                  {130, 414},
                                                                                  {130, 260},
@@ -122,6 +121,7 @@ namespace nuvelocity::frs42
                                                                                  {275, 190},
                                                                                  {275, 100},
                                                                                  {214, 51}});
+            barrier->AttachBrickInfo(aGame, barrierInfo);
             barrier->SetPosition({0.0f, 0.0f});
             barrier->SetHoverColor({120, 124, 120, 255}); // #787c78
             mMenuBarriers.push_back(barrier.get());
@@ -131,8 +131,8 @@ namespace nuvelocity::frs42
         {
             // Inner box: top-left (129,107), size 71x93
             auto barrier = std::make_unique<MenuBarrier>(
-                barrierInfo,
                 std::vector<SDL_FPoint>{{129, 107}, {200, 107}, {200, 200}, {129, 200}});
+            barrier->AttachBrickInfo(aGame, barrierInfo);
             barrier->SetPosition({0.0f, 0.0f});
             barrier->SetShowHoverEffect(false);
             mMenuBarriers.push_back(barrier.get());
@@ -197,7 +197,8 @@ namespace nuvelocity::frs42
                 }
             }
 
-            auto ball = std::make_unique<Ball>(menuBallSequence);
+            auto ball = std::make_unique<Ball>();
+            ball->AttachSequence(aGame, menuBallSequence);
             ball->SetPosition(spawnPos);
             ball->SetVelocity({disV(gen), disV(gen)});
             mGameBoard.AddBall(std::move(ball));

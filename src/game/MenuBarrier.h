@@ -11,27 +11,28 @@ namespace nuvelocity::frs42
     class MenuBarrier : public Brick
     {
     public:
-        MenuBarrier(const BrickInfo& info)
-                : Brick(info)
-        {
-            mVertices = info.GetCollisionPolygon();
-            // Force type to Indestructible
-            // no sequence to load, Brick constructor already loaded mSequence based on info
-        }
+        MenuBarrier() = default;
 
-        MenuBarrier(const BrickInfo& info, const SDL_FPoint& p1, const SDL_FPoint& p2)
-                : Brick(info)
+        MenuBarrier(const SDL_FPoint& p1, const SDL_FPoint& p2)
         {
             SetLine(p1, p2);
         }
 
-        MenuBarrier(const BrickInfo& info, std::vector<SDL_FPoint> vertices)
-                : Brick(info)
+        MenuBarrier(std::vector<SDL_FPoint> vertices)
+                : mVertices(std::move(vertices))
         {
-            mVertices = std::move(vertices);
         }
 
         virtual ~MenuBarrier() = default;
+
+        void AttachBrickInfo(Game* game, const BrickInfo& info) override
+        {
+            Brick::AttachBrickInfo(game, info);
+            if (mVertices.empty())
+            {
+                mVertices = info.GetCollisionPolygon();
+            }
+        }
 
         void SetLine(const SDL_FPoint& p1, const SDL_FPoint& p2)
         {

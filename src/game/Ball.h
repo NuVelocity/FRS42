@@ -4,15 +4,17 @@
 #include <Game.h>
 #include <SDL3/SDL.h>
 #include <Sequence.h>
-#include <system/AssetManager.h>
 #include <cmath>
+#include <system/AssetManager.h>
 
 namespace nuvelocity::frs42
 {
     class Ball
     {
     public:
-        Ball(Sequence* sequence = nullptr)
+        Ball() = default;
+
+        void AttachSequence(Game* game, Sequence* sequence = nullptr)
         {
             if (sequence != nullptr)
             {
@@ -20,7 +22,7 @@ namespace nuvelocity::frs42
             }
             else
             {
-                mSequence = AssetManager::LoadSequence("Resources/Ball/Ball");
+                mSequence = game->mAsset->LoadSequence("Resources/Ball/Ball");
             }
             mAnimationStartTick = SDL_GetTicks();
         }

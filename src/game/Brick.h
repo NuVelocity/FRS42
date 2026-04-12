@@ -12,15 +12,16 @@ namespace nuvelocity::frs42
     class Brick
     {
     public:
-        Brick(const BrickInfo& info)
-                : mInfo(info)
+        Brick() = default;
+        virtual ~Brick() = default;
+
+        virtual void AttachBrickInfo(Game* game, const BrickInfo& info)
         {
-            mSequence = AssetManager::LoadSequence(mInfo.GetPrimarySequencePath());
+            mInfo = info;
+            mSequence = game->mAsset->LoadSequence(mInfo.GetPrimarySequencePath());
             mAnimationStartTick = SDL_GetTicks();
             mIsDestroyed = false;
         }
-
-        virtual ~Brick() = default;
 
         const BrickInfo& GetInfo() const
         {
