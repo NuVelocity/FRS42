@@ -3,6 +3,7 @@
 
 #include "Ball.h"
 #include "Brick.h"
+#include <GameComponent.h>
 #include <memory>
 #include <vector>
 
@@ -13,14 +14,14 @@ namespace nuvelocity
 
 namespace nuvelocity::frs42
 {
-    class GameBoard
+    class GameBoard : public GameComponent
     {
     public:
         GameBoard();
         virtual ~GameBoard();
 
-        void Update(Game* game, float deltaTime);
-        void Draw(Game* game) const;
+        void Update(Game* aGame) override;
+        void Draw(Game* aGame) override;
 
         void AddBall(std::unique_ptr<Ball> ball)
         {

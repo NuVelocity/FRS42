@@ -9,9 +9,9 @@ namespace nuvelocity::frs42
         return mInfo.GetCollisionPolygon();
     }
 
-    void Brick::Draw(Game* game) const
+    void Brick::Draw(Game* aGame)
     {
-        if (game == nullptr || game->mSpriteBatch == nullptr || mSequence == nullptr ||
+        if (aGame == nullptr || aGame->mSpriteBatch == nullptr || mSequence == nullptr ||
             mIsDestroyed)
         {
             return;
@@ -36,7 +36,7 @@ namespace nuvelocity::frs42
                                .y = mPosition.y,
                                .w = static_cast<float>(surface->w),
                                .h = static_cast<float>(surface->h)};
-            game->mSpriteBatch->Draw(surface, &destRect);
+            aGame->mSpriteBatch->Draw(surface, &destRect);
         }
     }
 } // namespace nuvelocity::frs42

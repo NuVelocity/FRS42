@@ -108,8 +108,13 @@ namespace nuvelocity
         SetRect(mCurrentBounds);
     }
 
-    void MainMenuButton::Update(InputManager& input, int windowWidth, uint64_t nowTick)
+    void MainMenuButton::Update(Game* aGame)
     {
+        if (aGame == nullptr || aGame->mInput == nullptr)
+        {
+            return;
+        }
+
         if (!IsVisible() || !IsEnabled())
         {
             mHovered = false;
@@ -117,7 +122,7 @@ namespace nuvelocity
             return;
         }
 
-        UpdateAnimation(windowWidth, nowTick);
+        UpdateAnimation(aGame->mWindowWidth);
 
         if (!mRevealComplete)
         {
@@ -127,13 +132,13 @@ namespace nuvelocity
         }
 
         SetRect(mCurrentBounds);
-        Button::Update(input, SDL_FPoint{.x = 0.0F, .y = 0.0F});
+        Button::Update(*aGame->mInput, SDL_FPoint{.x = 0.0F, .y = 0.0F});
     }
 
-    void MainMenuButton::Draw(Game* game) const
+    void MainMenuButton::Draw(Game* aGame)
     {
-        if (!IsVisible() || game == nullptr || game->mSpriteBatch == nullptr ||
-            game->mFont == nullptr)
+        if (!IsVisible() || aGame == nullptr || aGame->mSpriteBatch == nullptr ||
+            aGame->mFont == nullptr)
         {
             return;
         }
@@ -172,21 +177,21 @@ namespace nuvelocity
         const SDL_FRect panelBounds{
             .x = renderBounds.x + 18, .y = renderBounds.y + 12, .w = panelSize.x, .h = panelSize.y};
 
-        DrawSequenceFrame(game, armSequence, 0, renderBounds);
-        DrawSequenceFrame(game, panelSequence, panelFrameIndex, panelBounds);
+        DrawSequenceFrame(aGame, armSequence, 0, renderBounds);
+        DrawSequenceFrame(aGame, panelSequence, panelFrameIndex, panelBounds);
 
         if (mPanelFlipComplete)
         {
-            game->mFont->DrawStringWithFontAt(kMainMenuButtonFontName,
-                                              game->mSpriteBatch,
-                                              GetDisplayCaption(),
-                                              panelBounds.x + (panelBounds.w / 2),
-                                              panelBounds.y + 6.0F,
-                                              mStyle.textColor,
-                                              13,
-                                              TextAlignment::Center,
-                                              nullptr,
-                                              GetMnemonicIndex());
+            aGame->mFont->DrawStringWithFontAt(kMainMenuButtonFontName,
+                                               aGame->mSpriteBatch,
+                                               GetDisplayCaption(),
+                                               panelBounds.x + (panelBounds.w / 2),
+                                               panelBounds.y + 6.0F,
+                                               mStyle.textColor,
+                                               13,
+                                               TextAlignment::Center,
+                                               nullptr,
+                                               GetMnemonicIndex());
         }
 
         if (GetButtonStyle().showFocusRing && IsFocused() && !mHovered)
@@ -196,19 +201,19 @@ namespace nuvelocity
                                       .w = SDL_max(0.0F, panelBounds.w - 4.0F),
                                       .h = SDL_max(0.0F, panelBounds.h - 4.0F)};
             SDL_Color focusColor{255, 255, 255, 64};
-            game->mSpriteBatch->DrawLine(
+            aGame->mSpriteBatch->DrawLine(
                 focusRect.x, focusRect.y, focusRect.x + focusRect.w, focusRect.y, focusColor);
-            game->mSpriteBatch->DrawLine(focusRect.x + focusRect.w,
-                                         focusRect.y,
-                                         focusRect.x + focusRect.w,
-                                         focusRect.y + focusRect.h,
-                                         focusColor);
-            game->mSpriteBatch->DrawLine(focusRect.x + focusRect.w,
-                                         focusRect.y + focusRect.h,
-                                         focusRect.x,
-                                         focusRect.y + focusRect.h,
-                                         focusColor);
-            game->mSpriteBatch->DrawLine(
+            aGame->mSpriteBatch->DrawLine(focusRect.x + focusRect.w,
+                                          focusRect.y,
+                                          focusRect.x + focusRect.w,
+                                          focusRect.y + focusRect.h,
+                                          focusColor);
+            aGame->mSpriteBatch->DrawLine(focusRect.x + focusRect.w,
+                                          focusRect.y + focusRect.h,
+                                          focusRect.x,
+                                          focusRect.y + focusRect.h,
+                                          focusColor);
+            aGame->mSpriteBatch->DrawLine(
                 focusRect.x, focusRect.y + focusRect.h, focusRect.x, focusRect.y, focusColor);
         }
     }
@@ -220,8 +225,10 @@ namespace nuvelocity
                point.y <= mCurrentBounds.y + mCurrentBounds.h;
     }
 
-    void MainMenuButton::UpdateAnimation(int windowWidth, uint64_t nowTick)
+    void MainMenuButton::UpdateAnimation(int windowWidth)
     {
+        uint64_t nowTick = SDL_GetTicks();
+
         if (!mRevealStarted)
         {
             ResetAnimation(nowTick);
@@ -293,12 +300,12 @@ namespace nuvelocity
         return SDL_min(frameIndex, frameCount - 1);
     }
 
-    void MainMenuButton::DrawSequenceFrame(Game* game,
+    void MainMenuButton::DrawSequenceFrame(Game* aGame,
                                            Sequence* sequence,
                                            std::size_t frameIndex,
                                            const SDL_FRect& destination)
     {
-        if (game == nullptr || game->mSpriteBatch == nullptr || sequence == nullptr)
+        if (aGame == nullptr || aGame->mSpriteBatch == nullptr || sequence == nullptr)
         {
             return;
         }
@@ -316,6 +323,6 @@ namespace nuvelocity
             return;
         }
 
-        game->mSpriteBatch->Draw(surface, &destination);
+        aGame->mSpriteBatch->Draw(surface, &destination);
     }
 } // namespace nuvelocity

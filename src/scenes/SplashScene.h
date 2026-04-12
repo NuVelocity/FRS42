@@ -25,10 +25,10 @@ namespace nuvelocity::frs42
 
         std::array<SplashFrame, kFrameCount> mFrames;
         std::size_t mCurrentFrameIndex = 0;
-        uint64_t mFrameStartTick = 0;
+        float mElapsedFrameTime = 0.0f;
         bool mTransitioned = false;
 
-        uint8_t GetBlackOverlayAlpha(uint64_t nowTick) const;
+        uint8_t GetBlackOverlayAlpha(float elapsedSeconds) const;
 
     public:
         SplashScene() = default;

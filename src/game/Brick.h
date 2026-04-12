@@ -3,13 +3,14 @@
 
 #include "BrickInfo.h"
 #include <Game.h>
+#include <GameComponent.h>
 #include <SDL3/SDL.h>
 #include <Sequence.h>
 #include <system/AssetManager.h>
 
 namespace nuvelocity::frs42
 {
-    class Brick
+    class Brick : public GameComponent
     {
     public:
         Brick() = default;
@@ -55,8 +56,8 @@ namespace nuvelocity::frs42
             // Indestructible does nothing
         }
 
-        virtual void Update(Game* game, float deltaTime) {}
-        virtual void Draw(Game* game) const;
+        void Update(Game* aGame) override {}
+        void Draw(Game* aGame) override;
 
         virtual std::vector<SDL_FPoint> GetCollisionPolygon() const;
         virtual bool IsClosedPolygon() const

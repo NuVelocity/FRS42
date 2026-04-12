@@ -30,7 +30,6 @@ namespace nuvelocity::frs42
         MainMenuButton mExitButton;
         std::array<nuvelocity::Button*, kMenuButtonCount> mMenuButtonPointers{};
         std::unique_ptr<nuvelocity::FocusContainer> mFocusContainer;
-        uint64_t mLastUpdateTick = 0;
         uint64_t mEntryFadeStartTick = 0;
 
         GameBoard mGameBoard;
@@ -47,7 +46,7 @@ namespace nuvelocity::frs42
         MainMenuScene() = default;
         void Load(Game* aGame) override;
         void Update(Game* aGame) override;
-        void UpdateGameBoard(nuvelocity::Game* aGame, float deltaTime);
+        void UpdateGameBoard(Game* aGame);
         void Draw(Game* aGame) override;
         void Unload(Game* aGame) override {};
         std::string GetName() const override;

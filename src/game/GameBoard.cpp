@@ -10,18 +10,19 @@ namespace nuvelocity::frs42
     GameBoard::GameBoard() = default;
     GameBoard::~GameBoard() = default;
 
-    void GameBoard::Draw(Game* game) const
+    void GameBoard::Draw(Game* aGame)
     {
         for (const auto& brick : mBricks)
         {
-            brick->Draw(game);
+            brick->Draw(aGame);
         }
         for (const auto& ball : mBalls)
         {
-            ball->Draw(game);
+            ball->Draw(aGame);
         }
 
-        if (game != nullptr && game->mArgs.get<bool>("--debug-collisions") && game->mSpriteBatch != nullptr)
+        if (aGame != nullptr && aGame->mArgs.get<bool>("--debug-collisions") &&
+            aGame->mSpriteBatch != nullptr)
         {
             constexpr SDL_Color kWireColor{0, 220, 160, 200};
             for (const auto& brick : mBricks)
@@ -44,7 +45,7 @@ namespace nuvelocity::frs42
                 for (size_t i = 0; i < segmentCount; ++i)
                 {
                     const size_t next = (i + 1) % poly.size();
-                    game->mSpriteBatch->DrawLine(
+                    aGame->mSpriteBatch->DrawLine(
                         poly[i].x, poly[i].y, poly[next].x, poly[next].y, kWireColor);
                 }
             }
@@ -60,11 +61,11 @@ namespace nuvelocity::frs42
                     const float a0 = (static_cast<float>(i) / kCircleSegments) * 2.0f * SDL_PI_F;
                     const float a1 =
                         (static_cast<float>(i + 1) / kCircleSegments) * 2.0f * SDL_PI_F;
-                    game->mSpriteBatch->DrawLine(center.x + r * SDL_cosf(a0),
-                                                 center.y + r * SDL_sinf(a0),
-                                                 center.x + r * SDL_cosf(a1),
-                                                 center.y + r * SDL_sinf(a1),
-                                                 kBallWireColor);
+                    aGame->mSpriteBatch->DrawLine(center.x + r * SDL_cosf(a0),
+                                                  center.y + r * SDL_sinf(a0),
+                                                  center.x + r * SDL_cosf(a1),
+                                                  center.y + r * SDL_sinf(a1),
+                                                  kBallWireColor);
                 }
             }
         }
@@ -116,11 +117,14 @@ namespace nuvelocity::frs42
         return false;
     }
 
-    void GameBoard::Update(Game* game, float deltaTime)
+    void GameBoard::Update(Game* aGame)
     {
+        const float deltaTime = aGame->GetDeltaTime();
+
         for (auto& ball : mBalls)
         {
-            const float maxStepDist = std::max(1.0f, ball->GetRadius() * 0.5f);
+            const float radius = ball->GetRadius();
+            const float maxStepDist = std::max(1.0f, radius * 0.5f);
             const float speed = ball->GetSpeed();
             const float moveDist = speed * deltaTime;
             int numSteps = static_cast<int>(std::ceil(moveDist / maxStepDist));
@@ -133,7 +137,7 @@ namespace nuvelocity::frs42
 
             for (int step = 0; step < numSteps; ++step)
             {
-                ball->Update(dt);
+                ball->Update(aGame);
 
                 SDL_FPoint pos = ball->GetPosition();
                 float radius = ball->GetRadius();
@@ -147,9 +151,9 @@ namespace nuvelocity::frs42
                     ball->SetVelocity(vel);
                     ball->SetPosition(pos);
                 }
-                else if (pos.x + radius > static_cast<float>(game->mWindowWidth))
+                else if (pos.x + radius > static_cast<float>(aGame->mWindowWidth))
                 {
-                    pos.x = static_cast<float>(game->mWindowWidth) - radius;
+                    pos.x = static_cast<float>(aGame->mWindowWidth) - radius;
                     vel.x = -std::abs(vel.x);
                     ball->SetVelocity(vel);
                     ball->SetPosition(pos);
@@ -162,9 +166,9 @@ namespace nuvelocity::frs42
                     ball->SetVelocity(vel);
                     ball->SetPosition(pos);
                 }
-                else if (pos.y + radius > static_cast<float>(game->mWindowHeight))
+                else if (pos.y + radius > static_cast<float>(aGame->mWindowHeight))
                 {
-                    pos.y = static_cast<float>(game->mWindowHeight) - radius;
+                    pos.y = static_cast<float>(aGame->mWindowHeight) - radius;
                     vel.y = -std::abs(vel.y);
                     ball->SetVelocity(vel);
                     ball->SetPosition(pos);
@@ -243,7 +247,7 @@ namespace nuvelocity::frs42
         // Potential brick update logic
         for (auto& brick : mBricks)
         {
-            brick->Update(game, deltaTime);
+            brick->Update(aGame);
         }
     }
 } // namespace nuvelocity::frs42

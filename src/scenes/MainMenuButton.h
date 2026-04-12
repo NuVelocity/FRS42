@@ -1,6 +1,8 @@
 #ifndef FRS42_MAIN_MENU_BUTTON_H
 #define FRS42_MAIN_MENU_BUTTON_H
 
+#include <Game.h>
+#include <GameComponent.h>
 #include <SDL3/SDL.h>
 #include <Sequence.h>
 #include <ui/Button.h>
@@ -10,9 +12,6 @@
 
 namespace nuvelocity
 {
-    class Game;
-    class InputManager;
-
     struct MainMenuButtonAssets
     {
         Sequence* armNormal = nullptr;
@@ -23,7 +22,7 @@ namespace nuvelocity
         Sequence* panelPressed = nullptr;
     };
 
-    class MainMenuButton : public Button
+    class MainMenuButton : public Button, public GameComponent
     {
     public:
         struct Style
@@ -40,8 +39,8 @@ namespace nuvelocity
         SDL_FPoint GetSize() const;
 
         void ResetAnimation(uint64_t nowTick, uint64_t revealDelayMs = 0);
-        void Update(InputManager& input, int windowWidth, uint64_t nowTick);
-        void Draw(Game* game) const;
+        void Update(Game* aGame) override;
+        void Draw(Game* aGame) override;
 
         bool Intersects(const SDL_FPoint& point) const;
 
@@ -58,7 +57,7 @@ namespace nuvelocity
 
         static constexpr uint64_t kSlideDurationMs = 700;
 
-        void UpdateAnimation(int windowWidth, uint64_t nowTick);
+        void UpdateAnimation(int windowWidth);
         SDL_FRect GetRenderBounds() const;
         std::size_t GetPanelFlipFrameIndex(uint64_t nowTick) const;
 

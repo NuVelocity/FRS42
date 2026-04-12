@@ -204,7 +204,6 @@ namespace nuvelocity::frs42
             mGameBoard.AddBall(std::move(ball));
         }
 
-        mLastUpdateTick = nowTick;
         mEntryFadeStartTick = nowTick;
     }
 
@@ -249,11 +248,6 @@ namespace nuvelocity::frs42
 
     void MainMenuScene::Update(Game* aGame)
     {
-        const uint64_t now = SDL_GetTicks();
-        float deltaTime =
-            (mLastUpdateTick == 0) ? 0.0f : static_cast<float>(now - mLastUpdateTick) / 1000.0f;
-        mLastUpdateTick = now;
-
         if (mFocusContainer == nullptr || aGame->mInput == nullptr)
         {
             return;
@@ -261,7 +255,7 @@ namespace nuvelocity::frs42
 
         mFocusContainer->UpdateFocusNavigation(aGame->mInput);
         UpdateMenuFocusFromMouse(aGame);
-        UpdateGameBoard(aGame, deltaTime);
+        UpdateGameBoard(aGame);
 
         const std::size_t focusedIndex = mFocusContainer->GetFocusedIndex();
         const bool hasFocus = mFocusContainer->HasFocus();
@@ -270,11 +264,11 @@ namespace nuvelocity::frs42
         {
             MainMenuButton* button = static_cast<MainMenuButton*>(mMenuButtonPointers[index]);
             button->SetFocused(hasFocus && index == focusedIndex);
-            button->Update(*aGame->mInput, aGame->mWindowWidth, now);
+            button->Update(aGame);
         }
     }
 
-    void MainMenuScene::UpdateGameBoard(nuvelocity::Game* aGame, float deltaTime)
+    void MainMenuScene::UpdateGameBoard(nuvelocity::Game* aGame)
     {
         // Apply gravity-like follow behavior if any barrier is hovered
         const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
@@ -292,11 +286,11 @@ namespace nuvelocity::frs42
         {
             for (auto& ball : mGameBoard.GetBalls())
             {
-                mMenuBarriers[0]->ApplyGravityEffect(ball.get(), mousePosition, deltaTime);
+                mMenuBarriers[0]->ApplyGravityEffect(aGame, ball.get(), mousePosition);
             }
         }
 
-        mGameBoard.Update(aGame, deltaTime);
+        mGameBoard.Update(aGame);
     }
 
     void MainMenuScene::Draw(Game* aGame)

@@ -3,9 +3,16 @@
 
 namespace nuvelocity::frs42
 {
-    void Ball::Draw(Game* game) const
+    void Ball::Update(Game* aGame)
     {
-        if (mSequence == nullptr || game == nullptr || game->mSpriteBatch == nullptr)
+        float deltaTime = aGame->GetDeltaTime();
+        mPosition.x += mDirection.x * mSpeed * deltaTime;
+        mPosition.y += mDirection.y * mSpeed * deltaTime;
+    }
+
+    void Ball::Draw(Game* aGame)
+    {
+        if (mSequence == nullptr || aGame == nullptr || aGame->mSpriteBatch == nullptr)
         {
             return;
         }
@@ -31,7 +38,7 @@ namespace nuvelocity::frs42
                                .y = mPosition.y - hh,
                                .w = static_cast<float>(surface->w),
                                .h = static_cast<float>(surface->h)};
-            game->mSpriteBatch->Draw(surface, &destRect);
+            aGame->mSpriteBatch->Draw(surface, &destRect);
         }
     }
 } // namespace nuvelocity::frs42

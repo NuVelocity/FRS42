@@ -39,8 +39,8 @@ namespace nuvelocity::frs42
             mVertices = {p1, p2};
         }
 
-        void Update(Game* game, float deltaTime) override;
-        void Draw(Game* game) const override;
+        void Update(Game* aGame) override;
+        void Draw(Game* aGame) override;
 
         std::vector<SDL_FPoint> GetCollisionPolygon() const override
         {
@@ -52,7 +52,7 @@ namespace nuvelocity::frs42
         }
 
         bool Intersects(const SDL_FPoint& point); // non-const: updates mHoveredSegment
-        void ApplyGravityEffect(Ball* ball, const SDL_FPoint& mousePos, float deltaTime) const;
+        void ApplyGravityEffect(Game* aGame, Ball* ball, const SDL_FPoint& mousePos) const;
 
         void Hit() override {} // MenuBarrier is indestructible — never mark as destroyed
 

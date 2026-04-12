@@ -6,15 +6,15 @@
 
 namespace nuvelocity::frs42
 {
-    void MenuBarrier::Update(Game* game, float deltaTime)
+    void MenuBarrier::Update(Game* aGame)
     {
         // Track mouse position for gravity effect.
-        mMousePosition = game->mInput->GetMousePosition();
+        mMousePosition = aGame->mInput->GetMousePosition();
     }
 
-    void MenuBarrier::Draw(Game* game) const
+    void MenuBarrier::Draw(Game* aGame)
     {
-        if (game == nullptr || game->mSpriteBatch == nullptr || !mShowHoverEffect ||
+        if (aGame == nullptr || aGame->mSpriteBatch == nullptr || !mShowHoverEffect ||
             mHoveredSegment < 0 || mVertices.size() < 2)
         {
             return;
@@ -23,7 +23,7 @@ namespace nuvelocity::frs42
         const size_t i = static_cast<size_t>(mHoveredSegment);
         const size_t next = (i + 1) % mVertices.size();
 
-        game->mSpriteBatch->DrawLine(mPosition.x + mVertices[i].x,
+        aGame->mSpriteBatch->DrawLine(mPosition.x + mVertices[i].x,
                                      mPosition.y + mVertices[i].y,
                                      mPosition.x + mVertices[next].x,
                                      mPosition.y + mVertices[next].y,
@@ -78,14 +78,14 @@ namespace nuvelocity::frs42
         return mHoveredSegment >= 0;
     }
 
-    void
-    MenuBarrier::ApplyGravityEffect(Ball* ball, const SDL_FPoint& mousePos, float deltaTime) const
+    void MenuBarrier::ApplyGravityEffect(Game* aGame, Ball* ball, const SDL_FPoint& mousePos) const
     {
-        if (ball == nullptr)
+        if (ball == nullptr || aGame == nullptr)
         {
             return;
         }
 
+        const float deltaTime = aGame->GetDeltaTime();
         const SDL_FPoint pos = ball->GetPosition();
         const float dx = mousePos.x - pos.x;
         const float dy = mousePos.y - pos.y;

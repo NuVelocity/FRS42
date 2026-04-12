@@ -7,33 +7,33 @@
 
 namespace nuvelocity::frs42
 {
-    uint8_t SplashScene::GetBlackOverlayAlpha(uint64_t nowTick) const
+    uint8_t SplashScene::GetBlackOverlayAlpha(float elapsedSeconds) const
     {
-        if (mCurrentFrameIndex >= mFrames.size() || mFrameStartTick == 0)
+        if (mCurrentFrameIndex >= mFrames.size())
         {
             return SDL_ALPHA_OPAQUE;
         }
 
-        const uint64_t elapsedMs = nowTick - mFrameStartTick;
-        const uint64_t frameDurationMs = (kFadeDurationMs * 2) + kHoldDurationMs;
-        const uint64_t clampedElapsedMs = SDL_min(elapsedMs, frameDurationMs);
+        const float fadeDuration = static_cast<float>(kFadeDurationMs) / 1000.0f;
+        const float holdDuration = static_cast<float>(kHoldDurationMs) / 1000.0f;
+        const float frameDuration = (fadeDuration * 2.0f) + holdDuration;
 
-        if (clampedElapsedMs < kFadeDurationMs)
+        const float clampedElapsed = std::min(elapsedSeconds, frameDuration);
+
+        if (clampedElapsed < fadeDuration)
         {
-            const float progress =
-                static_cast<float>(clampedElapsedMs) / static_cast<float>(kFadeDurationMs);
-            return static_cast<uint8_t>((1.0F - progress) * 255.0F);
+            const float progress = clampedElapsed / fadeDuration;
+            return static_cast<uint8_t>((1.0f - progress) * 255.0f);
         }
 
-        if (clampedElapsedMs < kFadeDurationMs + kHoldDurationMs)
+        if (clampedElapsed < fadeDuration + holdDuration)
         {
             return SDL_ALPHA_TRANSPARENT;
         }
 
-        const uint64_t fadeOutElapsedMs = clampedElapsedMs - (kFadeDurationMs + kHoldDurationMs);
-        const float progress =
-            static_cast<float>(fadeOutElapsedMs) / static_cast<float>(kFadeDurationMs);
-        return static_cast<uint8_t>(progress * 255.0F);
+        const float fadeOutElapsed = clampedElapsed - (fadeDuration + holdDuration);
+        const float progress = fadeOutElapsed / fadeDuration;
+        return static_cast<uint8_t>(progress * 255.0f);
     }
 
     void SplashScene::Load(Game* aGame)
@@ -53,30 +53,33 @@ namespace nuvelocity::frs42
         }
 
         mCurrentFrameIndex = 0;
-        mFrameStartTick = SDL_GetTicks();
+        mElapsedFrameTime = 0.0f;
         mTransitioned = false;
     }
 
     void SplashScene::Update(Game* aGame)
     {
-        if (mTransitioned || mFrameStartTick == 0)
+        if (mTransitioned)
         {
             return;
         }
 
-        const uint64_t nowTick = SDL_GetTicks();
-        const uint64_t elapsedMs = nowTick - mFrameStartTick;
-        const uint64_t frameDurationMs = (kFadeDurationMs * 2) + kHoldDurationMs;
+        const float deltaTime = aGame->GetDeltaTime();
+        mElapsedFrameTime += deltaTime;
+
+        const float fadeDuration = static_cast<float>(kFadeDurationMs) / 1000.0f;
+        const float holdDuration = static_cast<float>(kHoldDurationMs) / 1000.0f;
+        const float frameDuration = (fadeDuration * 2.0f) + holdDuration;
 
         // Clicking while the splash screen is fully visible will skip it.
         if (aGame->mInput != nullptr && aGame->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT) &&
-            elapsedMs >= kFadeDurationMs && elapsedMs < kFadeDurationMs + kHoldDurationMs)
+            mElapsedFrameTime >= fadeDuration && mElapsedFrameTime < fadeDuration + holdDuration)
         {
-            mFrameStartTick = nowTick - (kFadeDurationMs + kHoldDurationMs);
+            mElapsedFrameTime = fadeDuration + holdDuration;
             return;
         }
 
-        if (elapsedMs < frameDurationMs)
+        if (mElapsedFrameTime < frameDuration)
         {
             return;
         }
@@ -84,7 +87,7 @@ namespace nuvelocity::frs42
         if (mCurrentFrameIndex + 1 < mFrames.size())
         {
             ++mCurrentFrameIndex;
-            mFrameStartTick = nowTick;
+            mElapsedFrameTime = 0.0f;
             return;
         }
 
@@ -110,7 +113,7 @@ namespace nuvelocity::frs42
             }
         }
 
-        const uint8_t overlayAlpha = GetBlackOverlayAlpha(SDL_GetTicks());
+        const uint8_t overlayAlpha = GetBlackOverlayAlpha(mElapsedFrameTime);
         if (overlayAlpha > SDL_ALPHA_TRANSPARENT)
         {
             aGame->mSpriteBatch->FillRect(nullptr, SDL_Color{0, 0, 0, overlayAlpha});

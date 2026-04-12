@@ -2,6 +2,7 @@
 #define NVE_BALL_H
 
 #include <Game.h>
+#include <GameComponent.h>
 #include <SDL3/SDL.h>
 #include <Sequence.h>
 #include <cmath>
@@ -9,7 +10,7 @@
 
 namespace nuvelocity::frs42
 {
-    class Ball
+    class Ball : public GameComponent
     {
     public:
         Ball() = default;
@@ -96,13 +97,8 @@ namespace nuvelocity::frs42
             return 8.0f;
         }
 
-        void Update(float deltaTime)
-        {
-            mPosition.x += mDirection.x * mSpeed * deltaTime;
-            mPosition.y += mDirection.y * mSpeed * deltaTime;
-        }
-
-        void Draw(Game* game) const;
+        void Update(Game* aGame) override;
+        void Draw(Game* aGame) override;
 
     private:
         Sequence* mSequence = nullptr;
