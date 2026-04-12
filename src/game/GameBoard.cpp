@@ -87,8 +87,8 @@ namespace nuvelocity::frs42
             return false;
 
         float t = ((center.x - p1.x) * dx + (center.y - p1.y) * dy) / lenSq;
-        if (t < 0.0f || t > 1.0f)
-            return false; // Only collide with the segment surface, not near endpoints
+        // Clamp t to [0, 1] to stay on the segment
+        t = std::max(0.0f, std::min(1.0f, t));
 
         float closestX = p1.x + t * dx;
         float closestY = p1.y + t * dy;
@@ -124,24 +124,26 @@ namespace nuvelocity::frs42
         for (auto& ball : mBalls)
         {
             const float radius = ball->GetRadius();
-            const float maxStepDist = std::max(1.0f, radius * 0.5f);
-            const float speed = ball->GetSpeed();
-            const float moveDist = speed * deltaTime;
-            int numSteps = static_cast<int>(std::ceil(moveDist / maxStepDist));
-            if (numSteps < 1)
-            {
-                numSteps = 1;
-            }
 
+            // Key: adaptive sub-stepping based on speed and radius
+            // Ensures we never move more than half a radius per step
+            const float speed = ball->GetSpeed();
+            const float maxStepDist =
+                radius * 0.5f; // Conservative: move max 0.5 * radius per substep
+            const float moveDist = speed * deltaTime;
+
+            int numSteps = std::max(1, static_cast<int>(std::ceil(moveDist / maxStepDist)));
             const float dt = deltaTime / static_cast<float>(numSteps);
 
             for (int step = 0; step < numSteps; ++step)
             {
-                ball->Update(aGame);
-
                 SDL_FPoint pos = ball->GetPosition();
-                float radius = ball->GetRadius();
                 SDL_FPoint vel = ball->GetVelocity();
+
+                // Move by velocity * dt
+                pos.x += vel.x * dt;
+                pos.y += vel.y * dt;
+                ball->SetPosition(pos);
 
                 // Screen boundary checks (Bounce)
                 if (pos.x - radius < 0)

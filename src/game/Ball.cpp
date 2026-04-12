@@ -3,13 +3,6 @@
 
 namespace nuvelocity::frs42
 {
-    void Ball::Update(Game* aGame)
-    {
-        float deltaTime = aGame->GetDeltaTime();
-        mPosition.x += mDirection.x * mSpeed * deltaTime;
-        mPosition.y += mDirection.y * mSpeed * deltaTime;
-    }
-
     void Ball::Draw(Game* aGame)
     {
         if (mSequence == nullptr || aGame == nullptr || aGame->mSpriteBatch == nullptr)

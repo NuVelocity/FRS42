@@ -97,7 +97,7 @@ namespace nuvelocity::frs42
             return 8.0f;
         }
 
-        void Update(Game* aGame) override;
+        void Update(Game* aGame) override {};
         void Draw(Game* aGame) override;
 
     private:
