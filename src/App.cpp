@@ -66,6 +66,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         .default_value(false)
         .implicit_value(true);
 
+    game->GetArgs().add_argument("--skip-splash")
+        .help("Skip the splash screen")
+        .default_value(false)
+        .implicit_value(true);
+
     game->SetMouseCursor("Resources/Interface/MouseCursor");
     game->SetModuleInfo("Resources/ModuleInfo/TheGame.modinfo");
     if (game->Initialize(argc, argv))
@@ -84,7 +89,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
             game->mMdi->RegisterSkin("Ricochet", ricochetSkin);
         }
 
-        game->SetScene(new frs42::SplashScene());
+        if (game->GetArgs().get<bool>("--skip-splash"))
+        {
+            game->SetScene(new MainMenuScene());
+        }
+        else
+        {
+            game->SetScene(new SplashScene());
+        }
         return SDL_APP_CONTINUE;
     }
     return SDL_APP_FAILURE;
