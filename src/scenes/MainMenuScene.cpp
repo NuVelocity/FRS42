@@ -270,8 +270,6 @@ namespace nuvelocity::frs42
                 12.0F,
             SDL_Color{255, 255, 255, 255},
             8);
-
-        aGame->mSpriteBatch->Present();
     }
 
     std::string MainMenuScene::GetName() const

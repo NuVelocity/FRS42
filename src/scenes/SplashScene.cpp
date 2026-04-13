@@ -118,8 +118,6 @@ namespace nuvelocity::frs42
         {
             aGame->mSpriteBatch->FillRect(nullptr, SDL_Color{0, 0, 0, overlayAlpha});
         }
-
-        aGame->mSpriteBatch->Present();
     }
 
     std::string SplashScene::GetName() const
