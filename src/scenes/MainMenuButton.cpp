@@ -59,25 +59,25 @@ namespace nuvelocity
         }
     }
 
-    void MainMenuButton::SetBounds(const SDL_FRect& bounds)
+    void MainMenuButton::SetRect(const SDL_FRect& rect)
     {
         const SDL_FPoint size = GetSize();
 
-        mTargetBounds = bounds;
+        mTargetBounds = rect;
         if (size.x > 0.0F && size.y > 0.0F)
         {
             mTargetBounds.w = size.x;
             mTargetBounds.h = size.y;
         }
 
-        mCurrentBounds = bounds;
+        mCurrentBounds = rect;
         if (size.x > 0.0F && size.y > 0.0F)
         {
             mCurrentBounds.w = size.x;
             mCurrentBounds.h = size.y;
         }
 
-        SetRect(mCurrentBounds);
+        Widget::SetRect(mCurrentBounds);
     }
 
     void MainMenuButton::SetStyle(const Style& style)

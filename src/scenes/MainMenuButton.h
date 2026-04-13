@@ -33,7 +33,7 @@ namespace nuvelocity
         MainMenuButton();
 
         void SetAssets(const MainMenuButtonAssets& assets);
-        void SetBounds(const SDL_FRect& bounds);
+        void SetRect(const SDL_FRect& rect) override;
         void SetStyle(const Style& style);
         SDL_FPoint GetSize() const;
 
