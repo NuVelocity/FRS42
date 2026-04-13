@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "GameObjectRegistration.h"
+#include <system/ui/MdiManager.h>
 
 using namespace nuvelocity;
 using namespace frs42;
@@ -74,6 +75,15 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         // Load main menu music early.
         auto* asset = game->mAsset->Load("Music/Rock/Rockfast.ogg");
         game->mAudio->AssignBgm("Rock Fast", asset);
+
+        // Load and Register Window Skins
+        JWindowSkin* ricochetSkin =
+            game->mAsset->LoadWindowSkin("Resources/Interface/JWindowSkins/Ricochet.JWindowSkin");
+        if (ricochetSkin != nullptr)
+        {
+            game->mMdi->RegisterSkin("Ricochet", ricochetSkin);
+        }
+
         game->SetScene(new frs42::SplashScene());
         return SDL_APP_CONTINUE;
     }
