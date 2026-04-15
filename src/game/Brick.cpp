@@ -29,14 +29,6 @@ namespace nuvelocity::frs42
         const std::size_t frameIndex =
             static_cast<std::size_t>((static_cast<double>(elapsed) * fps) / 1000.0) % frameCount;
 
-        SDL_Surface* surface = mSequence->GetSurface(frameIndex);
-        if (surface != nullptr)
-        {
-            SDL_FRect destRect{.x = mPosition.x,
-                               .y = mPosition.y,
-                               .w = static_cast<float>(surface->w),
-                               .h = static_cast<float>(surface->h)};
-            aGame->mSpriteBatch->Draw(surface, &destRect);
-        }
+        aGame->mSpriteBatch->Draw(mSequence, frameIndex, mPosition.x, mPosition.y);
     }
 } // namespace nuvelocity::frs42

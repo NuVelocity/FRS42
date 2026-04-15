@@ -22,7 +22,7 @@ namespace nuvelocity::frs42
             ball->Draw(aGame);
         }
 
-        if (aGame != nullptr && aGame->mArgs.get<bool>("--debug-collisions") &&
+        if (aGame != nullptr && aGame->mArgs.get<bool>("--draw-bounds") &&
             aGame->mSpriteBatch != nullptr)
         {
             constexpr SDL_Color kWireColor{0, 220, 160, 200};

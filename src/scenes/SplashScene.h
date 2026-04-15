@@ -1,8 +1,8 @@
 #ifndef FRS42_SPLASH_SCENE_H
 #define FRS42_SPLASH_SCENE_H
 
-#include <Image.h>
 #include <Scene.h>
+#include <StandAloneFrame.h>
 
 #include <array>
 #include <cstddef>
@@ -16,7 +16,7 @@ namespace nuvelocity::frs42
         struct SplashFrame
         {
             const char* assetPath = nullptr;
-            Image image;
+            StandAloneFrame* frame = nullptr;
         };
 
         static constexpr std::size_t kFrameCount = 2;

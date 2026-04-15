@@ -45,11 +45,7 @@ namespace nuvelocity::frs42
 
         for (SplashFrame& splashFrame : mFrames)
         {
-            auto* frame = aGame->mAsset->LoadStandAloneFrame(splashFrame.assetPath);
-            if (frame != nullptr)
-            {
-                splashFrame.image = Image(*frame);
-            }
+            splashFrame.frame = aGame->mAsset->LoadStandAloneFrame(splashFrame.assetPath);
         }
 
         mCurrentFrameIndex = 0;
@@ -107,9 +103,9 @@ namespace nuvelocity::frs42
         if (mCurrentFrameIndex < mFrames.size())
         {
             SplashFrame& splashFrame = mFrames[mCurrentFrameIndex];
-            if (splashFrame.image.IsValid())
+            if (splashFrame.frame != nullptr)
             {
-                aGame->mSpriteBatch->DrawCentered(splashFrame.image.GetSurface());
+                aGame->mSpriteBatch->DrawCentered(splashFrame.frame);
             }
         }
 

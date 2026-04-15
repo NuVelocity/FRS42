@@ -9,9 +9,10 @@
 #include <array>
 #include <memory>
 
+#include "BarrierBrick.h"
 #include "GameBoard.h"
 #include "MainMenuButton.h"
-#include "BarrierBrick.h"
+#include "StandAloneFrame.h"
 
 namespace nuvelocity::frs42
 {
@@ -21,7 +22,7 @@ namespace nuvelocity::frs42
         static constexpr uint64_t kEntryFadeDurationMs = 600;
         static constexpr std::size_t kMenuButtonCount = 5;
 
-        Image mBackgroundImage;
+        StandAloneFrame* mBackgroundImage = nullptr;
         MainMenuButtonAssets mMenuAssets;
         MainMenuButton mPlayButton;
         MainMenuButton mStatsButton;

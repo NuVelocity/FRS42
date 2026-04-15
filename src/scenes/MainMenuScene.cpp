@@ -2,6 +2,7 @@
 #include <Image.h>
 #include <SDL3/SDL.h>
 #include <system/SpriteBatch.h>
+#include <StandAloneFrame.h>
 
 #include <array>
 #include <limits>
@@ -36,12 +37,8 @@ namespace nuvelocity::frs42
     {
         aGame->mAudio->PlayBgm("Rock Fast");
 
-        auto* backgroundFrame =
+        mBackgroundImage =
             aGame->mAsset->LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");
-        if (backgroundFrame != nullptr)
-        {
-            mBackgroundImage = Image(*backgroundFrame);
-        }
 
         mMenuAssets.armNormal =
             aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Arm Normal");
@@ -100,9 +97,9 @@ namespace nuvelocity::frs42
             const SDL_FRect buttonRect{
                 .x = buttonX,
                 .y = startY + (static_cast<float>(index) * (buttonSize.y + kButtonVerticalSpacing)),
-                .w = 0.0F,
-                .h = 0.0F};
-            button->SetBounds(buttonRect);
+                .w = buttonSize.x,
+                .h = buttonSize.y};
+            button->SetRect(buttonRect);
             button->ResetAnimation(nowTick, kMenuButtonRevealDelayMs * index);
         }
 
@@ -229,9 +226,9 @@ namespace nuvelocity::frs42
 
         aGame->mSpriteBatch->Clear(SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE});
 
-        if (mBackgroundImage.IsValid())
+        if (mBackgroundImage != nullptr)
         {
-            aGame->mSpriteBatch->DrawCentered(mBackgroundImage.GetSurface());
+            aGame->mSpriteBatch->DrawCentered(mBackgroundImage);
         }
 
         mGameBoard.Draw(aGame);
