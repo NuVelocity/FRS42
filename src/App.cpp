@@ -2,54 +2,18 @@
 
 #include "MainMenuScene.h"
 #include "SplashScene.h"
-#include <FontBitmap.h>
 #include <Game.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_main.h>
-
-#include <array>
-#include <memory>
+#include <system/AssetManager.h>
+#include <system/AudioManager.h>
 
 #include "GameObjectRegistration.h"
 #include <system/ui/MdiManager.h>
 
 using namespace nuvelocity;
 using namespace frs42;
-
-static void RegisterGameFonts(Game* game)
-{
-    if (game == nullptr || game->mAsset == nullptr || game->mFont == nullptr)
-    {
-        return;
-    }
-
-    constexpr std::array<std::pair<const char*, const char*>, 12> kBitmapFonts = {
-        std::pair{"Big White", "Fonts/Big White"},
-        std::pair{"Med Gold", "Fonts/Med Gold"},
-        std::pair{"Megovision", "Fonts/Megovision"},
-        std::pair{"Numbers Blue", "Fonts/Numbers Blue"},
-        std::pair{"OCR", "Fonts/OCR"},
-        std::pair{"Sell", "Fonts/Sell"},
-        std::pair{"Small Blue", "Fonts/Small Blue"},
-        std::pair{"Small Gold", "Fonts/Small Gold"},
-        std::pair{"WebLarge Blue", "Fonts/WebLarge Blue"},
-        std::pair{"WebSmall Black", "Fonts/WebSmall Black"},
-        std::pair{"Yellow Header", "Fonts/Yellow Header"},
-        std::pair{"Yellow Large Header", "Fonts/Yellow Large Header"},
-    };
-
-    for (const auto& [name, path] : kBitmapFonts)
-    {
-        FontBitmap* bitmapFont = game->mAsset->LoadFontBitmap(path);
-        if (bitmapFont == nullptr)
-        {
-            continue;
-        }
-
-        game->mFont->RegisterFont(name, std::unique_ptr<Font>(static_cast<Font*>(bitmapFont)));
-    }
-}
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -71,11 +35,21 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     game->SetModuleInfo("Resources/ModuleInfo/TheGame.modinfo");
     if (game->Initialize(argc, argv))
     {
-        RegisterGameFonts(game);
-
-        // Load main menu music early.
-        auto* asset = game->mAsset->Load("Music/Rock/Rockfast.ogg");
-        game->mAudio->AssignBgm("Rock Fast", asset);
+        // Load main menu music early and assign substitutions.
+        game->mAsset->AddMusicSubstitution("Infinity/Infinity Norm.ogg",
+                                           "Infinity/Infinity Fast.ogg");
+        game->mAsset->AddMusicSubstitution("Infinity/Infinity Slow.ogg",
+                                           "Infinity/Infinity Fast.ogg");
+        game->mAsset->AddMusicSubstitution("Rock/Rocknorm.ogg", "Rock/Rockfast.ogg");
+        game->mAsset->AddMusicSubstitution("Rock/Rockslow.ogg", "Rock/Rockfast.ogg");
+        game->mAsset->AddMusicSubstitution("Space/SpaceRumble norm.ogg",
+                                           "Space/SpaceRumble fast.ogg");
+        game->mAsset->AddMusicSubstitution("Space/SpaceRumble slow.ogg",
+                                           "Space/SpaceRumble fast.ogg");
+        game->mAsset->AddMusicSubstitution("Water/Water Norm.ogg", "Water/Water Fast.ogg");
+        game->mAsset->AddMusicSubstitution("Water/Water Slow.ogg", "Water/Water Fast.ogg");
+        game->mAsset->AddMusicSubstitution("Theme.ogg", "Rock/Rockfast.ogg");
+        game->mAudio->RegisterBgm(game->mAsset->LoadMusic("Theme.ogg"));
 
         // Load and Register Window Skins
         JWindowSkin* ricochetSkin =
