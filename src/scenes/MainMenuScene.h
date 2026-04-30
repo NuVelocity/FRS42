@@ -9,13 +9,18 @@
 #include <array>
 #include <memory>
 
-#include "BarrierBrick.h"
-#include "GameBoard.h"
 #include "MainMenuButton.h"
-#include "StandAloneFrame.h"
+#include "Playfield.h"
+
+namespace nuvelocity
+{
+    class StandAloneFrame;
+}
 
 namespace nuvelocity::frs42
 {
+    class PlayfieldBarrier;
+
     class MainMenuScene : public Scene
     {
     private:
@@ -32,23 +37,24 @@ namespace nuvelocity::frs42
         std::array<nuvelocity::Button*, kMenuButtonCount> mMenuButtonPointers{};
         std::unique_ptr<nuvelocity::FocusContainer> mFocusContainer;
         uint64_t mEntryFadeStartTick = 0;
+        bool mHideMenuButtons = false;
 
-        GameBoard mGameBoard;
-        std::vector<BarrierBrick*> mBarriers;
+        Playfield mPlayfield;
+        std::vector<PlayfieldBarrier*> mBarriers;
 
-        void OnPlayClick();
-        void OnStatsClick();
-        void OnFriendClick();
-        void OnOptionsClick();
-        void OnExitClick();
+        void OnPlayClick(Game* game);
+        void OnStatsClick(Game* game);
+        void OnFriendClick(Game* game);
+        void OnOptionsClick(Game* game);
+        void OnExitClick(Game* game);
 
     public:
         MainMenuScene() = default;
-        void Load(Game* aGame) override;
-        void Update(Game* aGame) override;
-        void UpdateGameBoard(Game* aGame);
-        void Draw(Game* aGame) override;
-        void Unload(Game* aGame) override {};
+        void Load(Game* game) override;
+        void Update(Game* game) override;
+        void UpdatePlayfield(Game* game);
+        void Draw(Game* game) override;
+        void Unload(Game* game) override {};
         std::string GetName() const override;
     };
 } // namespace nuvelocity::frs42

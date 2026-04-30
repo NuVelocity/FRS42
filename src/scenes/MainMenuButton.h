@@ -1,9 +1,7 @@
 #ifndef FRS42_MAIN_MENU_BUTTON_H
 #define FRS42_MAIN_MENU_BUTTON_H
 
-#include <Game.h>
 #include <SDL3/SDL.h>
-#include <Sequence.h>
 #include <ui/Button.h>
 
 #include <cstddef>
@@ -11,6 +9,8 @@
 
 namespace nuvelocity
 {
+    class Sequence;
+
     struct MainMenuButtonAssets
     {
         Sequence* armNormal = nullptr;
@@ -33,20 +33,23 @@ namespace nuvelocity
         MainMenuButton();
 
         void SetAssets(const MainMenuButtonAssets& assets);
-        void SetRect(const SDL_FRect& rect) override;
+        void SetRect(const SDL_Rect& rect) override;
         void SetStyle(const Style& style);
-        SDL_FPoint GetSize() const;
+        SDL_Point GetSize() const;
 
         void ResetAnimation(uint64_t nowTick, uint64_t revealDelayMs = 0);
-        void Update(Game* aGame) override;
-        void Draw(Game* aGame) override;
+        void Update(Game* game) override;
+        void Draw(Game* game) override;
 
-        bool Intersects(const SDL_FPoint& point) const;
+        bool Intersects(const SDL_Point& point) const;
 
     private:
         MainMenuButtonAssets mAssets;
-        SDL_FRect mTargetBounds;
-        SDL_FRect mCurrentBounds;
+        Sequence* mArmSequence;
+        Sequence* mPanelSequence;
+        std::size_t mPanelFrameIndex;
+        SDL_Rect mTargetBounds;
+        SDL_Rect mCurrentBounds;
         bool mRevealStarted;
         bool mRevealComplete;
         bool mPanelFlipComplete;
@@ -56,14 +59,14 @@ namespace nuvelocity
 
         static constexpr uint64_t kSlideDurationMs = 700;
 
-        void UpdateAnimation(int windowWidth);
-        SDL_FRect GetRenderBounds() const;
+        void UpdateAnimation(Game* game);
+        SDL_Rect GetRenderBounds() const;
         std::size_t GetPanelFlipFrameIndex(uint64_t nowTick) const;
 
-        static void DrawSequenceFrame(Game* game,
-                                      Sequence* sequence,
-                                      std::size_t frameIndex,
-                                      const SDL_FRect& destination);
+        void DrawSequenceFrame(Game* game,
+                               Sequence* sequence,
+                               std::size_t frameIndex,
+                               const SDL_Rect& destination);
     };
 } // namespace nuvelocity
 

@@ -2,11 +2,15 @@
 #define FRS42_SPLASH_SCENE_H
 
 #include <Scene.h>
-#include <StandAloneFrame.h>
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
+
+namespace nuvelocity
+{
+    class StandAloneFrame;
+}
 
 namespace nuvelocity::frs42
 {
@@ -32,10 +36,10 @@ namespace nuvelocity::frs42
 
     public:
         SplashScene() = default;
-        void Load(Game* aGame) override;
-        void Update(Game* aGame) override;
-        void Draw(Game* aGame) override;
-        void Unload(Game* aGame) override {};
+        void Load(Game* game) override;
+        void Update(Game* game) override;
+        void Draw(Game* game) override;
+        void Unload(Game* game) override {};
         std::string GetName() const override;
     };
 } // namespace nuvelocity::frs42

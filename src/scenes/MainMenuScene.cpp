@@ -1,57 +1,77 @@
+#include "MainMenuScene.h"
+#include "ArenaScene.h"
+#include "CheckpointButton.h"
+#include "Colors.h"
+#include "MathUtils.h"
+#include "PlayfieldBarrier.h"
+#include "RoundSet.h"
+#include "windows/LevelSelectWindow.h"
+#include "windows/NewGameOptionsWindow.h"
+#include "windows/OptionsWindow.h"
 #include <Game.h>
 #include <Image.h>
 #include <SDL3/SDL.h>
-#include <system/SpriteBatch.h>
+#include <Sequence.h>
 #include <StandAloneFrame.h>
-
+#include <algorithm>
 #include <array>
-#include <limits>
 #include <random>
-
-#include "BrickInfo.h"
-#include "MainMenuScene.h"
-#include "MathUtils.h"
+#include <system/AssetManager.h>
+#include <system/AudioManager.h>
+#include <system/FontManager.h>
+#include <system/InputManager.h>
+#include <system/SpriteBatch.h>
+#include <system/ui/MdiManager.h>
+#include <system/ui/skin/JWindowSkin.h>
 
 namespace nuvelocity::frs42
 {
     constexpr std::size_t kMenuButtonCount = 5;
     constexpr uint64_t kMenuButtonRevealDelayMs = 150;
     constexpr float kButtonVerticalSpacing = 8;
-    constexpr float kButtonRightMargin = 0;
+    constexpr float kButtonRightMargin = 2;
     constexpr SDL_Color kMenuTextColor{.r = 0, .g = 88, .b = 244, .a = 255};
     constexpr int kMenuFontPointSize = MainMenuButton::Style{}.fontPointSize;
 
-    SDL_FPoint GetWindowSizePixels(Game* aGame)
+    SDL_Point GetWindowSizePixels(Game* game)
     {
-        int width = aGame->mWindowWidth;
-        int height = aGame->mWindowHeight;
-        if (aGame->mWindow != nullptr)
+        int width = game->mWindowWidth;
+        int height = game->mWindowHeight;
+        if (game->mWindow != nullptr)
         {
-            SDL_GetWindowSizeInPixels(aGame->mWindow, &width, &height);
+            SDL_GetWindowSizeInPixels(game->mWindow, &width, &height);
         }
 
-        return SDL_FPoint{.x = static_cast<float>(width), .y = static_cast<float>(height)};
+        return SDL_Point{.x = width, .y = height};
     }
 
-    void MainMenuScene::Load(Game* aGame)
+    void MainMenuScene::Load(Game* game)
     {
-        aGame->mAudio->PlayBgm("Rock Fast");
+        game->mAudio->PlayBgm("Theme.ogg");
+        mBarriers.clear();
+        mPlayfield.Reset(game);
+        mPlayfield.SetSpawnShip(false);
 
         mBackgroundImage =
-            aGame->mAsset->LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");
+            game->mAsset->LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");
+
+        if (AudioData* bounceSound = game->mAsset->LoadSound("UI/Menu Ball Bounce.ogg"))
+        {
+            game->mAudio->RegisterSfx(bounceSound);
+        }
 
         mMenuAssets.armNormal =
-            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Arm Normal");
+            game->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Arm Normal");
         mMenuAssets.armHover =
-            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Arm Hover");
+            game->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Arm Hover");
         mMenuAssets.panelFlip =
-            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Flip");
+            game->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Flip");
         mMenuAssets.panelNormal =
-            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Normal");
+            game->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Normal");
         mMenuAssets.panelHover =
-            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Hover");
+            game->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Hover");
         mMenuAssets.panelPressed =
-            aGame->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Pressed");
+            game->mAsset->LoadSequence("Resources/Interface/Main Menu Button/Panel Pressed");
 
         // Initialization helper for each button
         auto initButton = [&](MainMenuButton& button, const char* caption, auto clickHandler)
@@ -60,14 +80,14 @@ namespace nuvelocity::frs42
             button.SetCaption(caption);
             button.SetStyle(MainMenuButton::Style{.textColor = kMenuTextColor,
                                                   .fontPointSize = kMenuFontPointSize});
-            button.SetOnClick(std::bind(clickHandler, this));
+            button.SetOnClick(std::bind(clickHandler, this, std::placeholders::_1));
         };
 
-        initButton(mPlayButton, "_Play Game", &MainMenuScene::OnPlayClick);
-        initButton(mStatsButton, "_Statistics", &MainMenuScene::OnStatsClick);
-        initButton(mFriendButton, "_Tell A Friend", &MainMenuScene::OnFriendClick);
-        initButton(mOptionsButton, "_Options", &MainMenuScene::OnOptionsClick);
-        initButton(mExitButton, "E_xit Game", &MainMenuScene::OnExitClick);
+        initButton(mPlayButton, "&Play Game", &MainMenuScene::OnPlayClick);
+        initButton(mStatsButton, "&Statistics", &MainMenuScene::OnStatsClick);
+        initButton(mFriendButton, "&Tell A Friend", &MainMenuScene::OnFriendClick);
+        initButton(mOptionsButton, "&Options", &MainMenuScene::OnOptionsClick);
+        initButton(mExitButton, "E&xit Game", &MainMenuScene::OnExitClick);
 
         mMenuButtonPointers[0] = &mPlayButton;
         mMenuButtonPointers[1] = &mStatsButton;
@@ -78,25 +98,26 @@ namespace nuvelocity::frs42
         mFocusContainer = std::make_unique<nuvelocity::FocusContainer>(mMenuButtonPointers.data(),
                                                                        mMenuButtonPointers.size());
 
-        SDL_FPoint windowSize = GetWindowSizePixels(aGame);
-        const SDL_FPoint buttonSize = mPlayButton.GetSize();
-        if (buttonSize.x <= 0.0F || buttonSize.y <= 0.0F)
+        SDL_Point windowSize = GetWindowSizePixels(game);
+        const SDL_Point buttonSize = mPlayButton.GetSize();
+        if (buttonSize.x <= 0 || buttonSize.y <= 0)
         {
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
                         "Main menu arm logical size is unavailable; menu buttons disabled.");
             return;
         }
 
-        const float startY = 30;
-        const float buttonX = windowSize.x - buttonSize.x - kButtonRightMargin;
+        const int startY = 30;
+        const int buttonX = windowSize.x - buttonSize.x - static_cast<int>(kButtonRightMargin);
 
         const uint64_t nowTick = SDL_GetTicks();
         for (std::size_t index = 0; index < mMenuButtonPointers.size(); ++index)
         {
             MainMenuButton* button = static_cast<MainMenuButton*>(mMenuButtonPointers[index]);
-            const SDL_FRect buttonRect{
+            const SDL_Rect buttonRect{
                 .x = buttonX,
-                .y = startY + (static_cast<float>(index) * (buttonSize.y + kButtonVerticalSpacing)),
+                .y = startY + (static_cast<int>(index) *
+                               (buttonSize.y + static_cast<int>(kButtonVerticalSpacing))),
                 .w = buttonSize.x,
                 .h = buttonSize.y};
             button->SetRect(buttonRect);
@@ -104,92 +125,92 @@ namespace nuvelocity::frs42
         }
 
         // Geography and spawn constants (shared between barriers and spawning logic)
-        static constexpr SDL_FPoint kSpawnPolygon[] = {{49, 51},
-                                                       {49, 414},
-                                                       {130, 414},
-                                                       {130, 260},
-                                                       {197, 260},
-                                                       {197, 414},
-                                                       {275, 414},
-                                                       {275, 275},
-                                                       {213, 232},
-                                                       {275, 190},
-                                                       {275, 100},
-                                                       {214, 51}};
+        static constexpr SDL_FPoint kSpawnPolygon[] = {{.x = 49, .y = 51},
+                                                       {.x = 49, .y = 414},
+                                                       {.x = 130, .y = 414},
+                                                       {.x = 130, .y = 260},
+                                                       {.x = 197, .y = 260},
+                                                       {.x = 197, .y = 414},
+                                                       {.x = 275, .y = 414},
+                                                       {.x = 275, .y = 275},
+                                                       {.x = 213, .y = 232},
+                                                       {.x = 275, .y = 190},
+                                                       {.x = 275, .y = 100},
+                                                       {.x = 214, .y = 51}};
         constexpr int kSpawnPolyCount = static_cast<int>(SDL_arraysize(kSpawnPolygon));
-        constexpr SDL_FRect kInnerBox = {129, 107, 71, 93};
+        constexpr SDL_FRect kInnerBox = {.x = 129, .y = 107, .w = 71, .h = 93};
         const std::vector<SDL_FRect> excludeRects = {kInnerBox};
 
-        // Initialize GameBoard barriers — outer playfield boundary + inner button-area box
-        BrickInfo barrierInfo;
-
+        // Initialize Playfield barriers — outer playfield boundary + inner button-area box
         {
-            auto barrier = std::make_unique<BarrierBrick>(
+            auto barrier = std::make_unique<PlayfieldBarrier>(
                 std::vector<SDL_FPoint>(kSpawnPolygon, kSpawnPolygon + kSpawnPolyCount));
-            barrier->AttachBrickInfo(aGame, barrierInfo);
-            barrier->SetPosition({0.0f, 0.0f});
-            barrier->SetHoverColor({120, 124, 120, 255}); // #787c78
+            barrier->SetPosition({.x = 0.0F, .y = 0.0F});
+            barrier->SetHoverColor({.r = 120, .g = 124, .b = 120, .a = 255}); // #787c78
             barrier->SetAttractionEnabled(true);
             mBarriers.push_back(barrier.get());
-            mGameBoard.AddBrick(std::move(barrier));
+            mPlayfield.AddCollidable(std::move(barrier));
         }
 
         {
             // Inner box derived from kInnerBox
-            auto barrier = std::make_unique<BarrierBrick>(
-                std::vector<SDL_FPoint>{{kInnerBox.x, kInnerBox.y},
-                                        {kInnerBox.x + kInnerBox.w, kInnerBox.y},
-                                        {kInnerBox.x + kInnerBox.w, kInnerBox.y + kInnerBox.h},
-                                        {kInnerBox.x, kInnerBox.y + kInnerBox.h}});
-            barrier->AttachBrickInfo(aGame, barrierInfo);
-            barrier->SetPosition({0.0f, 0.0f});
+            auto barrier = std::make_unique<PlayfieldBarrier>(std::vector<SDL_FPoint>{
+                {.x = kInnerBox.x, .y = kInnerBox.y},
+                {.x = kInnerBox.x + kInnerBox.w, .y = kInnerBox.y},
+                {.x = kInnerBox.x + kInnerBox.w, .y = kInnerBox.y + kInnerBox.h},
+                {.x = kInnerBox.x, .y = kInnerBox.y + kInnerBox.h}});
+            barrier->SetPosition({.x = 0.0F, .y = 0.0F});
             barrier->SetShowHoverEffect(false);
             mBarriers.push_back(barrier.get());
-            mGameBoard.AddBrick(std::move(barrier));
+            mPlayfield.AddCollidable(std::move(barrier));
         }
 
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_real_distribution<float> disV(-150.0f, 150.0f);
+        std::uniform_real_distribution<float> disV(-150.0F, 150.0F);
 
-        const SDL_FRect spawnBounds{50.0f, 52.0f, 224.0f, 361.0f}; // Covers (50,52) to (274,413)
+        const SDL_FRect spawnBounds{
+            .x = 50.0F, .y = 52.0F, .w = 224.0F, .h = 361.0F}; // Covers (50,52) to (274,413)
 
-        auto* menuBallSequence = aGame->mAsset->LoadSequence("Resources/Ball/Menu Ball");
+        auto* menuBallSequence = game->mAsset->LoadSequence("Resources/Ball/Menu Ball");
 
         for (int i = 0; i < 8; ++i)
         {
             auto ball = std::make_unique<Ball>();
-            ball->AttachSequence(aGame, menuBallSequence);
+            ball->AttachSequence(game, menuBallSequence);
             const float ballRadius = ball->GetRadius();
 
             SDL_FPoint spawnPos =
                 MathUtils::GetRandomPointInPolygon(
                     gen, kSpawnPolygon, kSpawnPolyCount, spawnBounds, ballRadius, excludeRects)
-                    .value_or(SDL_FPoint{130.0f, 276.0f});
+                    .value_or(SDL_FPoint{.x = 130.0F, .y = 276.0F});
 
             ball->SetPosition(spawnPos);
-            ball->SetVelocity({disV(gen), disV(gen)});
-            mGameBoard.AddBall(std::move(ball));
+            ball->SetVelocity({.x = disV(gen), .y = disV(gen)});
+            mPlayfield.AddBall(std::move(ball));
         }
 
         mEntryFadeStartTick = nowTick;
     }
 
-    void MainMenuScene::Update(Game* aGame)
+    void MainMenuScene::Update(Game* game)
     {
-        if (mFocusContainer == nullptr || aGame->mInput == nullptr)
+        if (mFocusContainer == nullptr || game->mInput == nullptr)
         {
             return;
         }
 
-        mFocusContainer->Update(aGame);
-        UpdateGameBoard(aGame);
+        if (!mHideMenuButtons)
+        {
+            mFocusContainer->Update(game);
+        }
+        UpdatePlayfield(game);
     }
 
-    void MainMenuScene::UpdateGameBoard(nuvelocity::Game* aGame)
+    void MainMenuScene::UpdatePlayfield(Game* game)
     {
         // Apply gravity-like follow behavior if any barrier is hovered
-        const SDL_FPoint mousePosition = aGame->mInput->GetMousePosition();
+        const SDL_Point mousePosition = game->mInput->GetMousePosition();
         bool anyBarrierHovered = false;
         for (auto* barrier : mBarriers)
         {
@@ -206,34 +227,40 @@ namespace nuvelocity::frs42
             {
                 if (barrier->IsAttractionEnabled())
                 {
-                    for (auto& ball : mGameBoard.GetBalls())
+                    for (const auto& ball : mPlayfield.GetBalls())
                     {
-                        barrier->ApplyAttraction(aGame, ball.get(), mousePosition);
+                        barrier->ApplyAttraction(game,
+                                                 ball.get(),
+                                                 {.x = static_cast<float>(mousePosition.x),
+                                                  .y = static_cast<float>(mousePosition.y)});
                     }
                 }
             }
         }
 
-        mGameBoard.Update(aGame);
+        mPlayfield.Update(game);
     }
 
-    void MainMenuScene::Draw(Game* aGame)
+    void MainMenuScene::Draw(Game* game)
     {
-        if (aGame == nullptr || aGame->mSpriteBatch == nullptr)
+        if (game == nullptr || game->mSpriteBatch == nullptr)
         {
             return;
         }
 
-        aGame->mSpriteBatch->Clear(SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE});
+        game->mSpriteBatch->Clear(SDL_Color{.r = 0, .g = 0, .b = 0, .a = SDL_ALPHA_OPAQUE});
 
         if (mBackgroundImage != nullptr)
         {
-            aGame->mSpriteBatch->DrawCentered(mBackgroundImage);
+            game->mSpriteBatch->DrawCentered(mBackgroundImage);
         }
 
-        mGameBoard.Draw(aGame);
+        mPlayfield.Draw(game);
 
-        mFocusContainer->Draw(aGame);
+        if (!mHideMenuButtons)
+        {
+            mFocusContainer->Draw(game);
+        }
 
         if (mEntryFadeStartTick != 0)
         {
@@ -247,7 +274,8 @@ namespace nuvelocity::frs42
 
             if (overlayAlpha > SDL_ALPHA_TRANSPARENT)
             {
-                aGame->mSpriteBatch->FillRect(nullptr, SDL_Color{0, 0, 0, overlayAlpha});
+                game->mSpriteBatch->FillRect(nullptr,
+                                             SDL_Color{.r = 0, .g = 0, .b = 0, .a = overlayAlpha});
             }
         }
 
@@ -255,18 +283,16 @@ namespace nuvelocity::frs42
         std::string versionText = "1.01 Build 50";
         int versionTextWidth = 0;
         int versionTextHeight = 0;
-        aGame->mFont->MeasureStringWithFont(
+        game->mFont->MeasureStringWithFont(
             versionFont, versionText, 8, versionTextWidth, versionTextHeight);
 
-        aGame->mFont->DrawStringWithFontAt(
-            versionFont,
-            aGame->mSpriteBatch,
-            versionText,
-            static_cast<float>(aGame->mWindowWidth - versionTextWidth),
-            static_cast<float>(aGame->mWindowHeight) - static_cast<float>(versionTextHeight) -
-                12.0F,
-            SDL_Color{255, 255, 255, 255},
-            8);
+        game->mFont->DrawStringWithFontAt(versionFont,
+                                          game->mSpriteBatch,
+                                          versionText,
+                                          game->mWindowWidth - versionTextWidth,
+                                          game->mWindowHeight - versionTextHeight - 12,
+                                          Colors::White,
+                                          8);
     }
 
     std::string MainMenuScene::GetName() const
@@ -274,15 +300,45 @@ namespace nuvelocity::frs42
         return "MainMenuScene";
     }
 
-    void MainMenuScene::OnPlayClick() {}
+    void MainMenuScene::OnPlayClick(Game* game)
+    {
+        if (game == nullptr || game->mMdi == nullptr)
+        {
+            return;
+        }
 
-    void MainMenuScene::OnStatsClick() {}
+        mHideMenuButtons = true;
+        auto playWindow = std::make_shared<NewGameOptionsWindow>(game);
+        playWindow->SetOnClose([this](nuvelocity::MdiWindow& window)
+                               { this->mHideMenuButtons = false; });
+        game->mMdi->AddCenteredWindow(game, playWindow);
+    }
 
-    void MainMenuScene::OnFriendClick() {}
+    void MainMenuScene::OnStatsClick(Game* game)
+    {
+        (void)game;
+    }
 
-    void MainMenuScene::OnOptionsClick() {}
+    void MainMenuScene::OnFriendClick(Game* game)
+    {
+        (void)game;
+    }
 
-    void MainMenuScene::OnExitClick()
+    void MainMenuScene::OnOptionsClick(Game* game)
+    {
+        if (game == nullptr || game->mMdi == nullptr)
+        {
+            return;
+        }
+
+        mHideMenuButtons = true;
+        auto optionsWindow = std::make_shared<OptionsWindow>(game);
+        optionsWindow->SetOnClose([this](nuvelocity::MdiWindow& window)
+                                  { this->mHideMenuButtons = false; });
+        game->mMdi->AddCenteredWindow(game, optionsWindow);
+    }
+
+    void MainMenuScene::OnExitClick(Game* game)
     {
         SDL_Event quit_event;
         quit_event.type = SDL_EVENT_QUIT;
