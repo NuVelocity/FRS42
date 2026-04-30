@@ -1,12 +1,12 @@
 #ifndef NVE_BRICK_TYPE_H
 #define NVE_BRICK_TYPE_H
 
+#include <cstdint>
 #include <string>
-#include <vector>
 
 namespace nuvelocity::frs42
 {
-    enum class BrickType
+    enum class BrickType : uint8_t
     {
         Normal,
         PowerUp,
@@ -34,45 +34,85 @@ namespace nuvelocity::frs42
     inline BrickType StringToBrickType(const std::string& typeStr)
     {
         if (typeStr == "Normal")
+        {
             return BrickType::Normal;
+        }
         if (typeStr == "Power Up")
+        {
             return BrickType::PowerUp;
+        }
         if (typeStr == "Obstacle")
+        {
             return BrickType::Obstacle;
+        }
         if (typeStr == "Indestructible")
+        {
             return BrickType::Indestructible;
+        }
         if (typeStr == "Indestructible Top")
+        {
             return BrickType::IndestructibleTop;
+        }
         if (typeStr == "Indestructible Bottom")
+        {
             return BrickType::IndestructibleBottom;
+        }
         if (typeStr == "Exploding")
+        {
             return BrickType::Exploding;
+        }
         if (typeStr == "3 Hit")
+        {
             return BrickType::ThreeHit;
+        }
         if (typeStr == "3 Hit Bottom")
+        {
             return BrickType::ThreeHitBottom;
+        }
         if (typeStr == "3 Hit Top")
+        {
             return BrickType::ThreeHitTop;
+        }
         if (typeStr == "Off/On")
+        {
             return BrickType::OffOn;
+        }
         if (typeStr == "On/Off")
+        {
             return BrickType::OnOff;
+        }
         if (typeStr == "Detinator")
+        {
             return BrickType::Detinator;
+        }
         if (typeStr == "Push Away")
+        {
             return BrickType::PushAway;
+        }
         if (typeStr == "Nudge Up")
+        {
             return BrickType::NudgeUp;
+        }
         if (typeStr == "Nudge Down")
+        {
             return BrickType::NudgeDown;
+        }
         if (typeStr == "Nudge Left")
+        {
             return BrickType::NudgeLeft;
+        }
         if (typeStr == "Nudge Right")
+        {
             return BrickType::NudgeRight;
+        }
         if (typeStr == "Brick Shredder")
+        {
             return BrickType::BrickShredder;
+        }
         if (typeStr == "Trapped Ball")
+        {
             return BrickType::TrappedBall;
+        }
         return BrickType::Unknown;
     }
 

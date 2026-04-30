@@ -1,31 +1,36 @@
 #ifndef NVE_BALL_H
 #define NVE_BALL_H
 
-#include <Game.h>
 #include <GameComponent.h>
 #include <SDL3/SDL.h>
-#include <Sequence.h>
 #include <cmath>
-#include <system/AssetManager.h>
+
+namespace nuvelocity
+{
+    class Sequence;
+}
 
 namespace nuvelocity::frs42
 {
+    class Playfield;
+
+    enum class BallType
+    {
+        Normal,
+        Fire,
+        Rail
+    };
+
     class Ball : public GameComponent
     {
     public:
-        Ball() = default;
+        Ball();
 
-        void AttachSequence(Game* game, Sequence* sequence = nullptr)
+        void AttachSequence(Game* game, Sequence* sequence = nullptr);
+
+        void SetPlayfield(Playfield* playfield)
         {
-            if (sequence != nullptr)
-            {
-                mSequence = sequence;
-            }
-            else
-            {
-                mSequence = game->mAsset->LoadSequence("Resources/Ball/Ball");
-            }
-            mAnimationStartTick = SDL_GetTicks();
+            mPlayfield = playfield;
         }
 
         void SetSequence(Sequence* sequence)
@@ -94,18 +99,87 @@ namespace nuvelocity::frs42
 
         float GetRadius() const
         {
-            return 8.0f;
+            return mIsSmall ? 4.0F : 8.0F;
         }
 
-        void Update(Game* aGame) override {};
-        void Draw(Game* aGame) override;
+        void SetIsAttached(bool attached)
+        {
+            mIsAttached = attached;
+        }
+
+        bool IsAttached() const
+        {
+            return mIsAttached;
+        }
+
+        void SetIsSmall(bool small);
+
+        bool IsSmall() const
+        {
+            return mIsSmall;
+        }
+
+        void SetType(BallType type);
+        BallType GetType() const
+        {
+            return mType;
+        }
+
+        void SetIsTrapped(bool trapped)
+        {
+            if (mIsTrapped != trapped)
+            {
+                mIsTrapped = trapped;
+                UpdateSequence(nullptr);
+            }
+        }
+        bool IsTrapped() const
+        {
+            return mIsTrapped;
+        }
+
+        void SetTrappedSequence(Sequence* sequence)
+        {
+            mTrappedSequence = sequence;
+            UpdateSequence(nullptr);
+        }
+
+        void SpeedUp();
+
+        void SetLastHitPosition(const SDL_FPoint& pos)
+        {
+            mLastHitPosition = pos;
+        }
+        const SDL_FPoint& GetLastHitPosition() const
+        {
+            return mLastHitPosition;
+        }
+
+        void Update(Game* game) override;
+        void Draw(Game* game) override;
 
     private:
+        void UpdateSequence(Game* game);
+
         Sequence* mSequence = nullptr;
+        Sequence* mNormalSequence = nullptr;
+        Sequence* mSmallSequence = nullptr;
+        Sequence* mFireSequence = nullptr;
+        Sequence* mRailSequence = nullptr;
+        Sequence* mTrappedSequence = nullptr;
+
         SDL_FPoint mPosition = {0.0f, 0.0f};
         SDL_FPoint mDirection = {0.0f, 0.0f};
-        float mSpeed = 0.0f;
+        SDL_FPoint mLastHitPosition = {0.0f, 0.0f};
+        float mSpeed = 79.0f;
         uint64_t mAnimationStartTick = 0;
+        bool mIsAttached = false;
+        bool mIsSmall = false;
+        bool mIsTrapped = false;
+        BallType mType = BallType::Normal;
+
+        float mTrailTimer = 0.0F;
+        Playfield* mPlayfield = nullptr;
     };
 } // namespace nuvelocity::frs42
 

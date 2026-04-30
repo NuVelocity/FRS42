@@ -2,11 +2,17 @@
 #define NVE_BRICK_INFO_H
 
 #include "BrickType.h"
-#include "model/Model.h"
+#include "ParticleType.h"
+#include <Object.h>
 #include <SDL3/SDL.h>
 #include <sstream>
 #include <string>
 #include <vector>
+
+namespace nuvelocity
+{
+    class ParticleGeneratorInfo;
+}
 
 namespace nuvelocity::frs42
 {
@@ -14,23 +20,23 @@ namespace nuvelocity::frs42
     {
     public:
         BrickInfo() = default;
-        ~BrickInfo() = default;
+        ~BrickInfo() override = default;
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CBrickInfo";
-            AddProperty(aInfo, "Brick Type", &BrickInfo::mBrickTypeStr);
-            AddProperty(aInfo, "Primary Sequence", &BrickInfo::mPrimarySequencePath);
-            AddProperty(aInfo, "Sequence 2", &BrickInfo::mSequence2Path);
-            AddProperty(aInfo, "Sequence 3", &BrickInfo::mSequence3Path);
-            AddProperty(aInfo, "Destroyed Seq", &BrickInfo::mDestroyedSeqPath);
-            AddProperty(aInfo, "Destroyed Sound", &BrickInfo::mDestroyedSoundPath);
-            AddProperty(aInfo, "Indestructible Sound", &BrickInfo::mIndestructibleSoundPath);
-            AddProperty(aInfo, "Damaged Sound", &BrickInfo::mDamagedSoundPath);
-            AddProperty(aInfo, "Score Value", &BrickInfo::mScoreValue);
-            AddProperty(aInfo, "Break Particle Gen", &BrickInfo::mBreakParticleGenPath);
-            AddProperty(aInfo, "Break Particle Types", &BrickInfo::mBreakParticleTypes, "Type");
-            AddProperty(aInfo, "Collision Polygon", &BrickInfo::mCollisionPolygonStr);
+            info.mName = "CBrickInfo";
+            AddProperty(info, "Brick Type", &BrickInfo::mBrickTypeStr);
+            AddProperty(info, "Primary Sequence", &BrickInfo::mPrimarySequencePath);
+            AddProperty(info, "Sequence 2", &BrickInfo::mSequence2Path);
+            AddProperty(info, "Sequence 3", &BrickInfo::mSequence3Path);
+            AddProperty(info, "Destroyed Seq", &BrickInfo::mDestroyedSeqPath);
+            AddProperty(info, "Destroyed Sound", &BrickInfo::mDestroyedSoundPath);
+            AddProperty(info, "Indestructible Sound", &BrickInfo::mIndestructibleSoundPath);
+            AddProperty(info, "Damaged Sound", &BrickInfo::mDamagedSoundPath);
+            AddProperty(info, "Score Value", &BrickInfo::mScoreValue);
+            AddProperty(info, "Break Particle Gen", &BrickInfo::mBreakParticleGenPath);
+            AddProperty(info, "Break Particle Types", &BrickInfo::mBreakParticleTypes);
+            AddPolygonProperty(info, "Collision Polygon", &BrickInfo::mCollisionPolygon);
         }
 
         BrickType GetBrickType() const
@@ -73,41 +79,29 @@ namespace nuvelocity::frs42
         {
             return mBreakParticleGenPath;
         }
-        const std::vector<std::string>& GetBreakParticleTypes() const
+        const std::vector<ParticleType*>& GetBreakParticleTypes() const
         {
             return mBreakParticleTypes;
         }
 
-        void SetCollisionPolygonStr(const std::string& poly)
+        const nuvelocity::ParticleGeneratorInfo* GetBreakParticleGen() const
         {
-            mCollisionPolygonStr = poly;
+            return mBreakParticleGen;
         }
 
-        std::vector<SDL_FPoint> GetCollisionPolygon() const
+        void SetBreakParticleGen(const nuvelocity::ParticleGeneratorInfo* info)
         {
-            std::vector<SDL_FPoint> points;
-            std::stringstream ss(mCollisionPolygonStr);
-            std::string segment;
-            std::vector<float> coords;
+            mBreakParticleGen = info;
+        }
 
-            while (std::getline(ss, segment, ','))
-            {
-                try
-                {
-                    coords.push_back(std::stof(segment));
-                }
-                catch (...)
-                {
-                    // Ignore non-numeric segments
-                }
-            }
+        void SetCollisionPolygon(const std::string& csv)
+        {
+            ParseCSVToPoints(csv, mCollisionPolygon);
+        }
 
-            for (size_t i = 0; i + 1 < coords.size(); i += 2)
-            {
-                points.push_back(SDL_FPoint{coords[i], coords[i + 1]});
-            }
-
-            return points;
+        const std::vector<SDL_FPoint>& GetCollisionPolygon() const
+        {
+            return mCollisionPolygon;
         }
 
     private:
@@ -121,8 +115,13 @@ namespace nuvelocity::frs42
         std::string mDamagedSoundPath = "!None";
         int mScoreValue = 0;
         std::string mBreakParticleGenPath = "!None";
-        std::vector<std::string> mBreakParticleTypes;
-        std::string mCollisionPolygonStr = "";
+        std::vector<ParticleType*> mBreakParticleTypes;
+        const nuvelocity::ParticleGeneratorInfo* mBreakParticleGen = nullptr;
+        std::vector<SDL_FPoint> mCollisionPolygon = {{-15.75F, -8.75F},
+                                                     {15.75F, -8.75F},
+                                                     {15.75F, 8.75F},
+                                                     {-15.75F, 8.75F},
+                                                     {-15.75F, -8.75F}};
     };
 } // namespace nuvelocity::frs42
 

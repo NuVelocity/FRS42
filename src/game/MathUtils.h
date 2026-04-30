@@ -52,6 +52,16 @@ namespace nuvelocity::frs42
                                              float& outPenetration);
 
         /**
+         * @brief Performs collision detection and resolution between a circle and a polygon.
+         * @return true if colliding.
+         */
+        static bool ResolveCirclePolygonCollision(const std::vector<SDL_FPoint>& poly,
+                                                  const SDL_FPoint& polyOffset,
+                                                  SDL_FPoint& pos,
+                                                  float radius,
+                                                  SDL_FPoint& vel);
+
+        /**
          * @brief Attempts to find a random point inside a polygon that can fit a ball of given
          * radius.
          * @param samplingBounds The axis-aligned bounding box to sample points from.

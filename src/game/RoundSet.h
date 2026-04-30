@@ -2,7 +2,7 @@
 #define NVE_ROUND_SET_H
 
 #include "CheckPointDefinition.h"
-#include "model/Model.h"
+#include <Object.h>
 #include <string>
 
 namespace nuvelocity::frs42
@@ -13,11 +13,20 @@ namespace nuvelocity::frs42
         RoundSet();
         ~RoundSet();
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CRoundSet";
-            AddProperty(aInfo, "Round List", &RoundSet::mRoundList, "Round");
-            AddProperty(aInfo, "Checkpoints", &RoundSet::mCheckPoints);
+            info.mName = "CRoundSet";
+            AddProperty(info, "Round List", &RoundSet::mRoundList, "Round");
+            AddProperty(info, "Checkpoints", &RoundSet::mCheckPoints);
+        }
+
+        const std::vector<std::string>& GetRoundList() const
+        {
+            return mRoundList;
+        }
+        const std::vector<CheckPointDefinition*>& GetCheckPoints() const
+        {
+            return mCheckPoints;
         }
 
     private:
