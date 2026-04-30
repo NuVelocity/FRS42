@@ -1,7 +1,7 @@
 #ifndef NVE_CHECK_POINT_DEFINITION_H
 #define NVE_CHECK_POINT_DEFINITION_H
 
-#include "model/Model.h"
+#include <Object.h>
 #include <string>
 
 namespace nuvelocity::frs42
@@ -12,11 +12,20 @@ namespace nuvelocity::frs42
         CheckPointDefinition();
         ~CheckPointDefinition();
 
-        static void InitClassInfo(ClassInfo& aInfo)
+        static void InitClassInfo(ClassInfo& info)
         {
-            aInfo.mName = "CCheckPointDefinition";
-            AddProperty(aInfo, "Round Number", &CheckPointDefinition::mRoundNumber);
-            AddProperty(aInfo, "Image", &CheckPointDefinition::mImage);
+            info.mName = "CCheckPointDefinition";
+            AddProperty(info, "Round Number", &CheckPointDefinition::mRoundNumber);
+            AddProperty(info, "Image", &CheckPointDefinition::mImage);
+        }
+
+        int GetRoundNumber() const
+        {
+            return mRoundNumber;
+        }
+        const std::string& GetImage() const
+        {
+            return mImage;
         }
 
     private:
