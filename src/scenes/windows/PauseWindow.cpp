@@ -73,8 +73,13 @@ namespace nuvelocity::frs42
         contBtn->SetCaption("&Continue");
         contBtn->SetSkin(skin);
         contBtn->SetRect({.x = 0, .y = 0, .w = 84, .h = buttonHeight});
-        contBtn->SetStyle(Button::Style{
-            .baseStyle = WidgetStyle{.margin = {.bottom = 0, .top = 4, .left = 0, .right = 0}}});
+        WidgetStyle ws;
+        ws.margin = {.left = 0, .top = 4, .right = 0, .bottom = 0};
+
+        Button::Style style;
+        style.baseStyle = ws;
+
+        contBtn->SetStyle(style);
         contBtn->SetOnClick(
             [this](Game* game)
             {
