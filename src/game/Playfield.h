@@ -9,7 +9,6 @@
 #include "Projectile.h"
 #include <GameComponent.h>
 #include <SDL3/SDL.h>
-#include <filesystem>
 #include <functional>
 #include <map>
 #include <memory>
@@ -236,9 +235,12 @@ namespace nuvelocity::frs42
 
         static inline std::string MakeImagePath(const std::string& base, const std::string& image)
         {
-            std::filesystem::path full(base);
-            std::filesystem::path parent = full.parent_path();
-            return (parent / image).string();
+            size_t lastSlash = base.find_last_of("/\\");
+            if (lastSlash == std::string::npos)
+            {
+                return image;
+            }
+            return base.substr(0, lastSlash + 1) + image;
         }
 
     private:
