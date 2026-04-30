@@ -857,42 +857,6 @@ namespace nuvelocity::frs42
                         }
                     }
 
-                    // Ball-Ball collision (for TrappedBall)
-                    auto checkBallBall =
-                        [&](Ball* b, const std::vector<std::unique_ptr<Ball>>& container)
-                    {
-                        for (auto& otherBall : container)
-                        {
-                            if (b == otherBall.get())
-                            {
-                                continue;
-                            }
-                            if (otherBall->IsAttached())
-                            {
-                                continue;
-                            }
-
-                            SDL_FPoint otherPos = otherBall->GetPosition();
-                            float otherRadius = otherBall->GetRadius();
-                            float dx = pos.x - otherPos.x;
-                            float dy = pos.y - otherPos.y;
-                            float distSq = dx * dx + dy * dy;
-                            float combinedRadius = radius + otherRadius;
-
-                            if (distSq < combinedRadius * combinedRadius)
-                            {
-                                if (b->IsTrapped() || otherBall->IsTrapped())
-                                {
-                                    b->SetIsTrapped(false);
-                                    otherBall->SetIsTrapped(false);
-                                }
-                            }
-                        }
-                    };
-
-                    checkBallBall(ball.get(), mBalls);
-                    checkBallBall(ball.get(), mTrappedBalls);
-
                     for (const auto& collidable : mCollidables)
                     {
                         if (collidable->IsDestroyed())
