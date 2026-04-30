@@ -6,7 +6,13 @@ target_sources(
     MainMenuButton.h
     SplashScene.cpp
     SplashScene.h
+    ArenaScene.cpp
+    ArenaScene.h
+    Megovision.cpp
+    Megovision.h
 )
+
+add_subdirectory(windows)
 
 target_include_directories(
     frs42 PUBLIC

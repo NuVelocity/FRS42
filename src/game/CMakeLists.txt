@@ -39,12 +39,16 @@ target_sources(
     Brick.h
     Ball.cpp
     Ball.h
-    BarrierBrick.cpp
-    BarrierBrick.h
+    PlayfieldBarrier.cpp
+    PlayfieldBarrier.h
     MathUtils.cpp
     MathUtils.h
-    GameBoard.cpp
-    GameBoard.h
+    Playfield.cpp
+    Playfield.h
+    Ship.cpp
+    Ship.h
+    CheckpointButton.cpp
+    CheckpointButton.h
     DebugPrinter.cpp
     DebugPrinter.h
     GameObjectTypes.def
@@ -56,6 +60,27 @@ target_sources(
     GameObjectRegistration.h
     RoundSet.cpp
     RoundSet.h
+    BackgroundDefinition.h
+    MusicMixerData.h
+    BackgroundSpriteGenerator.h
+    BackgroundSpriteAI.h
+    FishAI.h
+    PlanktonAI.h
+    RandomDebrisAI.h
+    GameStats.cpp
+    GameStats.h
+    SuspendedGameStats.cpp
+    SuspendedGameStats.h
+    PlayerStats.cpp
+    PlayerStats.h
+    Stats.cpp
+    Stats.h
+    Projectile.cpp
+    Projectile.h
+    PowerUp.cpp
+    PowerUp.h
+    Bomb.cpp
+    Bomb.h
 )
 
 target_include_directories(
