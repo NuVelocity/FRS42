@@ -8,8 +8,8 @@
 
 namespace nuvelocity::frs42
 {
-    CheckpointButton::CheckpointButton(Sequence* image, int roundNumber, std::string label)
-            : mImage(image)
+    CheckpointButton::CheckpointButton(Sequence* sequence, int roundNumber, std::string label)
+            : mSequence(sequence)
             , mRoundNumber(roundNumber)
             , mLabel(std::move(label))
     {
@@ -28,18 +28,28 @@ namespace nuvelocity::frs42
         SDL_Rect rect = GetScreenRect();
 
         // Inset for content
-        SDL_Rect innerRect = rect;
-        innerRect.x += 2;
-        innerRect.y += 2;
-        innerRect.w -= 4;
-        innerRect.h -= 4;
+        SDL_Rect innerRect = {.x = rect.x + 4, .y = rect.y + 4, .w = rect.w - 8, .h = rect.h - 8};
+        Uint8 alpha = 255;
 
-        if (mImage != nullptr && mImage->GetFrameCount() > 0)
+        if (IsPressed())
         {
-            SDL_Surface* surface = mImage->GetSurface(0);
+            innerRect.x += 1;
+            innerRect.y += 1;
+            if (!IsEnabled())
+            {
+                alpha -= 100;
+            }
+        }
+
+        if (mSequence != nullptr && mSequence->GetFrameCount() > 0)
+        {
+            SDL_Surface* surface = mSequence->GetSurface(0);
             if (surface != nullptr)
             {
-                game->mSpriteBatch->Draw(surface, &innerRect);
+                game->mSpriteBatch->Draw(surface,
+                                         &innerRect,
+                                         nullptr,
+                                         SDL_Color{.r = 255, .g = 255, .b = 255, .a = alpha});
             }
         }
 
@@ -47,22 +57,17 @@ namespace nuvelocity::frs42
         std::string font = "OCR";
         int tw = 0;
         int th = 0;
-        game->mFont->MeasureStringWithFont(font, mLabel, 8, tw, th);
+        game->mFont->MeasureStringWithFont(font, mLabel, -1, tw, th);
         game->mFont->DrawStringWithFontAt(font,
                                           game->mSpriteBatch,
                                           mLabel,
-                                          rect.x + rect.w - tw - 6,
-                                          rect.y + rect.h - th - 6,
+                                          rect.x + rect.w - 8,
+                                          rect.y + rect.h - 4 - th,
                                           {.r = 0, .g = 88, .b = 244, .a = 255},
                                           13,
-                                          nuvelocity::TextAlignment::Left,
+                                          nuvelocity::TextAlignment::Right,
                                           nullptr,
                                           -1,
                                           {.r = 0, .g = 88, .b = 244, .a = 255});
-
-        if (IsHovered() && !IsPressed())
-        {
-            game->mSpriteBatch->OutlineRect(&rect, {.r = 255, .g = 255, .b = 255, .a = 128});
-        }
     }
 } // namespace nuvelocity::frs42

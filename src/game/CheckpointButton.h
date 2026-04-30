@@ -15,7 +15,7 @@ namespace nuvelocity::frs42
     class CheckpointButton : public nuvelocity::Button
     {
     public:
-        CheckpointButton(Sequence* image, int roundNumber, std::string label);
+        CheckpointButton(Sequence* sequence, int roundNumber, std::string label);
         virtual ~CheckpointButton() = default;
 
         void Draw(nuvelocity::Game* game) override;
@@ -30,7 +30,7 @@ namespace nuvelocity::frs42
         }
 
     private:
-        Sequence* mImage;
+        Sequence* mSequence;
         int mRoundNumber;
         std::string mLabel;
     };
