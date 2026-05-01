@@ -52,8 +52,8 @@ namespace nuvelocity::frs42
     {
         game->mAudio->PlayBgm("Theme.ogg");
         mBarriers.clear();
+        mPlayfield.SetIsStandAlone(true);
         mPlayfield.Reset(game);
-        mPlayfield.SetSpawnShip(false);
 
         mBackgroundImage =
             game->mAsset->LoadStandAloneFrame("Resources/Interface/Main Menu Extreme");

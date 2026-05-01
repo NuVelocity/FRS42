@@ -119,7 +119,6 @@ namespace nuvelocity::frs42
             , mMgImage(nullptr)
             , mFgImage(nullptr)
             , mShadowOffset({0, 0})
-            , mSpawnShip(true)
             , mGameOverFrame(nullptr)
             , mBounds({0, 0, 640, 480})
             , mBoundaryFlags(static_cast<BoundaryFlags>(Left | Top | Right))
@@ -151,35 +150,37 @@ namespace nuvelocity::frs42
         mBallBonusTimer = 0.0F;
         mIsGameOver = false;
 
-        if (mSpawnShip)
+        if (mIsStandAlone)
         {
-            float baseSpeed = 268.6F;
-            int diff = mGameStats.mLevelOfDifficulty;
-            if (diff == 0)
-            {
-                baseSpeed *= 0.8F;
-            }
-            else if (diff == 2)
-            {
-                baseSpeed *= 1.2F;
-            }
-            else if (diff == 3)
-            {
-                baseSpeed *= 1.5F;
-            }
-
-            auto ball = std::make_unique<Ball>();
-            ball->SetPlayfield(this);
-            ball->SetSpeed(baseSpeed);
-            if (diff == 3)
-            {
-                ball->SetIsSmall(true);
-            }
-            ball->AttachSequence(game);
-            ball->SetIsAttached(true);
-            AddBall(std::move(ball));
-            mBallWaitingForRelease = true;
+            return;
         }
+
+        float baseSpeed = 268.6F;
+        int diff = mGameStats.mLevelOfDifficulty;
+        if (diff == 0)
+        {
+            baseSpeed *= 0.8F;
+        }
+        else if (diff == 2)
+        {
+            baseSpeed *= 1.2F;
+        }
+        else if (diff == 3)
+        {
+            baseSpeed *= 1.5F;
+        }
+
+        auto ball = std::make_unique<Ball>();
+        ball->SetPlayfield(this);
+        ball->SetSpeed(baseSpeed);
+        if (diff == 3)
+        {
+            ball->SetIsSmall(true);
+        }
+        ball->AttachSequence(game);
+        ball->SetIsAttached(true);
+        AddBall(std::move(ball));
+        mBallWaitingForRelease = true;
     }
 
     void Playfield::LoadBackground(Game* game, const std::string& path)
@@ -236,7 +237,7 @@ namespace nuvelocity::frs42
         }
 
         // Load Ship if requested
-        if (mSpawnShip)
+        if (!mIsStandAlone)
         {
             mShip = std::make_unique<Ship>();
             mShip->SetPlayfield(this);
@@ -417,9 +418,12 @@ namespace nuvelocity::frs42
         {
             ball->Draw(game);
         }
-        for (const auto& gen : mParticleGenerators)
+        if (!mIsStandAlone)
         {
-            gen->Draw(game);
+            for (const auto& gen : mParticleGenerators)
+            {
+                gen->Draw(game);
+            }
         }
 
         if (mShip)
@@ -611,7 +615,7 @@ namespace nuvelocity::frs42
                 }
             }
         }
-        if (!hasDestructible && !mIsLevelComplete && mSpawnShip)
+        if (!hasDestructible && !mIsLevelComplete && !mIsStandAlone)
         {
             mIsLevelComplete = true;
             mCompletionStep = 0;
@@ -1124,7 +1128,7 @@ namespace nuvelocity::frs42
         }
 
         // Respawn ball if needed
-        if (mIonSpheres > 0 && mBalls.empty() && mSpawnShip && !mIsLevelComplete)
+        if (mIonSpheres > 0 && mBalls.empty() && !mIsStandAlone && !mIsLevelComplete)
         {
             mIonSpheres--;
             game->mAudio->PlaySfx("Lost Ball.ogg");
@@ -1327,7 +1331,7 @@ namespace nuvelocity::frs42
     }
     void Playfield::ApplyBallSpeedUp(Ball* ball, const SDL_FPoint& hitPos, bool isBrick)
     {
-        if (ball->IsTrapped())
+        if (mIsStandAlone || ball->IsTrapped())
         {
             return;
         }

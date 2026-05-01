@@ -77,6 +77,11 @@ namespace nuvelocity::frs42
 
         void Reset(Game* game);
 
+        void SetIsStandAlone(bool isMainMenu)
+        {
+            mIsStandAlone = isMainMenu;
+        }
+
         void LoadBackground(Game* game, const std::string& path);
         void SetRoundEntry(const RoundEntry* entry)
         {
@@ -186,11 +191,6 @@ namespace nuvelocity::frs42
         void SetGameOverFrame(StandAloneFrame* frame)
         {
             mGameOverFrame = frame;
-        }
-
-        void SetSpawnShip(bool spawn)
-        {
-            mSpawnShip = spawn;
         }
 
         void SetBallWaitingForRelease(bool waiting)
@@ -308,7 +308,6 @@ namespace nuvelocity::frs42
 
         // Ship state
         std::unique_ptr<Ship> mShip;
-        bool mSpawnShip;
         StandAloneFrame* mGameOverFrame;
         SDL_Rect mBounds;
         BoundaryFlags mBoundaryFlags;
@@ -339,6 +338,7 @@ namespace nuvelocity::frs42
         std::vector<std::unique_ptr<ParticleGenerator>> mParticleGenerators;
         std::map<std::string, int> mPowerUpWeights;
         void ApplyBallSpeedUp(Ball* ball, const SDL_FPoint& hitPos, bool isBrick);
+        bool mIsStandAlone = false;
     };
 } // namespace nuvelocity::frs42
 
