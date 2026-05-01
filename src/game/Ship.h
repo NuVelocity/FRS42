@@ -53,6 +53,15 @@ namespace nuvelocity::frs42
             return mShipStyle;
         }
 
+        void SetVelocityX(float velocity)
+        {
+            mVelocityX = velocity;
+        }
+
+        float GetVelocityX() const
+        {
+            return mVelocityX;
+        }
 
         void CycleShield(Game* game);
         const std::vector<SDL_FPoint>& GetCollisionPolygon() const;
