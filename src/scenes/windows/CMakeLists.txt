@@ -1,5 +1,7 @@
 target_sources(
     frs42 PRIVATE
+    ConfirmWindow.cpp
+    ConfirmWindow.h
     LevelSelectWindow.cpp
     LevelSelectWindow.h
     OptionsWindow.cpp
