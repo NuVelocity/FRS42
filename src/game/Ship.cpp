@@ -20,9 +20,26 @@ namespace nuvelocity::frs42
         mStartTick = SDL_GetTicks();
     }
 
+    const std::vector<std::string>& Ship::GetShipSequencePaths()
+    {
+        static const std::vector<std::string> paths = {"Resources/Player Ship/RS Ship",
+                                                       "Resources/Player Ship/RS Ship2",
+                                                       "Resources/Player Ship/RS Ship3",
+                                                       "Resources/Player Ship/RS Ship4",
+                                                       "Resources/Player Ship/RS Ship5",
+                                                       "Resources/Player Ship/RS Ship6"};
+        return paths;
+    }
+
     void Ship::Load(Game* game)
     {
-        mBaseSequence = game->mAsset->LoadSequence("Resources/Player Ship/RS Ship");
+        const auto& paths = GetShipSequencePaths();
+        std::string basePath = "Resources/Player Ship/RS Ship";
+        if (mShipStyle >= 0 && mShipStyle < static_cast<int>(paths.size()))
+        {
+            basePath = paths[mShipStyle];
+        }
+        mBaseSequence = game->mAsset->LoadSequence(basePath);
         mExplodeSequence = game->mAsset->LoadSequence("Resources/Player Ship/RS Shipexplode");
         mThrustLeftSequence = game->mAsset->LoadSequence("Resources/Player Ship/Thrust Left");
         mThrustRightSequence = game->mAsset->LoadSequence("Resources/Player Ship/Thrust Right");

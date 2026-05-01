@@ -43,6 +43,17 @@ namespace nuvelocity::frs42
         void SetPosition(const SDL_FPoint& position);
         const SDL_FPoint& GetPosition() const;
 
+        void SetShipStyle(int style)
+        {
+            mShipStyle = style;
+        }
+
+        int GetShipStyle() const
+        {
+            return mShipStyle;
+        }
+
+
         void CycleShield(Game* game);
         const std::vector<SDL_FPoint>& GetCollisionPolygon() const;
         Sequence* GetBaseSequence() const
@@ -85,6 +96,8 @@ namespace nuvelocity::frs42
             mImpactRecoilTimer = 0.15F;
         }
 
+        static const std::vector<std::string>& GetShipSequencePaths();
+
     private:
         Sequence* mBaseSequence = nullptr;
         Sequence* mShieldSequence = nullptr;
@@ -97,6 +110,7 @@ namespace nuvelocity::frs42
         float mThrustPowerLeft = 0.0F;
         float mThrustPowerRight = 0.0F;
         uint64_t mStartTick = 0;
+        int mShipStyle = 0;
 
         std::vector<ShieldInfo> mAvailableShields;
         int mCurrentShieldIndex = 2; // Default to Normal Shield
