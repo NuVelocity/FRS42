@@ -1,4 +1,5 @@
 #include "Playfield.h"
+#include "ArenaScene.h"
 #include "BackgroundDefinition.h"
 #include "Ball.h"
 #include "Bomb.h"
@@ -16,9 +17,12 @@
 #include "PowerUp.h"
 #include "Projectile.h"
 #include "RandomDebrisAI.h"
+#include "RoundSetManager.h"
 #include "Ship.h"
+#include "StatsManager.h"
 #include "TextAlignment.h"
 #include <Game.h>
+#include <Scene.h>
 #include <Sequence.h>
 #include <StandAloneFrame.h>
 #include <algorithm>
@@ -107,7 +111,7 @@ namespace nuvelocity::frs42
             , mCompletionStep(0)
             , mCurrentBallBonusIndex(-1)
             , mBallBonusTimer(0.0F)
-            , mRoundName("")
+            , mRoundEntry(nullptr)
             , mRoundNameTimer(0.0F)
             , mRoundNameAlpha(0)
             , mBackgroundDef(nullptr)
@@ -149,8 +153,28 @@ namespace nuvelocity::frs42
 
         if (mSpawnShip)
         {
+            float baseSpeed = 268.6F;
+            int diff = mGameStats.mLevelOfDifficulty;
+            if (diff == 0)
+            {
+                baseSpeed *= 0.8F;
+            }
+            else if (diff == 2)
+            {
+                baseSpeed *= 1.2F;
+            }
+            else if (diff == 3)
+            {
+                baseSpeed *= 1.5F;
+            }
+
             auto ball = std::make_unique<Ball>();
             ball->SetPlayfield(this);
+            ball->SetSpeed(baseSpeed);
+            if (diff == 3)
+            {
+                ball->SetIsSmall(true);
+            }
             ball->AttachSequence(game);
             ball->SetIsAttached(true);
             AddBall(std::move(ball));
@@ -216,6 +240,10 @@ namespace nuvelocity::frs42
         {
             mShip = std::make_unique<Ship>();
             mShip->SetPlayfield(this);
+            if (auto* player = StatsManager::Get().GetCurrentPlayer())
+            {
+                mShip->SetShipStyle(player->mShipStyle);
+            }
             mShip->Load(game);
             mShip->SetPosition({static_cast<float>(mBounds.x + mBounds.w / 2),
                                 static_cast<float>(mBounds.y + mBounds.h - 40)});
@@ -411,19 +439,19 @@ namespace nuvelocity::frs42
             game->mSpriteBatch->Draw(mGameOverFrame, centerX, centerY);
         }
 
-        if (mRoundNameTimer > 0.0F && !mRoundName.empty())
+        if (mRoundNameTimer > 0.0F && mRoundEntry != nullptr && mRoundEntry->globalIndex >= 0)
         {
+            const auto& roundName = mRoundDisplayName;
             SDL_Color textColor = {.r = 255, .g = 255, .b = 255, .a = mRoundNameAlpha};
             SDL_Color bgColor = {
                 .r = 0, .g = 0, .b = 0, .a = static_cast<uint8_t>(mRoundNameAlpha / 2)};
 
-            // Center position
             int centerX = mBounds.x + mBounds.w / 2;
             int centerY = mBounds.y + mBounds.h / 2;
 
             int tw = 0;
             int th = 0;
-            game->mFont->MeasureStringWithFont("Big White", mRoundName, -1, tw, th);
+            game->mFont->MeasureStringWithFont("Big White", roundName, -1, tw, th);
 
             const int padding = 5;
             SDL_Rect bgRect = {.x = centerX - (tw / 2) - padding,
@@ -434,7 +462,7 @@ namespace nuvelocity::frs42
 
             game->mFont->DrawStringWithFontAt("Big White",
                                               game->mSpriteBatch,
-                                              mRoundName,
+                                              roundName,
                                               centerX,
                                               centerY,
                                               textColor,
@@ -482,7 +510,16 @@ namespace nuvelocity::frs42
             mGameOverTimer += deltaTime;
             if (mGameOverTimer >= 3.0F)
             {
-                game->SetScene(new MainMenuScene());
+                auto arena = dynamic_cast<ArenaScene*>(game->GetScene());
+                if (arena)
+                {
+                    arena->EndGame(game, true);
+                }
+                else
+                {
+                    StatsManager::Get().UpdateCareerStats(&mGameStats, true);
+                    game->SetScene(new MainMenuScene());
+                }
                 return;
             }
         }
@@ -532,8 +569,7 @@ namespace nuvelocity::frs42
                                     std::make_unique<Label>("500 Points", "Small Blue"));
                                 mMegovision->ShowMessage(std::move(labels), 0.5F, false);
                             }
-                            mScore += 500;
-                            mGameStats.mPointsScored += 500;
+                            AddScore(500);
                             mCurrentBallBonusIndex++;
                             mBallBonusTimer = 0.0F;
                         }
@@ -541,11 +577,15 @@ namespace nuvelocity::frs42
                     else
                     {
                         // Sequence finished
+                        StatsManager::Get().UpdateCheckpoint(mRoundEntry->globalIndex);
+                        StatsManager::Get().UpdateCareerStats(&mGameStats, false);
                         mCompletionStep = 5;
                     }
                 }
                 else
                 {
+                    StatsManager::Get().UpdateCheckpoint(mRoundEntry->globalIndex);
+                    StatsManager::Get().UpdateCareerStats(&mGameStats, false);
                     mCompletionStep = 5;
                 }
                 break;
@@ -691,8 +731,7 @@ namespace nuvelocity::frs42
                     mShip->GetCollisionPolygon(), mShip->GetPosition(), tempPos, 10.0F, tempVel))
             {
                 // Pickup!
-                mScore += 100;
-                mGameStats.mPointsScored += 100;
+                AddScore(100);
 
                 PowerUpType type = pu->GetType();
                 if (mMegovision)
@@ -727,8 +766,7 @@ namespace nuvelocity::frs42
                     ball->SetPosition(ballPos);
                     ball->SetVelocity(ballVel);
                     bomb->SetDead(true);
-                    mScore += 1000;
-                    mGameStats.mPointsScored += 1000;
+                    AddScore(1000);
                     if (mMegovision)
                     {
                         std::vector<std::unique_ptr<Label>> labels;
@@ -934,9 +972,10 @@ namespace nuvelocity::frs42
                                 }
                             }
 
+                            auto* brick = dynamic_cast<Brick*>(collidable.get());
                             if (ball->IsTrapped())
                             {
-                                if (auto* brick = dynamic_cast<Brick*>(collidable.get()))
+                                if (brick)
                                 {
                                     if (Brick::IsIndestructibleType(
                                             brick->GetInfo()->GetBrickType()))
@@ -961,7 +1000,10 @@ namespace nuvelocity::frs42
                             }
                             else
                             {
-                                mScore += 10; // Placeholder score
+                                int brickScore = (brick && brick->GetInfo())
+                                                     ? brick->GetInfo()->GetScoreValue()
+                                                     : 10;
+                                AddScore(brickScore);
                                 mGameStats.mBricksDestroyed++;
                                 SpawnPowerUpAt(game, collidable->GetPosition());
                             }

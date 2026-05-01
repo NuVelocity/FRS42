@@ -17,5 +17,9 @@ namespace nuvelocity
         AddProperty(info, "Level Of Difficulty", &GameStats::mLevelOfDifficulty);
         AddProperty(info, "Used Cheat", &GameStats::mUsedCheat);
         AddProperty(info, "Games Finished", &GameStats::mGamesFinished);
+
+        // Time tracking was introduced in build 75
+        AddProperty(info, "Start Time", &GameStats::mStartTime);
+        AddProperty(info, "End Time", &GameStats::mEndTime);
     }
 } // namespace nuvelocity

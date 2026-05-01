@@ -4,7 +4,12 @@
 #include "BrickLayout.h"
 #include "Font.h"
 #include "MainMenuScene.h"
+#include "MathUtils.h"
 #include "PlayfieldBarrier.h"
+#include "RoundSetManager.h"
+#include "StatisticsWindow.h"
+#include "StatsManager.h"
+#include "SuspendedGameStats.h"
 #include "windows/OptionsWindow.h"
 #include "windows/PauseWindow.h"
 #include <Colors.h>
@@ -30,22 +35,35 @@ namespace nuvelocity::frs42
     static std::random_device gRd;
     static std::mt19937 gGen(gRd());
 
-    ArenaScene::ArenaScene(std::string roundSetName, int roundIndex)
-            : mRoundSetName(std::move(roundSetName))
-            , mRoundIndex(static_cast<uint8_t>(roundIndex))
+    ArenaScene::ArenaScene(const RoundEntry* entry, bool resetStartTime, Difficulty diff)
+            : mRoundEntry(entry)
             , mPlayfieldRect({.x = 10, .y = 10, .w = 493, .h = 470})
             , mGameOverFrame(nullptr)
     {
+        mPlayfield.GetGameStats().mLevelOfDifficulty = DifficultyToInt(diff);
+        if (resetStartTime)
+        {
+            mPlayfield.GetGameStats().mStartTime = MathUtils::GetWindowsFiletime();
+        }
     }
 
     void ArenaScene::Load(Game* game)
     {
-        if (!LoadRoundSet(game))
+        if (mRoundEntry == nullptr)
+        {
+            game->SetScene(new MainMenuScene());
+            return;
+        }
+
+        auto& rsMgr = RoundSetManager::Get();
+
+        mRoundSet = rsMgr.GetRoundSet(mRoundEntry->setIndex);
+        if (mRoundSet == nullptr)
         {
             return;
         }
 
-        BrickLayout* layout = LoadBrickLayout(game);
+        BrickLayout* layout = rsMgr.LoadRoundLayout(mRoundEntry->globalIndex);
         if (layout == nullptr)
         {
             return;
@@ -60,9 +78,10 @@ namespace nuvelocity::frs42
         mPlayfield.SetPowerUpWeights(layout->GetPowerUpWeights());
         mPlayfield.SetMegovision(&mMegovision);
         mPlayfield.SetBounds(mPlayfieldRect);
-        mPlayfield.SetRoundName(layout->GetDisplayName());
+        mPlayfield.SetRoundEntry(mRoundEntry);
+        mPlayfield.SetRoundDisplayName(layout->GetDisplayName());
 
-        // FIXME: power-ups should not be hardcoded here.
+        // Populate sound cache
         std::vector<std::string> sfxToRegister = {"Lost Ball.ogg",
                                                   "Game Over.ogg",
                                                   "Timeout.ogg",
@@ -97,31 +116,10 @@ namespace nuvelocity::frs42
         }
 
         PopulateBricks(game, layout);
-        BuildLevelUI(game, layout);
+        BuildLevelUI(game, layout, mRoundEntry);
 
         game->mAudio->PlaySfx("Start Round.ogg");
         game->mAudio->PlaySfx("Ball In Play.ogg");
-    }
-
-    bool ArenaScene::LoadRoundSet(Game* game)
-    {
-        mRoundSet = static_cast<RoundSet*>(
-            game->mAsset->LoadPropertyFile("Resources/Rounds/" + mRoundSetName + ".RoundSet"));
-        if (mRoundSet == nullptr)
-        {
-            return false;
-        }
-
-        const auto& rounds = mRoundSet->GetRoundList();
-        return mRoundIndex < rounds.size();
-    }
-
-    BrickLayout* ArenaScene::LoadBrickLayout(Game* game)
-    {
-        const auto& rounds = mRoundSet->GetRoundList();
-        std::string roundPath = "Resources/" + rounds[mRoundIndex] + ".Ricochet";
-        SDL_Log("Loading round layout: %s", roundPath.c_str());
-        return static_cast<BrickLayout*>(game->mAsset->LoadPropertyFile(roundPath));
     }
 
     void ArenaScene::PopulateBricks(Game* game, BrickLayout* layout)
@@ -245,15 +243,13 @@ namespace nuvelocity::frs42
         SDL_Log("Floating bricks loaded: %d", floatingBricksLoaded);
     }
 
-    void ArenaScene::BuildLevelUI(Game* game, BrickLayout* layout)
+    void ArenaScene::BuildLevelUI(Game* game, BrickLayout* layout, const RoundEntry* entry)
     {
-        int roundSetNumber = 1;
-        size_t firstDigit = mRoundSetName.find_first_of("0123456789");
-        if (firstDigit != std::string::npos)
-        {
-            roundSetNumber = std::atoi(mRoundSetName.c_str() + firstDigit);
-        }
-        int roundNumber = mRoundIndex + 1;
+        if (entry == nullptr)
+            return;
+
+        int roundSetNumber = entry->setIndex + 1;
+        int roundNumber = entry->roundIndex + 1;
 
         const std::string& roundTitle = layout->GetDisplayName();
         char tickerBuf[256];
@@ -272,8 +268,7 @@ namespace nuvelocity::frs42
         megoLabels.push_back(std::make_unique<Label>(roundBuf, "Megovision"));
 
         // Word wrap round title for line 2+ (90px width)
-        const std::string& title = layout->GetDisplayName();
-        std::stringstream ss(title);
+        std::stringstream ss(roundTitle);
         std::string word;
         std::string currentLine;
         while (ss >> word)
@@ -345,10 +340,15 @@ namespace nuvelocity::frs42
                     }
                     else if (mCheatBuffer.find("cheatnext") != std::string::npos)
                     {
-                        mRoundIndex++;
-                        Load(game);
+                        const auto* nextEntry =
+                            RoundSetManager::Get().GetRoundEntry(mRoundEntry->globalIndex + 1);
+                        if (nextEntry != nullptr)
+                        {
+                            mRoundEntry = nextEntry;
+                            Load(game);
+                        }
                         mCheatBuffer.clear();
-                        return; // Load re-initialized everything, stop current update
+                        return;
                     }
                     else if (mCheatBuffer.find("cheatmouse") != std::string::npos)
                     {
@@ -424,8 +424,17 @@ namespace nuvelocity::frs42
             mPlayfield.Update(game);
             if (mPlayfield.IsCompletionSequenceFinished())
             {
-                mRoundIndex++;
-                Load(game);
+                const auto* nextEntry =
+                    RoundSetManager::Get().GetRoundEntry(mRoundEntry->globalIndex + 1);
+                if (nextEntry != nullptr)
+                {
+                    mRoundEntry = nextEntry;
+                    Load(game);
+                }
+                else
+                {
+                    game->SetScene(new MainMenuScene());
+                }
                 return;
             }
         }
@@ -470,10 +479,10 @@ namespace nuvelocity::frs42
         pauseWindow->SetOnClose(
             [this](nuvelocity::MdiWindow& window)
             {
+                (void)window;
                 this->mIsPaused = false;
                 this->mPlayfield.SetSuspended(false);
-                this->mMegovision.ShowMessage(
-                    std::vector<std::string>{}, 0.0F, false); // Clear message
+                this->mMegovision.ShowMessage(std::vector<std::unique_ptr<Label>>{}, 0.0F, false);
             });
 
         game->mMdi->AddCenteredWindow(game, pauseWindow);
@@ -498,5 +507,114 @@ namespace nuvelocity::frs42
         }
 
         game->mMdi->AddCenteredWindow(game, std::make_shared<OptionsWindow>(game));
+    }
+
+    void ArenaScene::SetInitialStats(const GameStats& stats, int lives)
+    {
+        mPlayfield.SetGameStats(stats);
+        mPlayfield.SetIonSpheres(lives);
+    }
+
+    void ArenaScene::SuspendGame()
+    {
+        PlayerStats* player = StatsManager::Get().GetCurrentPlayer();
+        if (player == nullptr)
+        {
+            return;
+        }
+
+        if (player->mSuspendedGame)
+        {
+            delete player->mSuspendedGame;
+        }
+
+        player->mSuspendedGame = new SuspendedGameStats();
+        *static_cast<GameStats*>(player->mSuspendedGame) = mPlayfield.GetGameStats();
+        player->mSuspendedGame->mEndTime = MathUtils::GetWindowsFiletime();
+        player->mSuspendedGame->mBallsLeft = mPlayfield.GetIonSpheres();
+        player->mSuspendedGame->mEndingRoundNumber = mRoundEntry ? mRoundEntry->globalIndex : -1;
+
+        StatsManager::Get().Save();
+    }
+
+    void ArenaScene::EndGame(Game* game, bool isGameOver)
+    {
+        if (mEnding)
+        {
+            return;
+        }
+        mEnding = true;
+
+        GameStats& stats = mPlayfield.GetGameStats();
+        // Tracking
+        stats.mEndTime = MathUtils::GetWindowsFiletime();
+        stats.mEndingRoundNumber = mRoundEntry ? mRoundEntry->globalIndex : -1;
+
+        PlayerStats* player = StatsManager::Get().GetCurrentPlayer();
+        bool isPersonalBest = false;
+        if (player)
+        {
+            int bestInDiff = 0;
+            for (auto* g : player->mAllGamesPlayed)
+            {
+                if (g->mLevelOfDifficulty == stats.mLevelOfDifficulty)
+                {
+                    if (g->mPointsScored > bestInDiff)
+                    {
+                        bestInDiff = g->mPointsScored;
+                    }
+                }
+            }
+            isPersonalBest = (stats.mPointsScored > bestInDiff);
+        }
+
+        StatsManager::Get().UpdateCareerStats(&stats, isGameOver);
+
+        std::string footer;
+        int score = stats.mPointsScored;
+
+        int rank = -1;
+        if (stats.mUsedCheat)
+        {
+            footer = "Your score of " + std::to_string(score) +
+                     " does not qualify you for the high scores list because you cheated.";
+        }
+        else
+        {
+            int diff = stats.mLevelOfDifficulty;
+            auto highScores = StatsManager::Get().GetHighScores(diff);
+            std::string playerName = player ? player->mName : StatsManager::kGuestName;
+
+            for (size_t i = 0; i < highScores.size(); ++i)
+            {
+                if (highScores[i].playerName == playerName && highScores[i].score == score)
+                {
+                    rank = static_cast<int>(i) + 1;
+                    break;
+                }
+            }
+
+            std::string rankStr = (rank > 0) ? std::to_string(rank) : "unknown";
+            if (isPersonalBest)
+            {
+                footer = "Your score of " + std::to_string(score) + " ranks number " + rankStr +
+                         " in the high scores list and is your personal best.";
+            }
+            else
+            {
+                footer = "Your score of " + std::to_string(score) + " ranks number " + rankStr +
+                         " in the high scores list.";
+            }
+        }
+
+        game->SetScene(new MainMenuScene());
+        if (score > 0)
+        {
+            // Tab 0: Players, Tab 1: High Scores (All), Tab 2: Easy, Tab 3: Normal, etc.
+            int tabIndex = stats.mLevelOfDifficulty + 2;
+            int selectedIndex = (rank > 0) ? (rank - 1) : -1;
+            game->mMdi->AddCenteredWindow(
+                game, std::make_shared<StatisticsWindow>(game, tabIndex, footer, selectedIndex));
+        }
     }
 } // namespace nuvelocity::frs42

@@ -35,10 +35,11 @@ namespace nuvelocity::frs42
         {
             innerRect.x += 1;
             innerRect.y += 1;
-            if (!IsEnabled())
-            {
-                alpha -= 100;
-            }
+        }
+
+        if (!IsEnabled() || mIsLocked)
+        {
+            alpha = 100;
         }
 
         if (mSequence != nullptr && mSequence->GetFrameCount() > 0)

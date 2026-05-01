@@ -1,6 +1,7 @@
 #ifndef FRS42_PLAYER_STATS_H
 #define FRS42_PLAYER_STATS_H
 
+#include "Difficulty.h"
 #include "model/Object.h"
 #include <string>
 #include <vector>
@@ -20,7 +21,7 @@ namespace nuvelocity
 
         std::string mName;
         int mShipStyle = 1;
-        int mLastSelectedDifficulty = 1;
+        int mLastSelectedDifficulty = frs42::DifficultyToInt(frs42::Difficulty::Normal);
         int mLastSelectedRoundSet = 0;
         int mLastSelectedCheckPoint = 0;
         SuspendedGameStats* mSuspendedGame = nullptr;

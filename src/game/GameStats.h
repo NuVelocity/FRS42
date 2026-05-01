@@ -1,7 +1,9 @@
 #ifndef FRS42_GAME_STATS_H
 #define FRS42_GAME_STATS_H
 
+#include "Difficulty.h"
 #include "model/Object.h"
+#include <cstdint>
 
 namespace nuvelocity
 {
@@ -19,9 +21,13 @@ namespace nuvelocity
         int mBallsLost = 0;
         int mPointsScored = 0;
         double mSecondsPlayed = 0.0;
-        int mLevelOfDifficulty = 0;
+        int mLevelOfDifficulty = frs42::DifficultyToInt(frs42::Difficulty::Easy);
         bool mUsedCheat = false;
         int mGamesFinished = 0;
+
+        // Time tracking was introduced in build 75
+        uint64_t mStartTime = 0;
+        uint64_t mEndTime = 0;
     };
 } // namespace nuvelocity
 

@@ -1,8 +1,7 @@
 #include "LevelSelectWindow.h"
 #include "ArenaScene.h"
-#include "RoundSet.h"
+#include "RoundSetManager.h"
 #include <Game.h>
-#include <algorithm>
 #include <system/AssetManager.h>
 #include <system/ui/Button.h>
 #include <system/ui/MdiManager.h>
@@ -55,42 +54,24 @@ namespace nuvelocity::frs42
 
     void LevelSelectWindow::PopulateList(Game* game)
     {
-        mLevelEntries.clear();
+        (void)game;
         mListView->Clear();
 
-        auto roundSets = game->mAsset->EnumerateRoundSets();
-        std::ranges::sort(roundSets,
-                          [](const auto& a, const auto& b) { return a.second < b.second; });
-
-        for (const auto& [fullPath, rsName] : roundSets)
+        for (const auto& entry : RoundSetManager::Get().GetAllRounds())
         {
-            RoundSet* rs = static_cast<RoundSet*>(game->mAsset->LoadPropertyFile(fullPath));
-            if (rs == nullptr)
-                continue;
-
-            const auto& rounds = rs->GetRoundList();
-            for (size_t i = 0; i < rounds.size(); ++i)
-            {
-                LevelEntry entry;
-                entry.roundSetPath = fullPath;
-                entry.roundSetName = rsName;
-                entry.roundName = rounds[i];
-                entry.roundIndex = static_cast<int>(i);
-                mLevelEntries.push_back(entry);
-
-                mListView->AddRow({rsName, std::to_string(i + 1), rounds[i]});
-            }
+            mListView->AddRow({entry.setName, std::to_string(entry.roundIndex + 1), entry.name});
         }
     }
 
     void LevelSelectWindow::OnGoClick(Game* game)
     {
         int selected = mListView->GetSelectedIndex();
-        if (selected >= 0 && selected < static_cast<int>(mLevelEntries.size()))
+        const auto& allRounds = RoundSetManager::Get().GetAllRounds();
+        if (selected >= 0 && selected < static_cast<int>(allRounds.size()))
         {
-            const auto& entry = mLevelEntries[selected];
+            const auto* entry = &allRounds[selected];
             game->mMdi->Clear();
-            game->SetScene(new ArenaScene(entry.roundSetName, entry.roundIndex));
+            game->SetScene(new ArenaScene(entry));
         }
     }
 } // namespace nuvelocity::frs42

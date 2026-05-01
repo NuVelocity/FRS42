@@ -29,10 +29,20 @@ namespace nuvelocity::frs42
             return mLabel;
         }
 
+        void SetLocked(bool locked)
+        {
+            mIsLocked = locked;
+        }
+        bool IsLocked() const
+        {
+            return mIsLocked;
+        }
+
     private:
         Sequence* mSequence;
         int mRoundNumber;
         std::string mLabel;
+        bool mIsLocked = false;
     };
 } // namespace nuvelocity::frs42
 

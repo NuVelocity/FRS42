@@ -1,6 +1,9 @@
 #include "PauseWindow.h"
+#include "ArenaScene.h"
+#include "ConfirmWindow.h"
 #include "MainMenuScene.h"
 #include "OptionsWindow.h"
+#include "StatisticsWindow.h"
 #include <Game.h>
 #include <system/ui/Button.h>
 #include <system/ui/ButtonContainer.h>
@@ -44,6 +47,8 @@ namespace nuvelocity::frs42
         statsBtn->SetCaption("&Statistics");
         statsBtn->SetSkin(skin);
         statsBtn->SetRect({.x = 0, .y = 0, .w = 221, .h = buttonHeight});
+        statsBtn->SetOnClick([](Game* game)
+                             { game->mMdi->AddWindow(std::make_shared<StatisticsWindow>(game)); });
         container->AddButton(statsBtn);
 
         // Abort Game
@@ -54,8 +59,34 @@ namespace nuvelocity::frs42
         abortBtn->SetOnClick(
             [this](Game* game)
             {
-                this->Close();
-                game->SetScene(new MainMenuScene());
+                auto arena = dynamic_cast<ArenaScene*>(game->GetScene());
+                if (arena && arena->GetScore() > 0)
+                {
+                    std::string title = "End Game Confirmation";
+                    std::string message = "Do you really want to end the game in progress?";
+                    auto confirm = std::make_shared<ConfirmWindow>(
+                        game,
+                        title,
+                        message,
+                        [this](Game* g)
+                        {
+                            auto arena = dynamic_cast<ArenaScene*>(g->GetScene());
+                            if (arena)
+                            {
+                                arena->EndGame(g, false);
+                            }
+                            this->Close();
+                        },
+                        [](Game* g) { (void)g; },
+                        "End Game",
+                        "Continue Playing");
+                    game->mMdi->AddCenteredWindow(game, confirm);
+                }
+                else
+                {
+                    arena->EndGame(game, false);
+                    this->Close();
+                }
             });
         container->AddButton(abortBtn);
 
@@ -64,6 +95,44 @@ namespace nuvelocity::frs42
         suspendBtn->SetCaption("&Suspend Game");
         suspendBtn->SetSkin(skin);
         suspendBtn->SetRect({.x = 0, .y = 0, .w = 221, .h = buttonHeight});
+        suspendBtn->SetOnClick(
+            [this](Game* game)
+            {
+                std::string title = "Suspend Game Confirmation";
+                std::string message =
+                    "This option will stop the game in progress and allow you to continue playing "
+                    "it at a later time.  When you continue later, you will have to re-start from "
+                    "the beginning of this round but your score and Ion Spheres will be "
+                    "preserved.";
+
+                auto confirm = std::make_shared<ConfirmWindow>(
+                    game,
+                    title,
+                    message,
+                    [this](Game* g)
+                    {
+                        auto arena = dynamic_cast<ArenaScene*>(g->GetScene());
+                        if (arena)
+                        {
+                            arena->SuspendGame();
+                        }
+                        this->Close();
+                        auto mainmenu = new MainMenuScene();
+                        g->SetScene(mainmenu);
+
+                        std::string alertTitle = "Game Suspended";
+                        std::string alertMessage =
+                            "Your game has been suspended.  Use the \"Play Game\" option to "
+                            "resume it at any time.";
+                        g->mMdi->AddCenteredWindow(
+                            g, std::make_shared<ConfirmWindow>(g, alertTitle, alertMessage));
+                    },
+                    [](Game* g) { (void)g; },
+                    "Suspend Game",
+                    "Continue Playing");
+
+                game->mMdi->AddCenteredWindow(game, confirm);
+            });
         container->AddButton(suspendBtn);
 
         AddChild(container);

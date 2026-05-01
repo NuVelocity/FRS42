@@ -69,6 +69,8 @@ target_sources(
     RandomDebrisAI.h
     GameStats.cpp
     GameStats.h
+    Difficulty.cpp
+    Difficulty.h
     SuspendedGameStats.cpp
     SuspendedGameStats.h
     PlayerStats.cpp
@@ -81,6 +83,12 @@ target_sources(
     PowerUp.h
     Bomb.cpp
     Bomb.h
+    DisplayShip.cpp
+    DisplayShip.h
+    RoundSetManager.cpp
+    RoundSetManager.h
+    StatsManager.cpp
+    StatsManager.h
 )
 
 target_include_directories(

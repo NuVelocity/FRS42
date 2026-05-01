@@ -2,6 +2,7 @@
 #define FRS42_NEW_GAME_OPTIONS_WINDOW_H
 
 #include <system/ui/MdiWindow.h>
+#include <system/ui/ToggleButtonGroup.h>
 
 namespace nuvelocity::frs42
 {
@@ -9,6 +10,9 @@ namespace nuvelocity::frs42
     {
     public:
         NewGameOptionsWindow(nuvelocity::Game* game);
+
+    private:
+        nuvelocity::ToggleButtonGroup mDifficultyGroup;
     };
 } // namespace nuvelocity::frs42
 

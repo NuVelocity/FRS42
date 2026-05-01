@@ -5,6 +5,7 @@
 #include "Bomb.h"
 #include "Collidable2D.h"
 #include "GameStats.h"
+#include "ListEntries.h"
 #include "PowerUp.h"
 #include "Projectile.h"
 #include <GameComponent.h>
@@ -77,11 +78,16 @@ namespace nuvelocity::frs42
         void Reset(Game* game);
 
         void LoadBackground(Game* game, const std::string& path);
-        void SetRoundName(const std::string& name)
+        void SetRoundEntry(const RoundEntry* entry)
         {
-            mRoundName = name;
+            mRoundEntry = entry;
             mRoundNameTimer = 3.0F;
             mRoundNameAlpha = 255;
+        }
+
+        void SetRoundDisplayName(const std::string& name)
+        {
+            mRoundDisplayName = name;
         }
 
         void AddBall(std::unique_ptr<Ball> ball)
@@ -133,6 +139,7 @@ namespace nuvelocity::frs42
         void AddScore(int score)
         {
             mScore += score;
+            mGameStats.mPointsScored += score;
         }
         int GetScore() const
         {
@@ -233,6 +240,16 @@ namespace nuvelocity::frs42
             mPowerUpWeights = weights;
         }
 
+        void SetGameStats(const nuvelocity::GameStats& stats)
+        {
+            mGameStats = stats;
+        }
+
+        nuvelocity::GameStats& GetGameStats()
+        {
+            return mGameStats;
+        }
+
         static inline std::string MakeImagePath(const std::string& base, const std::string& image)
         {
             size_t lastSlash = base.find_last_of("/\\");
@@ -275,9 +292,10 @@ namespace nuvelocity::frs42
         float mBallBonusTimer;
 
     private:
-        std::string mRoundName;
-        float mRoundNameTimer;
-        uint8_t mRoundNameAlpha;
+        const RoundEntry* mRoundEntry = nullptr;
+        std::string mRoundDisplayName;
+        float mRoundNameTimer = 0.0F;
+        uint8_t mRoundNameAlpha = 0;
 
         // Background state
         BackgroundDefinition* mBackgroundDef;

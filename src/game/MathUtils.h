@@ -2,6 +2,8 @@
 #define NVE_MATH_UTILS_H
 
 #include <SDL3/SDL.h>
+#include <cstdint>
+#include <ctime>
 #include <optional>
 #include <random>
 #include <vector>
@@ -77,6 +79,11 @@ namespace nuvelocity::frs42
                                 float radius = 0.0f,
                                 const std::vector<SDL_FRect>& excludeRects = {},
                                 int maxAttempts = 100);
+
+        /**
+         * @brief Gets current system time as Windows Filetime (100ns intervals since Jan 1, 1601).
+         */
+        static uint64_t GetWindowsFiletime();
     };
 } // namespace nuvelocity::frs42
 

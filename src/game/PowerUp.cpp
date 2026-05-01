@@ -91,6 +91,11 @@ namespace nuvelocity::frs42
             return "Power Ups/Snap On Smaller Shiled.ogg";
         case PowerUpType::Fast:
             return "Power Ups/Fast.ogg";
+        case PowerUpType::TheBomb:
+            // This "power-up" cannot be picked-up.
+            break;
+        default:
+            break;
         }
         return "";
     }
@@ -129,6 +134,8 @@ namespace nuvelocity::frs42
             return "Resources/Power Ups/Fast";
         case PowerUpType::TheBomb:
             return "Resources/Power Ups/Bomb";
+        default:
+            break;
         }
         return "";
     }

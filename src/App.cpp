@@ -2,10 +2,13 @@
 
 #include "MainMenuScene.h"
 #include "SplashScene.h"
+#include "game/RoundSetManager.h"
+#include "game/StatsManager.h"
 #include <Game.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_main.h>
+#include <Scene.h>
 #include <system/AssetManager.h>
 #include <system/AudioManager.h>
 
@@ -13,7 +16,7 @@
 #include <system/ui/MdiManager.h>
 
 using namespace nuvelocity;
-using namespace frs42;
+using namespace nuvelocity::frs42;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -35,6 +38,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     game->SetModuleInfo("Resources/ModuleInfo/TheGame.modinfo");
     if (game->Initialize(argc, argv))
     {
+        StatsManager::Get().SetAssetManager(game->mAsset);
+        StatsManager::Get().Initialize(argv);
+
+        RoundSetManager::Get().SetGame(game);
+        RoundSetManager::Get().Initialize(argv);
+
         // Load main menu music early and assign substitutions.
         game->mAsset->AddMusicSubstitution("Infinity/Infinity Norm.ogg",
                                            "Infinity/Infinity Fast.ogg");
@@ -96,6 +105,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+    StatsManager::Get().Save();
     auto* game = static_cast<Game*>(appstate);
     delete game;
     SDL_Quit();

@@ -227,4 +227,11 @@ namespace nuvelocity::frs42
 
         return false;
     }
+
+    uint64_t MathUtils::GetWindowsFiletime()
+    {
+        // 11644473600ULL is the offset from 1601 to 1970 in seconds.
+        // 10,000,000ULL is the number of 100ns intervals in a second.
+        return (static_cast<uint64_t>(std::time(nullptr)) + 11644473600ULL) * 10000000ULL;
+    }
 } // namespace nuvelocity::frs42

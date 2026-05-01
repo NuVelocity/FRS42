@@ -5,9 +5,12 @@
 #include "MathUtils.h"
 #include "PlayfieldBarrier.h"
 #include "RoundSet.h"
+#include "StatsManager.h"
 #include "windows/LevelSelectWindow.h"
 #include "windows/NewGameOptionsWindow.h"
 #include "windows/OptionsWindow.h"
+#include "windows/SelectPlayerWindow.h"
+#include "windows/StatisticsWindow.h"
 #include <Game.h>
 #include <Image.h>
 #include <SDL3/SDL.h>
@@ -308,7 +311,7 @@ namespace nuvelocity::frs42
         }
 
         mHideMenuButtons = true;
-        auto playWindow = std::make_shared<NewGameOptionsWindow>(game);
+        auto playWindow = std::make_shared<SelectPlayerWindow>(game);
         playWindow->SetOnClose([this](nuvelocity::MdiWindow& window)
                                { this->mHideMenuButtons = false; });
         game->mMdi->AddCenteredWindow(game, playWindow);
@@ -316,7 +319,16 @@ namespace nuvelocity::frs42
 
     void MainMenuScene::OnStatsClick(Game* game)
     {
-        (void)game;
+        if (game == nullptr || game->mMdi == nullptr)
+        {
+            return;
+        }
+
+        mHideMenuButtons = true;
+        auto statsWindow = std::make_shared<StatisticsWindow>(game);
+        statsWindow->SetOnClose([this](nuvelocity::MdiWindow& window)
+                                { this->mHideMenuButtons = false; });
+        game->mMdi->AddWindow(statsWindow);
     }
 
     void MainMenuScene::OnFriendClick(Game* game)

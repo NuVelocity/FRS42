@@ -1,6 +1,7 @@
 #ifndef FRS42_ARENA_SCENE_H
 #define FRS42_ARENA_SCENE_H
 
+#include "Difficulty.h"
 #include "Megovision.h"
 #include "Playfield.h"
 #include "RoundSet.h"
@@ -15,21 +16,31 @@ namespace nuvelocity::frs42
     class ArenaScene : public Scene
     {
     public:
-        ArenaScene(std::string roundSetName, int roundIndex);
+        ArenaScene(const RoundEntry* entry,
+                   bool resetStartTime = false,
+                   Difficulty diff = Difficulty::Normal);
         ~ArenaScene() override = default;
 
         void Load(Game* game) override;
         void Unload(Game* game) override;
         void Update(Game* game) override;
         void Draw(Game* game) override;
+        void SetInitialStats(const GameStats& stats, int lives);
+        void SuspendGame();
+        void EndGame(Game* game, bool isGameOver);
+        int GetScore() const
+        {
+            return mPlayfield.GetScore();
+        }
+
         std::string GetName() const override
         {
             return "ArenaScene";
         }
 
     private:
-        std::string mRoundSetName;
-        uint8_t mRoundIndex;
+        const RoundEntry* mRoundEntry = nullptr;
+        bool mEnding = false;
 
         RoundSet* mRoundSet = nullptr;
         Playfield mPlayfield;
@@ -40,10 +51,8 @@ namespace nuvelocity::frs42
         std::string mCheatBuffer;
         bool mIsPaused = false;
 
-        bool LoadRoundSet(Game* game);
-        BrickLayout* LoadBrickLayout(Game* game);
         void PopulateBricks(Game* game, BrickLayout* layout);
-        void BuildLevelUI(Game* game, BrickLayout* layout);
+        void BuildLevelUI(Game* game, BrickLayout* layout, const RoundEntry* entry);
         BrickInfo* GetOrLoadBrickInfo(Game* game, const std::string& path);
         void ShowPauseMenu(Game* game);
         void ShowOptionsDialog(Game* game);

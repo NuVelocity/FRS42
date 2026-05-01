@@ -10,6 +10,12 @@ target_sources(
     PauseWindow.h
     NewGameOptionsWindow.cpp
     NewGameOptionsWindow.h
+    NewPlayerWindow.cpp
+    NewPlayerWindow.h
+    SelectPlayerWindow.cpp
+    SelectPlayerWindow.h
+    StatisticsWindow.cpp
+    StatisticsWindow.h
 )
 
 target_include_directories(
