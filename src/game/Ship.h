@@ -66,6 +66,8 @@ namespace nuvelocity::frs42
 
         void CycleShield(Game* game);
         const std::vector<SDL_FPoint>& GetCollisionPolygon() const;
+        const std::vector<SDL_FPoint>& GetShipCollisionPolygon() const;
+        SDL_FPoint GetShieldPosition() const;
         Sequence* GetBaseSequence() const
         {
             return mBaseSequence;
@@ -164,6 +166,7 @@ namespace nuvelocity::frs42
         SDL_FPoint mElectricShieldOffset2 = {15.0F, -15.0F};
 
         uint64_t mShieldDelayMs = 40;
+        std::vector<SDL_FPoint> mShipCollisionPolygon;
     };
 } // namespace nuvelocity::frs42
 

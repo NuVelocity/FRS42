@@ -49,60 +49,104 @@ namespace nuvelocity::frs42
         mThrustLeftSequence = game->mAsset->LoadSequence("Resources/Player Ship/Thrust Left");
         mThrustRightSequence = game->mAsset->LoadSequence("Resources/Player Ship/Thrust Right");
 
-        mAvailableShields = {
-            {.name = "Small Shield",
-             .sequencePath = "Resources/Player Ship/RS Small Shield",
-             .collisionPolygon = {{.x = -22, .y = -31}, {.x = -20, .y = -33}, {.x = 0, .y = -34},
-                                  {.x = 22, .y = -33},  {.x = 24, .y = -30},  {.x = 18, .y = -26},
-                                  {.x = 16, .y = -20},  {.x = 10, .y = -11},  {.x = 11, .y = -3},
-                                  {.x = 11, .y = 6},    {.x = 15, .y = 17},   {.x = 15, .y = 17},
-                                  {.x = 15, .y = 29},   {.x = 6, .y = 33},    {.x = -8, .y = 33},
-                                  {.x = -16, .y = 27},  {.x = -15, .y = 13},  {.x = -9, .y = 8},
-                                  {.x = -9, .y = -7},   {.x = -18, .y = -21}, {.x = -20, .y = -28},
-                                  {.x = -22, .y = -31}}},
-            {.name = "Small Shield 2",
-             .sequencePath = "Resources/Player Ship/RS Small Shield 2",
-             .collisionPolygon = {{.x = -31, .y = -30}, {.x = -26, .y = -33}, {.x = 0, .y = -34},
-                                  {.x = 28, .y = -33},  {.x = 31, .y = -30},  {.x = 26, .y = -25},
-                                  {.x = 24, .y = -18},  {.x = 10, .y = -11},  {.x = 11, .y = -3},
-                                  {.x = 11, .y = 6},    {.x = 15, .y = 17},   {.x = 15, .y = 17},
-                                  {.x = 15, .y = 29},   {.x = 6, .y = 33},    {.x = -8, .y = 33},
-                                  {.x = -16, .y = 27},  {.x = -15, .y = 13},  {.x = -9, .y = 8},
-                                  {.x = -9, .y = -7},   {.x = -24, .y = -21}, {.x = -26, .y = -26},
-                                  {.x = -31, .y = -30}}},
-            {.name = "Normal Shield",
-             .sequencePath = "Resources/Player Ship/RS Normal Shield",
-             .collisionPolygon = {{.x = -45, .y = -15}, {.x = -31, .y = -27}, {.x = -8, .y = -33},
-                                  {.x = 16, .y = -31},  {.x = 32, .y = -26},  {.x = 42, .y = -17},
-                                  {.x = 43, .y = -12},  {.x = 40, .y = -9},   {.x = 24, .y = -19},
-                                  {.x = 17, .y = -18},  {.x = 10, .y = -6},   {.x = 11, .y = 6},
-                                  {.x = 15, .y = 17},   {.x = 15, .y = 17},   {.x = 15, .y = 29},
-                                  {.x = 6, .y = 33},    {.x = -8, .y = 33},   {.x = -16, .y = 27},
-                                  {.x = -15, .y = 13},  {.x = -9, .y = 8},    {.x = -9, .y = -7},
-                                  {.x = -19, .y = -18}, {.x = -30, .y = -16}, {.x = -40, .y = -11},
-                                  {.x = -44, .y = -12}, {.x = -45, .y = -15}}},
-            {.name = "Long Shield",
-             .sequencePath = "Resources/Player Ship/RS Long Shield",
-             .collisionPolygon = {{.x = -51, .y = -15}, {.x = -32, .y = -29}, {.x = -1, .y = -33},
-                                  {.x = 23, .y = -32},  {.x = 39, .y = -27},  {.x = 52, .y = -15},
-                                  {.x = 46, .y = -11},  {.x = 34, .y = -17},  {.x = 24, .y = -19},
-                                  {.x = 17, .y = -18},  {.x = 10, .y = -6},   {.x = 11, .y = 6},
-                                  {.x = 15, .y = 17},   {.x = 15, .y = 17},   {.x = 15, .y = 29},
-                                  {.x = 6, .y = 33},    {.x = -8, .y = 33},   {.x = -16, .y = 27},
-                                  {.x = -15, .y = 13},  {.x = -9, .y = 8},    {.x = -9, .y = -7},
-                                  {.x = -23, .y = -20}, {.x = -36, .y = -16}, {.x = -42, .y = -12},
-                                  {.x = -46, .y = -10}, {.x = -51, .y = -15}}},
-            {.name = "Biggest Shield",
-             .sequencePath = "Resources/Player Ship/RS Biggest Shield",
-             .collisionPolygon = {{.x = -63, .y = -16}, {.x = -41, .y = -30}, {.x = -1, .y = -33},
-                                  {.x = 33, .y = -31},  {.x = 46, .y = -27},  {.x = 61, .y = -17},
-                                  {.x = 57, .y = -12},  {.x = 40, .y = -19},  {.x = 24, .y = -19},
-                                  {.x = 17, .y = -18},  {.x = 10, .y = -6},   {.x = 11, .y = 6},
-                                  {.x = 15, .y = 17},   {.x = 15, .y = 17},   {.x = 15, .y = 29},
-                                  {.x = 6, .y = 33},    {.x = -8, .y = 33},   {.x = -16, .y = 27},
-                                  {.x = -15, .y = 13},  {.x = -9, .y = 8},    {.x = -9, .y = -7},
-                                  {.x = -23, .y = -20}, {.x = -40, .y = -19}, {.x = -54, .y = -14},
-                                  {.x = -60, .y = -12}, {.x = -63, .y = -16}}}};
+        mAvailableShields = {{.name = "Small Shield",
+                              .sequencePath = "Resources/Player Ship/RS Small Shield",
+                              .collisionPolygon = {{.x = -22, .y = -31},
+                                                   {.x = -20, .y = -33},
+                                                   {.x = 0, .y = -34},
+                                                   {.x = 22, .y = -33},
+                                                   {.x = 24, .y = -30},
+                                                   {.x = 18, .y = -26},
+                                                   {.x = 16, .y = -20},
+                                                   {.x = 10, .y = -11},
+                                                   {.x = -9, .y = -11},
+                                                   {.x = -18, .y = -21},
+                                                   {.x = -20, .y = -28},
+                                                   {.x = -22, .y = -31}}},
+                             {.name = "Small Shield 2",
+                              .sequencePath = "Resources/Player Ship/RS Small Shield 2",
+                              .collisionPolygon = {{.x = -31, .y = -30},
+                                                   {.x = -26, .y = -33},
+                                                   {.x = 0, .y = -34},
+                                                   {.x = 28, .y = -33},
+                                                   {.x = 31, .y = -30},
+                                                   {.x = 26, .y = -25},
+                                                   {.x = 24, .y = -18},
+                                                   {.x = 4, .y = -17},
+                                                   {.x = -5, .y = -17},
+                                                   {.x = -24, .y = -21},
+                                                   {.x = -26, .y = -26},
+                                                   {.x = -31, .y = -30}}},
+                             {.name = "Normal Shield",
+                              .sequencePath = "Resources/Player Ship/RS Normal Shield",
+                              .collisionPolygon = {{.x = -45, .y = -15},
+                                                   {.x = -31, .y = -27},
+                                                   {.x = -8, .y = -33},
+                                                   {.x = 16, .y = -31},
+                                                   {.x = 32, .y = -26},
+                                                   {.x = 42, .y = -17},
+                                                   {.x = 43, .y = -12},
+                                                   {.x = 40, .y = -9},
+                                                   {.x = 24, .y = -19},
+                                                   {.x = 17, .y = -18},
+                                                   {.x = 3, .y = -18},
+                                                   {.x = -6, .y = -18},
+                                                   {.x = -19, .y = -18},
+                                                   {.x = -30, .y = -16},
+                                                   {.x = -40, .y = -11},
+                                                   {.x = -44, .y = -12},
+                                                   {.x = -45, .y = -15}}},
+                             {.name = "Long Shield",
+                              .sequencePath = "Resources/Player Ship/RS Long Shield",
+                              .collisionPolygon = {{.x = -51, .y = -15},
+                                                   {.x = -32, .y = -29},
+                                                   {.x = -1, .y = -33},
+                                                   {.x = 23, .y = -32},
+                                                   {.x = 39, .y = -27},
+                                                   {.x = 52, .y = -15},
+                                                   {.x = 46, .y = -11},
+                                                   {.x = 34, .y = -17},
+                                                   {.x = 24, .y = -19},
+                                                   {.x = 17, .y = -18},
+                                                   {.x = 4, .y = -18},
+                                                   {.x = -4, .y = -20},
+                                                   {.x = -23, .y = -20},
+                                                   {.x = -36, .y = -16},
+                                                   {.x = -42, .y = -12},
+                                                   {.x = -46, .y = -10},
+                                                   {.x = -51, .y = -15}}},
+                             {.name = "Biggest Shield",
+                              .sequencePath = "Resources/Player Ship/RS Biggest Shield",
+                              .collisionPolygon = {{.x = -63, .y = -16},
+                                                   {.x = -41, .y = -30},
+                                                   {.x = -1, .y = -33},
+                                                   {.x = 33, .y = -31},
+                                                   {.x = 46, .y = -27},
+                                                   {.x = 61, .y = -17},
+                                                   {.x = 57, .y = -12},
+                                                   {.x = 40, .y = -19},
+                                                   {.x = 24, .y = -19},
+                                                   {.x = 17, .y = -18},
+                                                   {.x = 4, .y = -19},
+                                                   {.x = -4, .y = -19},
+                                                   {.x = -23, .y = -20},
+                                                   {.x = -40, .y = -19},
+                                                   {.x = -54, .y = -14},
+                                                   {.x = -60, .y = -12},
+                                                   {.x = -63, .y = -16}}}};
+
+        mShipCollisionPolygon = {{.x = 0, .y = -14},
+                                 {.x = 8, .y = -9},
+                                 {.x = 11, .y = 6},
+                                 {.x = 15, .y = 17},
+                                 {.x = 15, .y = 17},
+                                 {.x = 15, .y = 29},
+                                 {.x = 6, .y = 33},
+                                 {.x = -8, .y = 33},
+                                 {.x = -16, .y = 27},
+                                 {.x = -15, .y = 13},
+                                 {.x = -9, .y = 8},
+                                 {.x = -9, .y = -7}};
 
         for (auto& shield : mAvailableShields)
         {
@@ -215,7 +259,7 @@ namespace nuvelocity::frs42
         float dt = game->GetDeltaTime();
         if (mMouseControlEnabled)
         {
-            mPosition.x = static_cast<float>(mousePos.x);
+            SetPosition({static_cast<float>(mousePos.x), mPosition.y});
         }
 
         mPosition.y = mTargetY;
@@ -560,5 +604,19 @@ namespace nuvelocity::frs42
             return empty;
         }
         return mAvailableShields[mCurrentShieldIndex].collisionPolygon;
+    }
+
+    const std::vector<SDL_FPoint>& Ship::GetShipCollisionPolygon() const
+    {
+        return mShipCollisionPolygon;
+    }
+
+    SDL_FPoint Ship::GetShieldPosition() const
+    {
+        if (mPositionHistory.empty())
+        {
+            return mPosition;
+        }
+        return {mPositionHistory.front().position.x, mPosition.y};
     }
 } // namespace nuvelocity::frs42
