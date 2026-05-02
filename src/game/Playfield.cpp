@@ -156,19 +156,24 @@ namespace nuvelocity::frs42
             return;
         }
 
+        SpawnNormalBall(game);
+    }
+
+    void Playfield::SpawnNormalBall(nuvelocity::Game* game)
+    {
         float baseSpeed = 268.6F;
         int diff = mGameStats.mLevelOfDifficulty;
         if (diff == 0)
         {
-            baseSpeed *= 0.8F;
+            baseSpeed *= 0.63F;
         }
         else if (diff == 2)
         {
-            baseSpeed *= 1.2F;
+            baseSpeed *= 1.27F;
         }
         else if (diff == 3)
         {
-            baseSpeed *= 1.5F;
+            baseSpeed *= 1.62F;
         }
 
         auto ball = std::make_unique<Ball>();
@@ -1091,15 +1096,8 @@ namespace nuvelocity::frs42
             mShip->SetWeapon(game, WeaponType::None);
             mShip->SetCatchMode(false);
             mShip->SetExploded(false);
-            auto newBall = std::make_unique<Ball>();
-            newBall->SetPlayfield(this);
-            newBall->SetDirection({0.371F, -0.928F});
-            newBall->AttachSequence(game);
-            newBall->SetIsAttached(true);
-            newBall->SetIsAttachedToShield(true);
-            newBall->SetAttachmentOffset({20.0F, -38.0F});
-            mBalls.push_back(std::move(newBall));
-            mBallWaitingForRelease = true;
+
+            SpawnNormalBall(game);
         }
     }
 

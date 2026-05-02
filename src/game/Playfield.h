@@ -81,6 +81,8 @@ namespace nuvelocity::frs42
 
         void Reset(Game* game);
 
+        void SpawnNormalBall(Game* game);
+
         void SetIsStandAlone(bool isMainMenu)
         {
             mIsStandAlone = isMainMenu;
