@@ -50,6 +50,34 @@ namespace nuvelocity::frs42
         {
             return mDirection;
         }
+        int GetRange1() const
+        {
+            return mRange1;
+        }
+        int GetRange2() const
+        {
+            return mRange2;
+        }
+        const std::string& GetForcePowerUp() const
+        {
+            return mForcePowerUp;
+        }
+        const std::string& GetBrickToChangeFrom() const
+        {
+            return mBrickToChangeFrom;
+        }
+        const std::string& GetBrickToChangeTo() const
+        {
+            return mBrickToChangeTo;
+        }
+        bool GetCanMoveThroughOtherBricks() const
+        {
+            return mCanMoveThroughOtherBricks;
+        }
+        const std::string& GetBrickToLookLike() const
+        {
+            return mBrickToLookLike;
+        }
 
     private:
         int mPositionX;
