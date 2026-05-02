@@ -1193,30 +1193,63 @@ namespace nuvelocity::frs42
             if (mShip)
             {
                 SDL_FPoint shieldPos = mShip->GetShieldPosition();
+                float preCollisionSpeed = ball->GetSpeed();
 
                 if (MathUtils::ResolveCirclePolygonCollision(
                         mShip->GetCollisionPolygon(), shieldPos, pos, radius, vel))
                 {
+                    // Calculate new direction based on where it hit the shield.
+                    const auto& poly = mShip->GetCollisionPolygon();
+                    float minX = 0.0F, maxX = 0.0F;
+                    for (const auto& p : poly)
+                    {
+                        minX = std::min(minX, p.x);
+                        maxX = std::max(maxX, p.x);
+                    }
+                    float halfWidth = std::max(std::abs(minX), std::abs(maxX));
+                    if (halfWidth < 1.0F)
+                    {
+                        halfWidth = 45.0F;
+                    }
+
+                    float relX = (pos.x - shieldPos.x) / halfWidth;
+                    // Allow a bit of extra angle at edges
+                    relX = std::clamp(relX, -1.1F, 1.1F);
+
+                    SDL_FPoint dir;
+                    // Max horizontal angle
+                    dir.x = relX * 0.85F;
+                    dir.y = -std::sqrt(std::max(0.0F, 1.0F - dir.x * dir.x));
+
                     ball->SetIsTrapped(false);
-                    ball->SetVelocity(vel);
+                    ball->SetDirection(dir);
+                    ball->SetSpeed(preCollisionSpeed);
+
+                    if (mShip->GetCatchMode() && !mBallWaitingForRelease)
+                    {
+                        ball->SetPosition(pos);
+                        game->mAudio->PlaySfx("Bounce.ogg");
+                        mShip->ImpactRecoil();
+                        ApplyBallSpeedUp(ball, pos, false);
+
+                        mBallWaitingForRelease = true;
+                        ball->SetIsAttached(true);
+                        ball->SetIsAttachedToShield(true);
+                        ball->SetAttachmentOffset({pos.x - shieldPos.x, pos.y - shieldPos.y});
+
+                        return;
+                    }
+
                     ball->SetPosition(pos);
                     game->mAudio->PlaySfx("Bounce.ogg");
                     mShip->ImpactRecoil();
                     ApplyBallSpeedUp(ball, pos, false);
 
-                    float angle = std::atan2(vel.y, vel.x);
+                    float angle = std::atan2(ball->GetVelocity().y, ball->GetVelocity().x);
                     std::string pgen = ball->IsSmall()
                                            ? "Particle Generators/Bouce/Ball Hit Ship Small"
                                            : "Particle Generators/Bouce/Ball Hit Ship";
                     SpawnParticleBurst(game, pgen, pos, angle);
-
-                    if (mShip->GetCatchMode() && !mBallWaitingForRelease)
-                    {
-                        mBallWaitingForRelease = true;
-                        ball->SetIsAttached(true);
-                        ball->SetIsAttachedToShield(true);
-                        ball->SetAttachmentOffset({pos.x - shieldPos.x, pos.y - shieldPos.y});
-                    }
                 }
             }
 
