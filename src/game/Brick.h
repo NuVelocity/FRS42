@@ -60,6 +60,7 @@ namespace nuvelocity::frs42
         std::vector<SDL_FPoint> GetCollisionPolygon() const override;
 
         void OnHit(Game* game, const SDL_Rect& bounds) override;
+        void OnDestroy(Game* game, const SDL_Rect& bounds);
 
         static bool IsIndestructibleType(BrickType type);
 

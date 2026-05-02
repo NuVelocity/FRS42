@@ -364,59 +364,71 @@ namespace nuvelocity::frs42
         // Destruction trigger
         if (mHitsRemaining <= 0)
         {
-            mIsDestroyed = true;
-            mIsPlayingDestroyedAnimation = true;
-            if (mInfo->GetDestroyedSoundPath() != "!None")
+            OnDestroy(game, bounds);
+        }
+    }
+
+    void Brick::OnDestroy(Game* game, const SDL_Rect& bounds)
+    {
+        mHitsRemaining = 0;
+        mIsDestroyed = true;
+        mIsPlayingDestroyedAnimation = true;
+
+        if (mInfo == nullptr)
+        {
+            return;
+        }
+
+        BrickType type = mInfo->GetBrickType();
+
+        if (mInfo->GetDestroyedSoundPath() != "!None")
+        {
+            game->mAudio->PlaySfx(mInfo->GetDestroyedSoundPath());
+        }
+
+        if (mInfo->GetDestroyedSeqPath() != "!None")
+        {
+            mDestroyedSequence =
+                game->mAsset->LoadSequence("Resources/Effects/" + mInfo->GetDestroyedSeqPath());
+            mAnimationStartTick = SDL_GetTicks();
+        }
+
+        if (mPlayfield != nullptr)
+        {
+            if (mInfo->GetBreakParticleGen() != nullptr)
             {
-                game->mAudio->PlaySfx(mInfo->GetDestroyedSoundPath());
+                mPlayfield->SpawnParticleBurst(
+                    mInfo->GetBreakParticleGen(), GetPosition(), &mInfo->GetBreakParticleTypes());
             }
 
-            if (mInfo->GetDestroyedSeqPath() != "!None")
+            if (mIsCompleted)
             {
-                mDestroyedSequence =
-                    game->mAsset->LoadSequence("Resources/Effects/" + mInfo->GetDestroyedSeqPath());
-                mAnimationStartTick = SDL_GetTicks();
+                return;
             }
 
-            if (mPlayfield != nullptr)
+            mPlayfield->AddScore(mInfo->GetScoreValue());
+            if (mBrickToLookLike != "Bricks/!None")
             {
-                if (mInfo->GetBreakParticleGen() != nullptr)
-                {
-                    mPlayfield->SpawnParticleBurst(mInfo->GetBreakParticleGen(),
-                                                   GetPosition(),
-                                                   &mInfo->GetBreakParticleTypes());
-                }
-
-                if (mIsCompleted)
-                {
-                    return;
-                }
-
-                mPlayfield->AddScore(mInfo->GetScoreValue());
-                if (mBrickToLookLike != "Bricks/!None")
-                {
-                    mPlayfield->TriggerChainReaction(
-                        game, this, mBrickToLookLike, mBrickToChangeTo);
-                }
-                if (mForcePowerUp != "No Power-Up")
-                {
-                    mPlayfield->SpawnPowerUp(
-                        game, GetPosition(), PowerUp::TypeFromString(mForcePowerUp));
-                }
-                else if (type == BrickType::PowerUp)
-                {
-                    mPlayfield->SpawnPowerUpAt(game, GetPosition());
-                }
-
-                if (type == BrickType::Exploding)
-                {
-                    mPlayfield->TriggerExplosion(game, this);
-                }
-
-                mPlayfield->GetGameStats().mBricksDestroyed++;
-
-                mIsCompleted = true;
+                mPlayfield->TriggerChainReaction(game, this, mBrickToLookLike, mBrickToChangeTo);
             }
+            if (mForcePowerUp != "No Power-Up")
+            {
+                mPlayfield->SpawnPowerUp(
+                    game, GetPosition(), PowerUp::TypeFromString(mForcePowerUp));
+            }
+            else if (type == BrickType::PowerUp)
+            {
+                mPlayfield->SpawnPowerUpAt(game, GetPosition());
+            }
+
+            if (type == BrickType::Exploding)
+            {
+                mPlayfield->TriggerExplosion(game, this);
+            }
+
+            mPlayfield->GetGameStats().mBricksDestroyed++;
+
+            mIsCompleted = true;
         }
     }
 

@@ -626,7 +626,7 @@ namespace nuvelocity::frs42
 
             if (next != nullptr && !next->IsDestroyed())
             {
-                next->OnHit(game, mBounds);
+                next->OnDestroy(game, mBounds);
             }
             mExplosionTimer = 0.05F;
         }
