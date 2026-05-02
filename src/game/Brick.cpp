@@ -206,6 +206,10 @@ namespace nuvelocity::frs42
         if (IsChangeBrick())
         {
             // XXX: RX does not clip the Change From sequence.
+            frameIndex = static_cast<std::size_t>((static_cast<double>(elapsed) *
+                                                   mChangeFromSequence->GetFramesPerSecond()) /
+                                                  1000.0) %
+                         mChangeFromSequence->GetFrameCount();
             game->mSpriteBatch->Draw(mChangeFromSequence, frameIndex, x, y);
 
             Frame* f = mChangeToSequence->GetFrame(frameIndex);
