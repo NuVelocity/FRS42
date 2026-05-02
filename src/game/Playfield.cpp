@@ -1123,28 +1123,13 @@ namespace nuvelocity::frs42
             pos = ball->GetPosition();
             vel = ball->GetVelocity();
 
-            // Ship collision
+            // Ship shield collision
             if (mShip && vel.y > 0)
             {
                 SDL_FPoint shieldPos = mShip->GetShieldPosition();
-                SDL_FPoint shipPos = mShip->GetPosition();
-                bool collided = false;
-                bool hitShield = false;
 
                 if (MathUtils::ResolveCirclePolygonCollision(
                         mShip->GetCollisionPolygon(), shieldPos, pos, radius, vel))
-                {
-                    collided = true;
-                    hitShield = true;
-                }
-                else if (MathUtils::ResolveCirclePolygonCollision(
-                             mShip->GetShipCollisionPolygon(), shipPos, pos, radius, vel))
-                {
-                    collided = true;
-                    hitShield = false;
-                }
-
-                if (collided)
                 {
                     ball->SetIsTrapped(false);
                     ball->SetVelocity(vel);
@@ -1163,9 +1148,8 @@ namespace nuvelocity::frs42
                     {
                         mBallWaitingForRelease = true;
                         ball->SetIsAttached(true);
-                        ball->SetIsAttachedToShield(hitShield);
-                        SDL_FPoint parentPos = hitShield ? shieldPos : shipPos;
-                        ball->SetAttachmentOffset({pos.x - parentPos.x, pos.y - parentPos.y});
+                        ball->SetIsAttachedToShield(true);
+                        ball->SetAttachmentOffset({pos.x - shieldPos.x, pos.y - shieldPos.y});
                     }
                 }
             }
