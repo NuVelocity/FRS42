@@ -129,15 +129,12 @@ namespace nuvelocity::frs42
         // Populate bricks from grid
         Frame* frame = layout->GetLayout();
         const auto& palette = layout->GetBrickPalette();
-        SDL_Log(
-            "Layout frame: %p, Palette size: %zu", reinterpret_cast<void*>(frame), palette.size());
 
         int bricksLoaded = 0;
         if (frame != nullptr)
         {
             int rows = frame->GetHeight();
             int cols = frame->GetWidth();
-            SDL_Log("Grid dimensions: %dx%d", cols, rows);
 
             for (int y = 0; y < rows; ++y)
             {
@@ -145,51 +142,55 @@ namespace nuvelocity::frs42
                 {
                     uint32_t pixel = frame->GetPixel(x, y);
                     uint8_t index = pixel & 0xFF;
-                    if (index > 0 && index < palette.size())
+                    if (index == 0)
                     {
-                        std::string brickPath = "Resources/" + palette[index];
-                        BrickInfo* info = GetOrLoadBrickInfo(game, brickPath);
-                        if (info != nullptr)
+                        continue;
+                    }
+
+                    std::string brickPath = "Resources/" + palette[index];
+                    BrickInfo* info = GetOrLoadBrickInfo(game, brickPath);
+                    if (info == nullptr)
+                    {
+                        SDL_LogWarn(NVE_LOG_CATEGORY_ASSETS,
+                                    "Failed to load brick info for path: %s",
+                                    brickPath.c_str());
+                        continue;
+                    }
+
+                    if (info->GetBrickType() == BrickType::TrappedBall)
+                    {
+                        auto ball = std::make_unique<Ball>();
+                        ball->AttachSequence(game);
+                        if (info->GetPrimarySequencePath() != "!None")
                         {
-                            if (info->GetBrickType() == BrickType::TrappedBall)
-                            {
-                                auto ball = std::make_unique<Ball>();
-                                ball->AttachSequence(game);
-                                if (info->GetPrimarySequencePath() != "!None")
-                                {
-                                    ball->SetTrappedSequence(game->mAsset->LoadSequence(
-                                        "Resources/" + info->GetPrimarySequencePath()));
-                                }
-                                ball->SetPosition(
-                                    {.x = static_cast<float>(mPlayfieldRect.x + 4 + x * 32),
-                                     .y = static_cast<float>(mPlayfieldRect.y + y * 18)});
-                                ball->SetIsTrapped(true);
-                                ball->SetPlayfield(&mPlayfield);
-
-                                std::uniform_real_distribution<float> angleDis(0, 2.0F * 3.14159F);
-                                float angle = angleDis(gGen);
-                                ball->SetVelocity(
-                                    {std::cos(angle) * 200.0F, std::sin(angle) * 200.0F});
-
-                                mPlayfield.AddBall(std::move(ball));
-                            }
-                            else
-                            {
-                                auto brick = std::make_unique<Brick>();
-                                brick->AttachBrickInfo(game, info);
-                                brick->SetPosition(
-                                    {.x = static_cast<float>(mPlayfieldRect.x + 4 + x * 32),
-                                     .y = static_cast<float>(mPlayfieldRect.y + y * 18)});
-
-                                brick->SetBrickInfoPath(palette[index]);
-
-                                brick->SetAnimationStartTick(SDL_GetTicks() - (gGen() % 5000));
-
-                                brick->SetPlayfield(&mPlayfield);
-                                mPlayfield.AddCollidable(std::move(brick));
-                                bricksLoaded++;
-                            }
+                            ball->SetTrappedSequence(game->mAsset->LoadSequence(
+                                "Resources/" + info->GetPrimarySequencePath()));
                         }
+                        ball->SetPosition({.x = static_cast<float>(mPlayfieldRect.x + 4 + x * 32),
+                                           .y = static_cast<float>(mPlayfieldRect.y + y * 18)});
+                        ball->SetIsTrapped(true);
+                        ball->SetPlayfield(&mPlayfield);
+
+                        std::uniform_real_distribution<float> angleDis(0, 2.0F * 3.14159F);
+                        float angle = angleDis(gGen);
+                        ball->SetVelocity({std::cos(angle) * 200.0F, std::sin(angle) * 200.0F});
+
+                        mPlayfield.AddBall(std::move(ball));
+                    }
+                    else
+                    {
+                        auto brick = std::make_unique<Brick>();
+                        brick->AttachBrickInfo(game, info);
+                        brick->SetPosition({.x = static_cast<float>(mPlayfieldRect.x + 4 + x * 32),
+                                            .y = static_cast<float>(mPlayfieldRect.y + y * 18)});
+
+                        brick->SetBrickInfoPath(palette[index]);
+
+                        brick->SetAnimationStartTick(SDL_GetTicks() - (gGen() % 5000));
+
+                        brick->SetPlayfield(&mPlayfield);
+                        mPlayfield.AddCollidable(std::move(brick));
+                        bricksLoaded++;
                     }
                 }
             }
