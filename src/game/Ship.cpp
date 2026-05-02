@@ -433,7 +433,20 @@ namespace nuvelocity::frs42
 
         if (mIsExploded)
         {
-            drawAnimated(mExplodeSequence, drawPos);
+            if (mExplodeSequence != nullptr)
+            {
+                const uint64_t now = SDL_GetTicks();
+                const uint64_t elapsed = now - mStartTick;
+                const float fps = mExplodeSequence->GetFramesPerSecond();
+                const std::size_t frameCount = mExplodeSequence->GetFrameCount();
+                std::size_t frameIndex =
+                    static_cast<std::size_t>((static_cast<double>(elapsed) * fps) / 1000.0);
+                if (frameIndex >= frameCount)
+                {
+                    frameIndex = frameCount - 1;
+                }
+                drawFrame(mExplodeSequence, drawPos, static_cast<int>(frameIndex));
+            }
             return;
         }
 

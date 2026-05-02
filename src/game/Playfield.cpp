@@ -919,7 +919,7 @@ namespace nuvelocity::frs42
             // Ship-Bomb
             SDL_FPoint bombPos = bomb->GetPosition();
             SDL_FPoint bombVel = {0, 0};
-            if (mShip && !bomb->IsDead() &&
+            if (mShip && !mShip->IsExploded() && !bomb->IsDead() &&
                 MathUtils::ResolveCirclePolygonCollision(
                     mShip->GetCollisionPolygon(), mShip->GetPosition(), bombPos, 10.0F, bombVel))
             {
@@ -927,12 +927,33 @@ namespace nuvelocity::frs42
                 game->mAudio->PlaySfx("Ship EXPLODE.ogg");
                 if (mMegovision)
                 {
-                    auto label = std::make_unique<Label>("Ship Destroyed", "Megovision");
+                    auto label = std::make_unique<Label>("Bomb", "Megovision");
                     label->SetWrap(true);
-                    mMegovision->ShowMessage(std::move(label), 1.5F, false);
+                    mMegovision->ShowMessage(std::move(label), 5.0F, false);
                 }
                 mShip->Explode(game);
-                HandleBallOut(game); // Lose a life
+
+                // Automatically release any attached balls
+                if (mBallWaitingForRelease)
+                {
+                    mBallWaitingForRelease = false;
+                    for (auto& ball : mBalls)
+                    {
+                        if (ball->IsAttached())
+                        {
+                            ball->SetIsAttached(false);
+                            ball->SetIsAttachedToShield(false);
+                            // Ensure it's moving up if it was caught while moving down (unlikely
+                            // but safe)
+                            SDL_FPoint v = ball->GetVelocity();
+                            if (v.y > 0)
+                            {
+                                v.y = -v.y;
+                                ball->SetVelocity(v);
+                            }
+                        }
+                    }
+                }
             }
         }
         std::erase_if(mBombs, [](const auto& b) { return b->IsDead(); });
@@ -1066,6 +1087,7 @@ namespace nuvelocity::frs42
             mShip->SetShieldSize(game, 2); // Reset to Normal Shield
             mShip->SetWeapon(game, WeaponType::None);
             mShip->SetCatchMode(false);
+            mShip->SetExploded(false);
             auto newBall = std::make_unique<Ball>();
             newBall->SetPlayfield(this);
             newBall->SetDirection({0.371F, -0.928F});
@@ -1190,7 +1212,7 @@ namespace nuvelocity::frs42
             vel = ball->GetVelocity();
 
             // Ship shield collision
-            if (mShip)
+            if (mShip && !mShip->IsExploded())
             {
                 SDL_FPoint shieldPos = mShip->GetShieldPosition();
                 float preCollisionSpeed = ball->GetSpeed();

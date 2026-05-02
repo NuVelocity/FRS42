@@ -94,6 +94,16 @@ namespace nuvelocity::frs42
         {
             return mCatchMode;
         }
+        
+        void SetExploded(bool exploded)
+        {
+            mIsExploded = exploded;
+        }
+
+        bool IsExploded() const
+        {
+            return mIsExploded;
+        }
 
         void SetShieldSize(Game* game, int sizeIndex);
 
