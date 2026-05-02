@@ -38,7 +38,10 @@ namespace nuvelocity::frs42
 
         void ApplyAttraction(Game* game, Ball* ball, const SDL_FPoint& mousePos) const;
 
-        void OnHit(Game* game, const SDL_Rect& bounds) override;
+        void OnHit(Game* game,
+                   const SDL_Rect& bounds,
+                   bool hitFromTop = false,
+                   bool ignoreDirection = true) override;
 
         void SetHovered(const bool hovered)
         {

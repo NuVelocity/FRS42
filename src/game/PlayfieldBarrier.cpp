@@ -154,9 +154,14 @@ namespace nuvelocity::frs42
         ball->SetVelocity(velocity);
     }
 
-    void PlayfieldBarrier::OnHit(Game* game, const SDL_Rect& bounds)
+    void PlayfieldBarrier::OnHit(Game* game,
+                                 const SDL_Rect& bounds,
+                                 bool hitFromTop,
+                                 bool ignoreDirection)
     {
         (void)bounds;
+        (void)hitFromTop;
+        (void)ignoreDirection;
         game->mAudio->PlaySfx("UI/Menu Ball Bounce.ogg");
     }
 } // namespace nuvelocity::frs42

@@ -247,9 +247,34 @@ namespace nuvelocity::frs42
         return GetInfo()->GetCollisionPolygon();
     }
 
-    void Brick::OnHit(Game* game, const SDL_Rect& bounds)
+    void Brick::OnHit(Game* game, const SDL_Rect& bounds, bool hitFromTop, bool ignoreDirection)
     {
+        if (mIsDestroyed || mIsPlayingDestroyedAnimation || mInfo == nullptr)
+        {
+            return;
+        }
+
         const BrickType type = mInfo->GetBrickType();
+
+        if (!ignoreDirection)
+        {
+            if (type == BrickType::IndestructibleTop && hitFromTop)
+            {
+                if (mInfo->GetIndestructibleSoundPath() != "!None")
+                {
+                    game->mAudio->PlaySfx(mInfo->GetIndestructibleSoundPath());
+                }
+                return;
+            }
+            if (type == BrickType::IndestructibleBottom && !hitFromTop)
+            {
+                if (mInfo->GetIndestructibleSoundPath() != "!None")
+                {
+                    game->mAudio->PlaySfx(mInfo->GetIndestructibleSoundPath());
+                }
+                return;
+            }
+        }
 
         const bool isIndestructible = IsIndestructibleType(type);
         if (isIndestructible)
@@ -264,10 +289,7 @@ namespace nuvelocity::frs42
                 type == BrickType::NudgeLeft || type == BrickType::NudgeRight)
             {
                 const auto poly = GetCollisionPolygon();
-                float minX = 0;
-                float maxX = 0;
-                float minY = 0;
-                float maxY = 0;
+                float minX = 0, maxX = 0, minY = 0, maxY = 0;
                 if (!poly.empty())
                 {
                     minX = maxX = poly[0].x;
@@ -339,8 +361,12 @@ namespace nuvelocity::frs42
                 game->mAudio->PlaySfx(mInfo->GetDamagedSoundPath());
             }
 
-            // Damage logic
             mHitsRemaining--;
+            if (mHitSequence != nullptr)
+            {
+                mSequence = mHitSequence;
+                mAnimationStartTick = SDL_GetTicks();
+            }
 
             // Visual updates for 3-hit bricks
             if (type == BrickType::ThreeHit || type == BrickType::ThreeHitBottom ||

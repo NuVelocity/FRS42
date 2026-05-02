@@ -59,7 +59,10 @@ namespace nuvelocity::frs42
 
         std::vector<SDL_FPoint> GetCollisionPolygon() const override;
 
-        void OnHit(Game* game, const SDL_Rect& bounds) override;
+        void OnHit(Game* game,
+                   const SDL_Rect& bounds,
+                   bool hitFromTop = false,
+                   bool ignoreDirection = true) override;
         void OnDestroy(Game* game, const SDL_Rect& bounds);
 
         static bool IsIndestructibleType(BrickType type);
@@ -128,6 +131,7 @@ namespace nuvelocity::frs42
     protected:
         const BrickInfo* mInfo = nullptr;
         Sequence* mSequence = nullptr;
+        Sequence* mHitSequence = nullptr;
         uint64_t mAnimationStartTick = 0;
         bool mIsDestroyed = false; // Set to true after destruction animation finishes.
         bool mIsCompleted = false;

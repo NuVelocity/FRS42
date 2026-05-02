@@ -1300,6 +1300,7 @@ namespace nuvelocity::frs42
         }
 
         // 1. Check if we collide with the collidable's polygon. If not, skip.
+        bool hitFromTop = (vel.y > 0);
         if (!MathUtils::ResolveCirclePolygonCollision(
                 collidable->GetCollisionPolygon(), collidable->GetPosition(), pos, radius, vel))
         {
@@ -1369,21 +1370,10 @@ namespace nuvelocity::frs42
                 brick->OnDestroy(game, mBounds);
             }
         }
-        // 4.3. Apply hit effects if it's not a trapped ball.
+        // 4.3. Apply hit effects.
         else
         {
-            collidable->OnHit(game, mBounds);
-            if (ball->GetType() == BallType::Fire)
-            {
-                if (!collidable->IsDestroyed())
-                {
-                    collidable->OnHit(game, mBounds);
-                }
-                if (!collidable->IsDestroyed())
-                {
-                    collidable->OnHit(game, mBounds);
-                }
-            }
+            collidable->OnHit(game, mBounds, hitFromTop, false);
         }
 
         // 5.1. If it's not destroyed, spawn ball hit brick particles.
