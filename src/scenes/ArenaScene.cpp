@@ -180,6 +180,8 @@ namespace nuvelocity::frs42
                                     {.x = static_cast<float>(mPlayfieldRect.x + 4 + x * 32),
                                      .y = static_cast<float>(mPlayfieldRect.y + y * 18)});
 
+                                brick->SetBrickInfoPath(palette[index]);
+
                                 brick->SetAnimationStartTick(SDL_GetTicks() - (gGen() % 5000));
 
                                 brick->SetPlayfield(&mPlayfield);
@@ -230,9 +232,30 @@ namespace nuvelocity::frs42
                     {
                         auto brick = std::make_unique<Brick>();
                         brick->AttachBrickInfo(game, info);
-                        brick->SetPosition(
+                        brick->SetBrickInfoPath(palette[pIdx]);
+                        brick->SetInitialPosition(
                             {.x = static_cast<float>(mPlayfieldRect.x + floatingBrick->GetX() + 4),
                              .y = static_cast<float>(mPlayfieldRect.y + floatingBrick->GetY())});
+
+                        brick->SetMovement(static_cast<float>(floatingBrick->GetSpeed()),
+                                           floatingBrick->GetRange1(),
+                                           floatingBrick->GetRange2(),
+                                           floatingBrick->GetDirection());
+
+                        brick->SetForcePowerUp(floatingBrick->GetForcePowerUp());
+                        brick->SetCanMoveThroughOtherBricks(
+                            floatingBrick->GetCanMoveThroughOtherBricks());
+
+                        const std::string& from = floatingBrick->GetBrickToChangeFrom();
+                        const std::string& to = floatingBrick->GetBrickToChangeTo();
+                        if (from != "Bricks/!None" && to != "Bricks/!None")
+                        {
+                            Sequence* fromSeq = game->mAsset->LoadSequence("Resources/" + from);
+                            Sequence* toSeq = game->mAsset->LoadSequence("Resources/" + to);
+                            brick->SetChangeBrickSequences(from, to, fromSeq, toSeq);
+                        }
+                        brick->SetBrickToLookLike(floatingBrick->GetBrickToLookLike());
+
                         brick->SetAnimationStartTick(SDL_GetTicks() - (gGen() % 5000));
                         brick->SetPlayfield(&mPlayfield);
                         mPlayfield.AddCollidable(std::move(brick));

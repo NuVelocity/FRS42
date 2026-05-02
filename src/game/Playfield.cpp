@@ -508,6 +508,51 @@ namespace nuvelocity::frs42
 
     void Playfield::Update(Game* game)
     {
+        mInfectionTimer -= game->GetDeltaTime();
+        if (mInfectionTimer <= 0.0F && !mInfectionQueue.empty())
+        {
+            PendingInfection next = mInfectionQueue.front();
+            mInfectionQueue.pop();
+
+            if (!next.target->IsDestroyed() && next.target->GetBrickInfoPath() == next.lookLike)
+            {
+                ChangeBrickType(game, next.target, next.changeTo);
+
+                // Add neighbors of this newly transformed brick
+                SDL_FPoint pos = next.target->GetPosition();
+                const float searchDistX = 34.0F;
+                const float searchDistY = 20.0F;
+
+                for (const auto& collidable : mCollidables)
+                {
+                    Brick* neighbor = dynamic_cast<Brick*>(collidable.get());
+                    if (!neighbor || neighbor->IsDestroyed() || mInfectedBricks.count(neighbor))
+                    {
+                        continue;
+                    }
+
+                    SDL_FPoint nPos = neighbor->GetPosition();
+                    float dx = std::abs(nPos.x - pos.x);
+                    float dy = std::abs(nPos.y - pos.y);
+
+                    if (dx <= searchDistX && dy <= searchDistY && (dx > 0.1F || dy > 0.1F))
+                    {
+                        if (neighbor->GetBrickInfoPath() == next.lookLike)
+                        {
+                            mInfectedBricks.insert(neighbor);
+                            mInfectionQueue.push({neighbor, next.lookLike, next.changeTo});
+                        }
+                    }
+                }
+            }
+            mInfectionTimer = 0.05F;
+        }
+
+        if (mInfectionQueue.empty() && !mInfectedBricks.empty())
+        {
+            mInfectedBricks.clear();
+        }
+
         const float deltaTime = game->GetDeltaTime();
 
         if (mIsGameOver)
@@ -1268,6 +1313,11 @@ namespace nuvelocity::frs42
             }
         }
 
+        SpawnPowerUp(game, pos, type);
+    }
+
+    void Playfield::SpawnPowerUp(Game* game, const SDL_FPoint& pos, PowerUpType type)
+    {
         std::string path = PowerUp::GetSequencePath(type);
         if (path.empty())
         {
@@ -1285,6 +1335,73 @@ namespace nuvelocity::frs42
         {
             auto pu = std::make_unique<PowerUp>(type, pos, seq);
             mPowerUps.push_back(std::move(pu));
+        }
+    }
+
+    void Playfield::TriggerChainReaction(Game* game,
+                                         Brick* source,
+                                         const std::string& lookLike,
+                                         const std::string& changeTo)
+    {
+        if (lookLike == "Bricks/!None" || changeTo == "Bricks/!None")
+        {
+            return;
+        }
+
+        // Search neighbors and add matching ones to queue
+        SDL_FPoint pos = source->GetPosition();
+        const float searchDistX = 34.0F;
+        const float searchDistY = 20.0F;
+
+        for (const auto& collidable : mCollidables)
+        {
+            Brick* neighbor = dynamic_cast<Brick*>(collidable.get());
+            if (!neighbor || neighbor->IsDestroyed() || mInfectedBricks.count(neighbor))
+            {
+                continue;
+            }
+
+            SDL_FPoint nPos = neighbor->GetPosition();
+            float dx = std::abs(nPos.x - pos.x);
+            float dy = std::abs(nPos.y - pos.y);
+
+            if (dx <= searchDistX && dy <= searchDistY && (dx > 0.1F || dy > 0.1F))
+            {
+                if (neighbor->GetBrickInfoPath() == lookLike)
+                {
+                    mInfectedBricks.insert(neighbor);
+                    mInfectionQueue.push({neighbor, lookLike, changeTo});
+                }
+            }
+        }
+    }
+
+    void Playfield::ChangeBrickType(Game* game, Brick* brick, const std::string& infoPath)
+    {
+        const BrickInfo* info =
+            static_cast<const BrickInfo*>(game->mAsset->LoadBrickInfo("Resources/" + infoPath));
+        if (info)
+        {
+            brick->AttachBrickInfo(game, info);
+            brick->SetBrickInfoPath(infoPath);
+
+            // Ensure particle gen and types are loaded/resolved (Logic from
+            // ArenaScene::GetOrLoadBrickInfo)
+            BrickInfo* mutableInfo = const_cast<BrickInfo*>(info);
+            if (mutableInfo->GetBreakParticleGen() == nullptr &&
+                mutableInfo->GetBreakParticleGenPath() != "!None")
+            {
+                mutableInfo->SetBreakParticleGen(game->mAsset->LoadParticleGeneratorInfo(
+                    "Resources/Effects/" + mutableInfo->GetBreakParticleGenPath()));
+
+                for (auto* pt : mutableInfo->GetBreakParticleTypes())
+                {
+                    pt->SetSequence(game->mAsset->ResolveParticleSequence(pt->GetParticleType()));
+                }
+            }
+
+            SpawnParticleBurst(
+                game, "Particle Generators/Bricks/Brick Change Type", brick->GetPosition());
         }
     }
 

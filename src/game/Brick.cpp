@@ -5,12 +5,33 @@
 #include <Game.h>
 #include <Sequence.h>
 #include <cmath>
+#include <numbers>
 #include <system/AssetManager.h>
 #include <system/AudioManager.h>
 #include <system/SpriteBatch.h>
 
 namespace nuvelocity::frs42
 {
+    SDL_FRect Brick::GetCollidableBounds(Collidable2D* c)
+    {
+        const auto& poly = c->GetCollisionPolygon();
+        const auto pos = c->GetPosition();
+        if (poly.empty())
+        {
+            return SDL_FRect{pos.x, pos.y, 0, 0};
+        }
+        float minX = poly[0].x, maxX = poly[0].x;
+        float minY = poly[0].y, maxY = poly[0].y;
+        for (const auto& p : poly)
+        {
+            minX = std::min(minX, p.x);
+            maxX = std::max(maxX, p.x);
+            minY = std::min(minY, p.y);
+            maxY = std::max(maxY, p.y);
+        }
+        return SDL_FRect{pos.x + minX, pos.y + minY, maxX - minX, maxY - minY};
+    }
+
     void Brick::AttachBrickInfo(Game* game, const BrickInfo* info)
     {
         mInfo = info;
@@ -51,7 +72,12 @@ namespace nuvelocity::frs42
 
     void Brick::Update(Game* game)
     {
-        (void)game;
+        UpdateBrickMovement(game);
+        UpdateBrickDestroyed();
+    }
+
+    void Brick::UpdateBrickDestroyed()
+    {
         if (mIsPlayingDestroyedAnimation && mDestroyedSequence != nullptr)
         {
             const uint64_t now = SDL_GetTicks();
@@ -75,6 +101,66 @@ namespace nuvelocity::frs42
         }
     }
 
+    void Brick::UpdateBrickMovement(nuvelocity::Game* game)
+    {
+        if (mSpeed <= 0.0F)
+        {
+            return;
+        }
+
+        const float rad = static_cast<float>(mDirection) * std::numbers::pi_v<float> / 180.0F;
+        const SDL_FPoint unit = {std::cos(rad), std::sin(rad)};
+        const SDL_FPoint t1 = {mInitialPosition.x - (static_cast<float>(mRange1) * unit.x),
+                               mInitialPosition.y - (static_cast<float>(mRange1) * unit.y)};
+        const SDL_FPoint t2 = {t1.x + (static_cast<float>(mRange1 + mRange2) * unit.x),
+                               t1.y + (static_cast<float>(mRange1 + mRange2) * unit.y)};
+
+        const SDL_FPoint target = (mMoveTarget == 1) ? t1 : t2;
+        const float dx = target.x - mPosition.x;
+        const float dy = target.y - mPosition.y;
+        const float dist = std::sqrt(dx * dx + dy * dy);
+        const float moveStep = mSpeed * game->GetDeltaTime();
+
+        if (dist <= moveStep)
+        {
+            mPosition = target;
+            mMoveTarget = (mMoveTarget == 1) ? 2 : 1;
+        }
+        else if (dist > 0.001F)
+        {
+            const SDL_FPoint oldPos = mPosition;
+            mPosition.x += (dx / dist) * moveStep;
+            mPosition.y += (dy / dist) * moveStep;
+
+            // Collision check with other bricks
+            if (!mCanMoveThroughOtherBricks && mPlayfield != nullptr)
+            {
+                const SDL_FRect r1 = Brick::GetCollidableBounds(this);
+                bool collided = false;
+                for (const auto& other : mPlayfield->GetCollidables())
+                {
+                    if (other.get() == this || other->IsDestroyed())
+                    {
+                        continue;
+                    }
+
+                    const SDL_FRect r2 = Brick::GetCollidableBounds(other.get());
+                    if (r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h &&
+                        r1.y + r1.h > r2.y)
+                    {
+                        collided = true;
+                        break;
+                    }
+                }
+
+                if (collided)
+                {
+                    mPosition = oldPos;
+                }
+            }
+        }
+    }
+
     void Brick::Draw(Game* game)
     {
         Collidable2D::Draw(game);
@@ -85,38 +171,64 @@ namespace nuvelocity::frs42
         }
 
         Sequence* seqToDraw = mIsPlayingDestroyedAnimation ? mDestroyedSequence : mSequence;
-        if (game->mSpriteBatch != nullptr && seqToDraw != nullptr)
+        if (game->mSpriteBatch == nullptr || seqToDraw == nullptr)
         {
-            const std::size_t frameCount = seqToDraw->GetFrameCount();
-            if (frameCount == 0)
+            return;
+        }
+
+        const std::size_t frameCount = seqToDraw->GetFrameCount();
+        if (frameCount == 0)
+        {
+            return;
+        }
+
+        const uint64_t now = SDL_GetTicks();
+        const uint64_t elapsed = now - mAnimationStartTick;
+        const float fps = seqToDraw->GetFramesPerSecond();
+
+        std::size_t frameIndex = 0;
+        if (mIsPlayingDestroyedAnimation)
+        {
+            frameIndex = static_cast<std::size_t>((static_cast<double>(elapsed) * fps) / 1000.0);
+            if (frameIndex >= frameCount)
             {
-                return;
+                frameIndex = frameCount - 1;
             }
+            return;
+        }
 
-            const uint64_t now = SDL_GetTicks();
-            const uint64_t elapsed = now - mAnimationStartTick;
-            const float fps = seqToDraw->GetFramesPerSecond();
+        frameIndex =
+            static_cast<std::size_t>((static_cast<double>(elapsed) * fps) / 1000.0) % frameCount;
 
-            std::size_t frameIndex = 0;
-            if (mIsPlayingDestroyedAnimation)
-            {
-                frameIndex =
-                    static_cast<std::size_t>((static_cast<double>(elapsed) * fps) / 1000.0);
-                if (frameIndex >= frameCount)
-                {
-                    frameIndex = frameCount - 1;
-                }
-            }
-            else
-            {
-                frameIndex =
-                    static_cast<std::size_t>((static_cast<double>(elapsed) * fps) / 1000.0) %
-                    frameCount;
-            }
+        int x = static_cast<int>(GetPosition().x);
+        int y = static_cast<int>(GetPosition().y);
 
-            int x = static_cast<int>(GetPosition().x);
-            int y = static_cast<int>(GetPosition().y);
+        if (IsChangeBrick())
+        {
+            // XXX: RX does not clip the Change From sequence.
+            game->mSpriteBatch->Draw(mChangeFromSequence, frameIndex, x, y);
 
+            Frame* f = mChangeToSequence->GetFrame(frameIndex);
+            int changeToX = x + f->GetHotSpot().x;
+            int changeToY = y + f->GetHotSpot().y;
+            int changeWidth = f->GetWidth();
+            int changeHeight = f->GetHeight();
+            const SDL_Rect clipRight = {.x = changeToX + changeWidth / 2,
+                                        .y = changeToY,
+                                        .w = changeWidth - (changeWidth / 2),
+                                        .h = changeHeight};
+            game->mSpriteBatch->SetClipRect(&clipRight);
+            frameIndex = static_cast<std::size_t>((static_cast<double>(elapsed) *
+                                                   mChangeToSequence->GetFramesPerSecond()) /
+                                                  1000.0) %
+                         mChangeToSequence->GetFrameCount();
+
+            game->mSpriteBatch->Draw(mChangeToSequence, frameIndex, x, y);
+
+            game->mSpriteBatch->SetClipRect(nullptr);
+        }
+        else
+        {
             game->mSpriteBatch->Draw(seqToDraw, frameIndex, x, y);
         }
     }
@@ -277,7 +389,17 @@ namespace nuvelocity::frs42
                 }
 
                 mPlayfield->AddScore(mInfo->GetScoreValue());
-                if (type == BrickType::PowerUp)
+                if (mBrickToLookLike != "Bricks/!None")
+                {
+                    mPlayfield->TriggerChainReaction(
+                        game, this, mBrickToLookLike, mBrickToChangeTo);
+                }
+                if (mForcePowerUp != "No Power-Up")
+                {
+                    mPlayfield->SpawnPowerUp(
+                        game, GetPosition(), PowerUp::TypeFromString(mForcePowerUp));
+                }
+                else if (type == BrickType::PowerUp)
                 {
                     mPlayfield->SpawnPowerUpAt(game, GetPosition());
                 }

@@ -14,6 +14,8 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <queue>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -32,6 +34,7 @@ namespace nuvelocity::frs42
     class BackgroundSpriteAI;
     class Megovision;
     class Ship;
+    class Brick;
 } // namespace nuvelocity::frs42
 
 namespace nuvelocity
@@ -124,6 +127,15 @@ namespace nuvelocity::frs42
         }
 
         void SpawnPowerUpAt(Game* game, const SDL_FPoint& pos);
+
+        void SpawnPowerUp(Game* game, const SDL_FPoint& pos, PowerUpType type);
+
+        void TriggerChainReaction(Game* game,
+                                  Brick* source,
+                                  const std::string& lookLike,
+                                  const std::string& changeTo);
+
+        void ChangeBrickType(Game* game, Brick* brick, const std::string& infoPath);
 
         void SetBallsSmall(bool small);
 
@@ -399,6 +411,16 @@ namespace nuvelocity::frs42
         void DrawMidground(Game* game);
 
         void DrawForeground(Game* game);
+
+        struct PendingInfection
+        {
+            Brick* target;
+            std::string lookLike;
+            std::string changeTo;
+        };
+        std::queue<PendingInfection> mInfectionQueue;
+        std::set<Brick*> mInfectedBricks;
+        float mInfectionTimer = 0.0F;
 
         std::vector<std::unique_ptr<ParticleGenerator>> mParticleGenerators;
         std::map<std::string, int> mPowerUpWeights;
