@@ -403,6 +403,12 @@ namespace nuvelocity::frs42
                 {
                     mPlayfield->SpawnPowerUpAt(game, GetPosition());
                 }
+
+                if (type == BrickType::Exploding)
+                {
+                    mPlayfield->TriggerExplosion(game, this);
+                }
+
                 mPlayfield->GetGameStats().mBricksDestroyed++;
 
                 mIsCompleted = true;

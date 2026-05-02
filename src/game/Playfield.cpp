@@ -618,6 +618,24 @@ namespace nuvelocity::frs42
             mInfectionTimer = 0.05F;
         }
 
+        mExplosionTimer -= deltaTime;
+        if (mExplosionTimer <= 0.0F && !mExplosionQueue.empty())
+        {
+            Brick* next = mExplosionQueue.front();
+            mExplosionQueue.pop();
+
+            if (next != nullptr && !next->IsDestroyed())
+            {
+                next->OnHit(game, mBounds);
+            }
+            mExplosionTimer = 0.05F;
+        }
+
+        if (mExplosionQueue.empty() && !mExplosionSet.empty())
+        {
+            mExplosionSet.clear();
+        }
+
         if (mInfectionQueue.empty() && !mInfectedBricks.empty())
         {
             mInfectedBricks.clear();
@@ -1440,6 +1458,38 @@ namespace nuvelocity::frs42
                     mInfectedBricks.insert(neighbor);
                     mInfectionQueue.push({neighbor, lookLike, changeTo});
                 }
+            }
+        }
+    }
+
+    void Playfield::TriggerExplosion(Game* game, Brick* source)
+    {
+        if (source == nullptr)
+        {
+            return;
+        }
+
+        SDL_FPoint pos = source->GetPosition();
+        const float searchDistX = 34.0F;
+        const float searchDistY = 20.0F;
+
+        for (const auto& collidable : mCollidables)
+        {
+            Brick* neighbor = dynamic_cast<Brick*>(collidable.get());
+            if (!neighbor || neighbor->IsDestroyed() || neighbor == source ||
+                mExplosionSet.count(neighbor))
+            {
+                continue;
+            }
+
+            SDL_FPoint nPos = neighbor->GetPosition();
+            float dx = std::abs(nPos.x - pos.x);
+            float dy = std::abs(nPos.y - pos.y);
+
+            if (dx <= searchDistX && dy <= searchDistY)
+            {
+                mExplosionSet.insert(neighbor);
+                mExplosionQueue.push(neighbor);
             }
         }
     }

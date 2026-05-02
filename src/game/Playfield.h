@@ -135,6 +135,8 @@ namespace nuvelocity::frs42
                                   const std::string& lookLike,
                                   const std::string& changeTo);
 
+        void TriggerExplosion(Game* game, Brick* source);
+
         void ChangeBrickType(Game* game, Brick* brick, const std::string& infoPath);
 
         void SetBallsSmall(bool small);
@@ -422,6 +424,10 @@ namespace nuvelocity::frs42
         std::queue<PendingInfection> mInfectionQueue;
         std::set<Brick*> mInfectedBricks;
         float mInfectionTimer = 0.0F;
+
+        std::queue<Brick*> mExplosionQueue;
+        std::set<Brick*> mExplosionSet;
+        float mExplosionTimer = 0.0F;
 
         std::vector<std::unique_ptr<ParticleGenerator>> mParticleGenerators;
         std::map<std::string, int> mPowerUpWeights;
