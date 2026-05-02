@@ -323,7 +323,12 @@ namespace nuvelocity::frs42
     private:
         void UpdateBalls(Game* game, std::vector<std::unique_ptr<Ball>>& balls);
         void UpdateBall(Game* game, Ball* ball);
-        void HandleBallCollidableCollision(Game* game, Ball* ball, Collidable2D* collidable, SDL_FPoint& pos, SDL_FPoint& vel, float radius);
+        void HandleBallCollidableCollision(Game* game,
+                                           Ball* ball,
+                                           Collidable2D* collidable,
+                                           SDL_FPoint& pos,
+                                           SDL_FPoint& vel,
+                                           float radius);
         void HandleBallOut(Game* game);
 
         std::vector<std::unique_ptr<Ball>> mBalls;
@@ -386,11 +391,8 @@ namespace nuvelocity::frs42
                                  Game* game,
                                  bool drawShadows);
 
-        void CheckScreenBoundary(Game* game,
-                                 SDL_FPoint& pos,
-                                 const float radius,
-                                 SDL_FPoint& vel,
-                                 std::unique_ptr<nuvelocity::frs42::Ball>& ball);
+        void CheckScreenBoundary(
+            Game* game, SDL_FPoint& pos, const float radius, SDL_FPoint& vel, Ball* ball);
 
         void DrawBackground(Game* game);
 

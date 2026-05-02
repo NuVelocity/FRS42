@@ -951,11 +951,8 @@ namespace nuvelocity::frs42
         }
     }
 
-    void Playfield::CheckScreenBoundary(Game* game,
-                                        SDL_FPoint& pos,
-                                        const float radius,
-                                        SDL_FPoint& vel,
-                                        std::unique_ptr<nuvelocity::frs42::Ball>& ball)
+    void Playfield::CheckScreenBoundary(
+        Game* game, SDL_FPoint& pos, const float radius, SDL_FPoint& vel, Ball* ball)
     {
         bool hitWall = false;
         if (((mBoundaryFlags & Left) != 0) && pos.x - radius < static_cast<float>(mBounds.x))
