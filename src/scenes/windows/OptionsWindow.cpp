@@ -1,9 +1,12 @@
 #include "OptionsWindow.h"
+#include "ConfirmWindow.h"
 #include <Game.h>
+#include <algorithm>
 #include <system/ui/Button.h>
 #include <system/ui/ButtonContainer.h>
 #include <system/ui/MdiManager.h>
 #include <system/ui/skin/JWindowSkin.h>
+
 
 namespace nuvelocity::frs42
 {
@@ -41,6 +44,16 @@ namespace nuvelocity::frs42
             btn->SetCaption(label);
             btn->SetSkin(skin);
             btn->SetRect({.x = 0, .y = 0, .w = 221, .h = buttonHeight});
+
+            btn->SetOnClick(
+                [label](Game* g)
+                {
+                    std::string title = label;
+                    title.erase(std::remove(title.begin(), title.end(), '&'), title.end());
+                    auto confirm = std::make_shared<ConfirmWindow>(g, title, "Not yet implemented");
+                    g->mMdi->AddCenteredWindow(g, confirm);
+                });
+
             container->AddButton(btn);
         }
 

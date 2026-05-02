@@ -6,6 +6,7 @@
 #include "PlayfieldBarrier.h"
 #include "RoundSet.h"
 #include "StatsManager.h"
+#include "windows/ConfirmWindow.h"
 #include "windows/LevelSelectWindow.h"
 #include "windows/NewGameOptionsWindow.h"
 #include "windows/OptionsWindow.h"
@@ -26,6 +27,7 @@
 #include <system/SpriteBatch.h>
 #include <system/ui/MdiManager.h>
 #include <system/ui/skin/JWindowSkin.h>
+
 
 namespace nuvelocity::frs42
 {
@@ -333,7 +335,14 @@ namespace nuvelocity::frs42
 
     void MainMenuScene::OnFriendClick(Game* game)
     {
-        (void)game;
+        if (game == nullptr || game->mMdi == nullptr)
+        {
+            return;
+        }
+
+        auto confirm =
+            std::make_shared<ConfirmWindow>(game, "Tell A Friend", "Not yet implemented");
+        game->mMdi->AddCenteredWindow(game, confirm);
     }
 
     void MainMenuScene::OnOptionsClick(Game* game)
