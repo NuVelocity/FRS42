@@ -25,6 +25,7 @@
 #include <system/ui/MdiManager.h>
 #include <system/ui/MdiWindow.h>
 
+#include <format>
 #include <random>
 #include <sstream>
 #include <string>
@@ -246,51 +247,22 @@ namespace nuvelocity::frs42
     void ArenaScene::BuildLevelUI(Game* game, BrickLayout* layout, const RoundEntry* entry)
     {
         if (entry == nullptr)
+        {
             return;
+        }
 
         int roundSetNumber = entry->setIndex + 1;
         int roundNumber = entry->roundIndex + 1;
 
         const std::string& roundTitle = layout->GetDisplayName();
-        char tickerBuf[256];
-        SDL_snprintf(tickerBuf,
-                     sizeof(tickerBuf),
-                     "Round %d-%d: %s",
-                     roundSetNumber,
-                     roundNumber,
-                     roundTitle.c_str());
-        mMegovision.SetTickerText(tickerBuf, game);
+        mMegovision.SetTickerText(
+            std::format("Round {}-{}: {}", roundSetNumber, roundNumber, roundTitle), game);
 
         // Megovision round message
         std::vector<std::unique_ptr<Label>> megoLabels;
-        char roundBuf[32];
-        SDL_snprintf(roundBuf, sizeof(roundBuf), "Round %d-%d", roundSetNumber, roundNumber);
-        megoLabels.push_back(std::make_unique<Label>(roundBuf, "Megovision"));
-
-        // Word wrap round title for line 2+ (90px width)
-        std::stringstream ss(roundTitle);
-        std::string word;
-        std::string currentLine;
-        while (ss >> word)
-        {
-            std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
-            int w = 0;
-            int h = 0;
-            game->mFont->MeasureStringWithFont("Small Blue", testLine, 8, w, h);
-            if (w > 90 && !currentLine.empty())
-            {
-                megoLabels.push_back(std::make_unique<Label>(currentLine, "Small Blue"));
-                currentLine = word;
-            }
-            else
-            {
-                currentLine = testLine;
-            }
-        }
-        if (!currentLine.empty())
-        {
-            megoLabels.push_back(std::make_unique<Label>(currentLine, "Small Blue"));
-        }
+        megoLabels.push_back(std::make_unique<Label>(
+            std::format("Round {}-{}", roundSetNumber, roundNumber), "Megovision"));
+        megoLabels.push_back(std::make_unique<Label>(roundTitle, "Small Blue"));
         mMegovision.ShowMessage(std::move(megoLabels), 0.0F, false);
     }
 
@@ -638,9 +610,8 @@ namespace nuvelocity::frs42
             mPlayfield.MarkCheated();
         }
 
-        std::vector<std::unique_ptr<nuvelocity::Label>> labels;
-        labels.push_back(std::make_unique<nuvelocity::Label>("You are", "Megovision"));
-        labels.push_back(std::make_unique<nuvelocity::Label>("cheating", "Megovision"));
-        mMegovision.ShowMessage(std::move(labels), 3.0F, false);
+        auto label = std::make_unique<nuvelocity::Label>("You are cheating", "Megovision");
+        label->SetWrap(true);
+        mMegovision.ShowMessage(std::move(label), 3.0F, false);
     }
 } // namespace nuvelocity::frs42
