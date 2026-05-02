@@ -112,11 +112,31 @@ namespace nuvelocity::frs42
             return mIsAttached;
         }
 
+        void SetAttachmentOffset(const SDL_FPoint& offset)
+        {
+            mAttachmentOffset = offset;
+        }
+
+        const SDL_FPoint& GetAttachmentOffset() const
+        {
+            return mAttachmentOffset;
+        }
+
         void SetIsSmall(bool small);
 
         bool IsSmall() const
         {
             return mIsSmall;
+        }
+
+        void SetIsAttachedToShield(bool shield)
+        {
+            mIsAttachedToShield = shield;
+        }
+
+        bool IsAttachedToShield() const
+        {
+            return mIsAttachedToShield;
         }
 
         void SetType(BallType type);
@@ -171,9 +191,11 @@ namespace nuvelocity::frs42
         SDL_FPoint mPosition = {0.0f, 0.0f};
         SDL_FPoint mDirection = {0.0f, 0.0f};
         SDL_FPoint mLastHitPosition = {0.0f, 0.0f};
+        SDL_FPoint mAttachmentOffset = {0.0f, 0.0f};
         float mSpeed = 79.0f;
         uint64_t mAnimationStartTick = 0;
         bool mIsAttached = false;
+        bool mIsAttachedToShield = false;
         bool mIsSmall = false;
         bool mIsTrapped = false;
         BallType mType = BallType::Normal;

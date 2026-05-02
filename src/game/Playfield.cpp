@@ -174,12 +174,15 @@ namespace nuvelocity::frs42
         auto ball = std::make_unique<Ball>();
         ball->SetPlayfield(this);
         ball->SetSpeed(baseSpeed);
+        ball->SetDirection({0.371F, -0.928F});
         if (diff == 3)
         {
             ball->SetIsSmall(true);
         }
         ball->AttachSequence(game);
         ball->SetIsAttached(true);
+        ball->SetIsAttachedToShield(true);
+        ball->SetAttachmentOffset({20.0F, -38.0F});
         AddBall(std::move(ball));
         mBallWaitingForRelease = true;
     }
@@ -930,28 +933,38 @@ namespace nuvelocity::frs42
 
         if (mBallWaitingForRelease)
         {
-            if (!mBalls.empty() && mShip)
+            if (mShip)
             {
-                Ball* ball = nullptr;
-                for (auto& b : mBalls)
+                bool releaseRequested = game->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT);
+                SDL_FPoint shieldPos = mShip->GetShieldPosition();
+                SDL_FPoint shipPos = mShip->GetPosition();
+
+                for (auto& ball : mBalls)
                 {
-                    if (b->IsAttached())
+                    if (ball->IsAttached())
                     {
-                        ball = b.get();
-                        break;
+                        if (releaseRequested)
+                        {
+                            ball->SetIsAttached(false);
+                            SDL_FPoint v = ball->GetVelocity();
+                            if (v.y > 0)
+                            {
+                                v.y = -v.y;
+                                ball->SetVelocity(v);
+                            }
+                        }
+                        else
+                        {
+                            SDL_FPoint offset = ball->GetAttachmentOffset();
+                            SDL_FPoint parentPos = ball->IsAttachedToShield() ? shieldPos : shipPos;
+                            ball->SetPosition({parentPos.x + offset.x, parentPos.y + offset.y});
+                        }
                     }
                 }
-                if (ball)
-                {
-                    SDL_FPoint shipPos = mShip->GetPosition();
-                    ball->SetPosition({shipPos.x + 20, shipPos.y - 40});
 
-                    if (game->mInput->IsMouseButtonPressed(SDL_BUTTON_LEFT))
-                    {
-                        mBallWaitingForRelease = false;
-                        ball->SetIsAttached(false);
-                        ball->SetVelocity({100.0F, -250.0F});
-                    }
+                if (releaseRequested)
+                {
+                    mBallWaitingForRelease = false;
                 }
             }
         }
@@ -989,8 +1002,11 @@ namespace nuvelocity::frs42
             mShip->SetCatchMode(false);
             auto newBall = std::make_unique<Ball>();
             newBall->SetPlayfield(this);
+            newBall->SetDirection({0.371F, -0.928F});
             newBall->AttachSequence(game);
             newBall->SetIsAttached(true);
+            newBall->SetIsAttachedToShield(true);
+            newBall->SetAttachmentOffset({20.0F, -38.0F});
             mBalls.push_back(std::move(newBall));
             mBallWaitingForRelease = true;
         }
@@ -1110,8 +1126,25 @@ namespace nuvelocity::frs42
             // Ship collision
             if (mShip && vel.y > 0)
             {
+                SDL_FPoint shieldPos = mShip->GetShieldPosition();
+                SDL_FPoint shipPos = mShip->GetPosition();
+                bool collided = false;
+                bool hitShield = false;
+
                 if (MathUtils::ResolveCirclePolygonCollision(
-                        mShip->GetCollisionPolygon(), mShip->GetPosition(), pos, radius, vel))
+                        mShip->GetCollisionPolygon(), shieldPos, pos, radius, vel))
+                {
+                    collided = true;
+                    hitShield = true;
+                }
+                else if (MathUtils::ResolveCirclePolygonCollision(
+                             mShip->GetShipCollisionPolygon(), shipPos, pos, radius, vel))
+                {
+                    collided = true;
+                    hitShield = false;
+                }
+
+                if (collided)
                 {
                     ball->SetIsTrapped(false);
                     ball->SetVelocity(vel);
@@ -1126,10 +1159,13 @@ namespace nuvelocity::frs42
                                            : "Particle Generators/Bouce/Ball Hit Ship";
                     SpawnParticleBurst(game, pgen, pos, angle);
 
-                    if (mShip->GetCatchMode())
+                    if (mShip->GetCatchMode() && !mBallWaitingForRelease)
                     {
                         mBallWaitingForRelease = true;
                         ball->SetIsAttached(true);
+                        ball->SetIsAttachedToShield(hitShield);
+                        SDL_FPoint parentPos = hitShield ? shieldPos : shipPos;
+                        ball->SetAttachmentOffset({pos.x - parentPos.x, pos.y - parentPos.y});
                     }
                 }
             }
