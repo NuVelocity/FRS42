@@ -1273,7 +1273,9 @@ namespace nuvelocity::frs42
                         mBallWaitingForRelease = true;
                         ball->SetIsAttached(true);
                         ball->SetIsAttachedToShield(true);
-                        ball->SetAttachmentOffset({pos.x - shieldPos.x, pos.y - shieldPos.y});
+                        // Add a small 2-pixel buffer to ensure no overlap/stuck balls
+                        ball->SetAttachmentOffset(
+                            {pos.x - shieldPos.x, pos.y - shieldPos.y - 2.0F});
 
                         return;
                     }
