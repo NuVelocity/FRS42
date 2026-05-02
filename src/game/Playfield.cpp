@@ -98,7 +98,7 @@ namespace nuvelocity::frs42
     Playfield::Playfield()
             : mMegovision(nullptr)
             , mScore(0)
-            , mIonSpheres(3)
+            , mIonSpheres(2)
             , mLevelTime(0.0F)
             , mIsSuspended(false)
             , mIsGameOver(false)

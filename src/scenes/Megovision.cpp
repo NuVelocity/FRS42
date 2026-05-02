@@ -249,7 +249,7 @@ namespace nuvelocity::frs42
 
         // Ion Spheres (display remaining)
         drawStat("ION SPHERES",
-                 std::to_string(std::max(0, mIonSpheres - 1)),
+                 std::to_string(std::max(0, mIonSpheres)),
                  sbX,
                  labelY + (spacing * 3) + 4);
 
