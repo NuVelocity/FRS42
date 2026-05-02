@@ -18,6 +18,7 @@
 #include <Sequence.h>
 #include <StandAloneFrame.h>
 #include <system/AssetManager.h>
+#include <numbers>
 #include <system/AudioManager.h>
 #include <system/FontManager.h>
 #include <system/InputManager.h>
@@ -171,8 +172,8 @@ namespace nuvelocity::frs42
                         ball->SetIsTrapped(true);
                         ball->SetPlayfield(&mPlayfield);
 
-                        std::uniform_real_distribution<float> angleDis(0, 2.0F * 3.14159F);
-                        float angle = angleDis(gGen);
+                        // Initial direction towards bottom-right
+                        float angle = 45.0F * (std::numbers::pi_v<float> / 180.0F);
                         ball->SetVelocity({std::cos(angle) * 200.0F, std::sin(angle) * 200.0F});
 
                         mPlayfield.AddBall(std::move(ball));
