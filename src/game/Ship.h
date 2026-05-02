@@ -3,6 +3,7 @@
 
 #include <GameComponent.h>
 #include <SDL3/SDL.h>
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -105,6 +106,11 @@ namespace nuvelocity::frs42
             mImpactRecoilTimer = 0.15F;
         }
 
+        void DrawElectricLine(Game* game,
+                              SDL_FPoint p1,
+                              SDL_FPoint p2,
+                              SDL_Color color = {.r = 0x88, .g = 0x88, .b = 0xF0, .a = 255});
+
         static const std::vector<std::string>& GetShipSequencePaths();
 
     private:
@@ -142,6 +148,22 @@ namespace nuvelocity::frs42
         float mImpactRecoilTimer = 0.0F;
         float mLeftThrustTimer = 0.0F;
         float mRightThrustTimer = 0.0F;
+
+        float mTargetY = 0.0F;
+        struct PositionSample
+        {
+            uint64_t timestamp;
+            SDL_FPoint position;
+        };
+        std::deque<PositionSample> mPositionHistory;
+
+        // Electric line attachment offsets
+        SDL_FPoint mElectricShipOffset1 = {-11.0F, -8.0F};
+        SDL_FPoint mElectricShieldOffset1 = {-15.0F, -15.0F};
+        SDL_FPoint mElectricShipOffset2 = {11.0F, -8.0F};
+        SDL_FPoint mElectricShieldOffset2 = {15.0F, -15.0F};
+
+        uint64_t mShieldDelayMs = 40;
     };
 } // namespace nuvelocity::frs42
 

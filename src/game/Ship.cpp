@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cmath>
 #include <numbers>
+#include <random>
 #include <system/AssetManager.h>
 #include <system/InputManager.h>
 #include <system/SpriteBatch.h>
@@ -15,9 +16,13 @@
 
 namespace nuvelocity::frs42
 {
+    static std::random_device gRd;
+    static std::mt19937 gGen(gRd());
+
     Ship::Ship()
     {
         mStartTick = SDL_GetTicks();
+        mTargetY = -1.0F; // Uninitialized flag
     }
 
     const std::vector<std::string>& Ship::GetShipSequencePaths()
@@ -152,6 +157,53 @@ namespace nuvelocity::frs42
         mStartTick = SDL_GetTicks();
     }
 
+    void Ship::DrawElectricLine(Game* game, SDL_FPoint p1, SDL_FPoint p2, SDL_Color color)
+    {
+        if (game == nullptr || game->mSpriteBatch == nullptr)
+        {
+            return;
+        }
+
+        float dx = p2.x - p1.x;
+        float dy = p2.y - p1.y;
+        float len = std::sqrt(dx * dx + dy * dy);
+
+        if (len < 0.1F)
+        {
+            return;
+        }
+
+        const int segments = std::clamp(static_cast<int>(len / 8.0F), 4, 15);
+        const float jitter = len * 0.12F;
+
+        std::uniform_real_distribution<float> dist(-jitter, jitter);
+
+        float nx = -dy / len;
+        float ny = dx / len;
+
+        SDL_FPoint current = p1;
+        for (int i = 1; i <= segments; ++i)
+        {
+            float t = static_cast<float>(i) / segments;
+            SDL_FPoint target = {p1.x + dx * t, p1.y + dy * t};
+
+            if (i < segments)
+            {
+                float offset = dist(gGen);
+                target.x += nx * offset;
+                target.y += ny * offset;
+            }
+
+            game->mSpriteBatch->DrawLine(static_cast<int>(std::lround(current.x)),
+                                         static_cast<int>(std::lround(current.y)),
+                                         static_cast<int>(std::lround(target.x)),
+                                         static_cast<int>(std::lround(target.y)),
+                                         color);
+
+            current = target;
+        }
+    }
+
     void Ship::Update(Game* game)
     {
         if (game->mInput == nullptr || mIsExploded)
@@ -165,6 +217,8 @@ namespace nuvelocity::frs42
         {
             mPosition.x = static_cast<float>(mousePos.x);
         }
+
+        mPosition.y = mTargetY;
 
         float targetVelocity = mPosition.x - mPreviousX;
         const float lerpFactor = 0.15F;
@@ -388,6 +442,26 @@ namespace nuvelocity::frs42
             drawAnimated(mThrustRightSequence, thrusterPos);
         }
 
+        // Shield delayed X
+        SDL_FPoint shieldPos = drawPos;
+        if (!mPositionHistory.empty())
+        {
+            shieldPos.x = mPositionHistory.front().position.x;
+        }
+
+        // Electric lines between ship and shield
+        SDL_FPoint shipP1 = {drawPos.x + mElectricShipOffset1.x,
+                             drawPos.y + mElectricShipOffset1.y};
+        SDL_FPoint shieldP1 = {shieldPos.x + mElectricShieldOffset1.x,
+                               shieldPos.y + mElectricShieldOffset1.y};
+        DrawElectricLine(game, shipP1, shieldP1);
+
+        SDL_FPoint shipP2 = {drawPos.x + mElectricShipOffset2.x,
+                             drawPos.y + mElectricShipOffset2.y};
+        SDL_FPoint shieldP2 = {shieldPos.x + mElectricShieldOffset2.x,
+                               shieldPos.y + mElectricShieldOffset2.y};
+        DrawElectricLine(game, shipP2, shieldP2);
+
         // Draw base ship
         drawAnimatedTilt(mBaseSequence, mPosition, tiltFrameIndex);
 
@@ -427,8 +501,8 @@ namespace nuvelocity::frs42
             drawAnimatedTilt(mWeaponSequence, mPosition, tiltFrameIndex);
         }
 
-        // Shield remains time-animated with recoil
-        drawAnimated(mShieldSequence, drawPos);
+        // Shield
+        drawAnimated(mShieldSequence, shieldPos);
 
         // Draw debug polygon
         if (game->mSpriteBatch->IsDrawBoundsEnabled())
@@ -446,10 +520,19 @@ namespace nuvelocity::frs42
             }
         }
     }
-
     void Ship::SetPosition(const SDL_FPoint& position)
     {
-        mPosition = position;
+        mPosition.x = position.x;
+        mPosition.y = position.y;
+        mTargetY = position.y;
+
+        uint64_t nowTicks = SDL_GetTicks();
+        mPositionHistory.push_back({nowTicks, position});
+        while (!mPositionHistory.empty() &&
+               nowTicks - mPositionHistory.front().timestamp > mShieldDelayMs)
+        {
+            mPositionHistory.pop_front();
+        }
     }
 
     const SDL_FPoint& Ship::GetPosition() const
