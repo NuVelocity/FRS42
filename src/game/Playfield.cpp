@@ -801,7 +801,7 @@ namespace nuvelocity::frs42
                     mMegovision->ShowMessage(std::move(label), 1.5F, false);
                 }
                 mShip->Explode(game);
-                HandleBallOut(game, nullptr); // Lose a life
+                HandleBallOut(game); // Lose a life
             }
         }
         std::erase_if(mBombs, [](const auto& b) { return b->IsDead(); });
@@ -858,7 +858,7 @@ namespace nuvelocity::frs42
                                        if (ball->GetPosition().y - ball->GetRadius() >
                                            static_cast<float>(game->mWindowHeight))
                                        {
-                                           HandleBallOut(game, ball.get());
+                                           HandleBallOut(game);
                                            return true;
                                        }
                                        return false;
@@ -1210,9 +1210,8 @@ namespace nuvelocity::frs42
         }
     }
 
-    void Playfield::HandleBallOut(Game* game, Ball* ball)
+    void Playfield::HandleBallOut(Game* game)
     {
-        (void)ball;
         mGameStats.mBallsLost++;
 
         if (mMegovision != nullptr && mIonSpheres <= 0)

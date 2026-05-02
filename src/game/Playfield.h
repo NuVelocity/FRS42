@@ -324,7 +324,7 @@ namespace nuvelocity::frs42
         void UpdateBalls(Game* game, std::vector<std::unique_ptr<Ball>>& balls);
         void UpdateBall(Game* game, Ball* ball);
         void HandleBallCollidableCollision(Game* game, Ball* ball, Collidable2D* collidable, SDL_FPoint& pos, SDL_FPoint& vel, float radius);
-        void HandleBallOut(Game* game, Ball* ball);
+        void HandleBallOut(Game* game);
 
         std::vector<std::unique_ptr<Ball>> mBalls;
         std::vector<std::unique_ptr<Ball>> mTrappedBalls;
