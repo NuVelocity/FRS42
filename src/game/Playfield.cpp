@@ -559,7 +559,26 @@ namespace nuvelocity::frs42
 
     void Playfield::Update(Game* game)
     {
-        mInfectionTimer -= game->GetDeltaTime();
+        float deltaTime = game->GetDeltaTime();
+
+        if (!mBallsToAdd.empty())
+        {
+            for (auto& ball : mBallsToAdd)
+            {
+                mBalls.push_back(std::move(ball));
+            }
+            mBallsToAdd.clear();
+        }
+        if (!mProjectilesToAdd.empty())
+        {
+            for (auto& proj : mProjectilesToAdd)
+            {
+                mProjectiles.push_back(std::move(proj));
+            }
+            mProjectilesToAdd.clear();
+        }
+
+        mInfectionTimer -= deltaTime;
         if (mInfectionTimer <= 0.0F && !mInfectionQueue.empty())
         {
             PendingInfection next = mInfectionQueue.front();
@@ -603,8 +622,6 @@ namespace nuvelocity::frs42
         {
             mInfectedBricks.clear();
         }
-
-        const float deltaTime = game->GetDeltaTime();
 
         if (mIsGameOver)
         {
@@ -1015,23 +1032,6 @@ namespace nuvelocity::frs42
                     mBallWaitingForRelease = false;
                 }
             }
-        }
-
-        if (!mBallsToAdd.empty())
-        {
-            for (auto& ball : mBallsToAdd)
-            {
-                mBalls.push_back(std::move(ball));
-            }
-            mBallsToAdd.clear();
-        }
-        if (!mProjectilesToAdd.empty())
-        {
-            for (auto& proj : mProjectilesToAdd)
-            {
-                mProjectiles.push_back(std::move(proj));
-            }
-            mProjectilesToAdd.clear();
         }
 
         // Respawn ball if needed
