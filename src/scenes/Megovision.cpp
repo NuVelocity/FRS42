@@ -12,7 +12,8 @@
 
 namespace nuvelocity::frs42
 {
-    constexpr int kMessageRectWidthAllowance = 10;
+    constexpr int kMessageRectWidthAllowance = 5;
+    constexpr int kSmallBlueWidthAllowance = -20;
     const SDL_Rect Megovision::kMessageAreaRect = {.x = 530 - (kMessageRectWidthAllowance / 2),
                                                    .y = 35,
                                                    .w = 90 + kMessageRectWidthAllowance,
@@ -89,14 +90,27 @@ namespace nuvelocity::frs42
                 int totalHeight = 0;
                 for (const auto& label : mMessageLabels)
                 {
-                    totalHeight += label->GetRequiredHeight(game, kMessageAreaRect.w);
+                    int maxWidth = kMessageAreaRect.w;
+                    if (label->GetFont() == "Small Blue")
+                    {
+                        maxWidth += kSmallBlueWidthAllowance;
+                    }
+                    totalHeight += label->GetRequiredHeight(game, maxWidth);
                 }
 
                 int currentY = kMessageAreaRect.y + ((kMessageAreaRect.h - totalHeight) / 2);
                 for (auto& label : mMessageLabels)
                 {
-                    int h = label->GetRequiredHeight(game, kMessageAreaRect.w);
-                    SDL_Rect r = {kMessageAreaRect.x, currentY, kMessageAreaRect.w, h};
+                    int maxWidth = kMessageAreaRect.w;
+                    if (label->GetFont() == "Small Blue")
+                    {
+                        maxWidth += kSmallBlueWidthAllowance;
+                    }
+                    int h = label->GetRequiredHeight(game, maxWidth);
+                    SDL_Rect r = {kMessageAreaRect.x + (kMessageAreaRect.w - maxWidth) / 2,
+                                  currentY,
+                                  maxWidth,
+                                  h};
                     label->SetRect(r);
                     currentY += h;
                 }
