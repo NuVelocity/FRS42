@@ -450,6 +450,7 @@ namespace nuvelocity::frs42
             shieldOff2 = mShip->GetElectricShieldOffset2();
         }
 
+        bool anyElectricLinesDrawn = false;
         for (const auto& ball : mBalls)
         {
             if (catchMode)
@@ -469,6 +470,7 @@ namespace nuvelocity::frs42
 
                 if (shouldDrawLines)
                 {
+                    anyElectricLinesDrawn = true;
                     SDL_FPoint ballCenter = ball->GetPosition();
                     mShip->DrawElectricLine(
                         game, {shipPos.x + shipOff1.x, shipPos.y + shipOff1.y}, ballCenter);
@@ -481,6 +483,19 @@ namespace nuvelocity::frs42
                 }
             }
             ball->Draw(game);
+        }
+
+        if (catchMode && !anyElectricLinesDrawn)
+        {
+            SDL_FPoint shipP1 = {shipPos.x + shipOff1.x, shipPos.y + shipOff1.y};
+            SDL_FPoint shipP2 = {shipPos.x + shipOff2.x, shipPos.y + shipOff2.y};
+            SDL_FPoint shieldP1 = {shieldPos.x + shieldOff1.x, shieldPos.y + shieldOff1.y};
+            SDL_FPoint shieldP2 = {shieldPos.x + shieldOff2.x, shieldPos.y + shieldOff2.y};
+
+            mShip->DrawElectricLine(game, shipP1, shipP2);
+            mShip->DrawElectricLine(game, shipP1, shipP2);
+            mShip->DrawElectricLine(game, shieldP1, shieldP2);
+            mShip->DrawElectricLine(game, shieldP1, shieldP2);
         }
 
         for (const auto& ball : mTrappedBalls)
