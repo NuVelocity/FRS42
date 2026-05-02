@@ -45,6 +45,7 @@ namespace nuvelocity::frs42
         if (resetStartTime)
         {
             mPlayfield.GetGameStats().mStartTime = MathUtils::GetWindowsFiletime();
+            mPlayfield.GetGameStats().mStartingRoundNumber = entry ? entry->globalIndex : 0;
         }
     }
 

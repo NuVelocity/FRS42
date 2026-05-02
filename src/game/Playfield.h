@@ -315,6 +315,7 @@ namespace nuvelocity::frs42
         void SetGameStats(const nuvelocity::GameStats& stats)
         {
             mGameStats = stats;
+            mScore = mGameStats.mPointsScored;
         }
 
         nuvelocity::GameStats& GetGameStats()
