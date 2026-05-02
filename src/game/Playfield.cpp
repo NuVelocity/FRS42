@@ -1172,7 +1172,7 @@ namespace nuvelocity::frs42
             vel = ball->GetVelocity();
 
             // Ship shield collision
-            if (mShip && vel.y > 0)
+            if (mShip)
             {
                 SDL_FPoint shieldPos = mShip->GetShieldPosition();
 
