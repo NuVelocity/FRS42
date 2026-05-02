@@ -373,7 +373,7 @@ namespace nuvelocity::frs42
             SDL_FPoint thrusterPos = {.x = mPosition.x + sideOffset,
                                       .y = mPosition.y + thrusterYOffset};
             mPlayfield->SpawnParticleBurst(
-                game, "Particle Generators/Ship Thruster", thrusterPos, angle, 3.0F, 2.0F);
+                game, "Particle Generators/Ship Thruster", thrusterPos, angle, 3.0F, 0.5F);
         }
 
         // Thrusters
