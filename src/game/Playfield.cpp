@@ -1238,12 +1238,6 @@ namespace nuvelocity::frs42
 
     void Playfield::SpawnPowerUpAt(Game* game, const SDL_FPoint& pos)
     {
-        std::uniform_int_distribution<> spawnDis(0, 7); // 1 in 8 chance
-        if (spawnDis(gGen) != 0)
-        {
-            return;
-        }
-
         if (mPowerUpWeights.empty())
         {
             return;
