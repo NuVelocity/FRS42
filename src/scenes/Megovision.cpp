@@ -12,7 +12,7 @@
 
 namespace nuvelocity::frs42
 {
-    constexpr int kMessageRectWidthAllowance = 20;
+    constexpr int kMessageRectWidthAllowance = 10;
     const SDL_Rect Megovision::kMessageAreaRect = {.x = 530 - (kMessageRectWidthAllowance / 2),
                                                    .y = 35,
                                                    .w = 90 + kMessageRectWidthAllowance,
