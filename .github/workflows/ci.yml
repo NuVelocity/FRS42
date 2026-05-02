@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build-linux:
+    name: Linux (GCC)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Rewrite SSH to HTTPS
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Update submodules
+        run: git submodule update --init --recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+              libasound2-dev libpulse-dev libdbus-1-dev libwayland-dev libx11-dev \
+              libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxss-dev \
+              libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+              libegl1-mesa-dev libibus-1.0-dev libudev-dev libpipewire-0.3-dev \
+              glslang-tools ninja-build
+
+      - name: Configure CMake
+        run: cmake --preset gcc-amd64-release
+
+      - name: Build
+        run: cmake --build --preset gcc-amd64-release
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frs42-linux
+          path: out/build/gcc-amd64-release/bin/
+
+  build-windows:
+    name: Windows (MSVC)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Rewrite SSH to HTTPS
+        shell: bash
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Update submodules
+        run: git submodule update --init --recursive
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure CMake
+        run: cmake --preset msvc-amd64-release
+
+      - name: Build
+        run: cmake --build --preset msvc-amd64-release
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frs42-windows
+          path: out/build/msvc-amd64-release/bin/
