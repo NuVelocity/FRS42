@@ -52,12 +52,12 @@ namespace nuvelocity::frs42
     void Brick::Update(Game* game)
     {
         (void)game;
-        if (mIsPlayingDestroyedAnimation && mSequence != nullptr)
+        if (mIsPlayingDestroyedAnimation && mDestroyedSequence != nullptr)
         {
             const uint64_t now = SDL_GetTicks();
             const uint64_t elapsed = now - mAnimationStartTick;
-            const float fps = mSequence->GetFramesPerSecond();
-            const std::size_t frameCount = mSequence->GetFrameCount();
+            const float fps = mDestroyedSequence->GetFramesPerSecond();
+            const std::size_t frameCount = mDestroyedSequence->GetFrameCount();
 
             if (frameCount > 0)
             {
@@ -84,9 +84,10 @@ namespace nuvelocity::frs42
             return;
         }
 
-        if (game->mSpriteBatch != nullptr && mSequence != nullptr)
+        Sequence* seqToDraw = mIsPlayingDestroyedAnimation ? mDestroyedSequence : mSequence;
+        if (game->mSpriteBatch != nullptr && seqToDraw != nullptr)
         {
-            const std::size_t frameCount = mSequence->GetFrameCount();
+            const std::size_t frameCount = seqToDraw->GetFrameCount();
             if (frameCount == 0)
             {
                 return;
@@ -94,7 +95,7 @@ namespace nuvelocity::frs42
 
             const uint64_t now = SDL_GetTicks();
             const uint64_t elapsed = now - mAnimationStartTick;
-            const float fps = mSequence->GetFramesPerSecond();
+            const float fps = seqToDraw->GetFramesPerSecond();
 
             std::size_t frameIndex = 0;
             if (mIsPlayingDestroyedAnimation)
@@ -113,10 +114,10 @@ namespace nuvelocity::frs42
                     frameCount;
             }
 
-            game->mSpriteBatch->Draw(mSequence,
-                                     frameIndex,
-                                     static_cast<int>(GetPosition().x),
-                                     static_cast<int>(GetPosition().y));
+            int x = static_cast<int>(GetPosition().x);
+            int y = static_cast<int>(GetPosition().y);
+
+            game->mSpriteBatch->Draw(seqToDraw, frameIndex, x, y);
         }
     }
 
@@ -256,7 +257,7 @@ namespace nuvelocity::frs42
 
             if (mInfo->GetDestroyedSeqPath() != "!None")
             {
-                mSequence =
+                mDestroyedSequence =
                     game->mAsset->LoadSequence("Resources/Effects/" + mInfo->GetDestroyedSeqPath());
                 mAnimationStartTick = SDL_GetTicks();
             }

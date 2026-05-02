@@ -75,6 +75,7 @@ namespace nuvelocity::frs42
 
         int mHitsRemaining = 1;
         bool mIsPlayingDestroyedAnimation = false;
+        Sequence* mDestroyedSequence = nullptr;
         Playfield* mPlayfield = nullptr;
     };
 } // namespace nuvelocity::frs42
