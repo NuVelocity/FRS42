@@ -145,23 +145,23 @@ namespace nuvelocity::frs42
         switch (type)
         {
         case PowerUpType::Slow:
-            return "Slow Ball";
+            return "Ball Slow Down";
         case PowerUpType::ExpandPaddle:
-            return "Expand Paddle";
+            return "Shield Expander";
         case PowerUpType::Catch:
-            return "Catch Ball";
+            return "Ball Catcher";
         case PowerUpType::FireBall:
             return "Fire Ball";
         case PowerUpType::Multiply3:
-            return "Multiply 3";
+            return "3 Way Ball Split";
         case PowerUpType::Multiply8:
-            return "Multiply 8";
+            return "8 Way Ball Split";
         case PowerUpType::Gun:
-            return "Laser";
+            return "Laser Blaster Gun";
         case PowerUpType::BigGun:
-            return "Big Guns";
+            return "Meg-O-Blaster Gun";
         case PowerUpType::ExtraBall:
-            return "Extra Ball";
+            return "Extra Ion Sphere";
         case PowerUpType::RailBall:
             return "Rail Ball";
         case PowerUpType::NormalBall:
@@ -169,11 +169,11 @@ namespace nuvelocity::frs42
         case PowerUpType::SmallBall:
             return "Small Ball";
         case PowerUpType::ShrinkPaddle:
-            return "Shrink Paddle";
+            return "Shield Shrinker";
         case PowerUpType::Fast:
-            return "Fast Ball";
+            return "Ball Speed Up";
         case PowerUpType::TheBomb:
-            return "The Bomb";
+            return "Bomb";
         }
         return "Powerup";
     }
