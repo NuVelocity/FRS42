@@ -913,6 +913,8 @@ namespace nuvelocity::frs42
                         labels.push_back(std::make_unique<Label>("+1000 Points", "Small Blue"));
                         mMegovision->ShowMessage(std::move(labels), 1.5F, false);
                     }
+                    SpawnParticleBurst(
+                        game, "Particle Generators/Bomb Explode", bomb->GetPosition());
                     break;
                 }
             }
@@ -932,6 +934,7 @@ namespace nuvelocity::frs42
                     mMegovision->ShowMessage(std::move(label), 5.0F, false);
                 }
                 mShip->Explode(game);
+                SpawnParticleBurst(game, "Particle Generators/Bomb Explode", bomb->GetPosition());
 
                 // Automatically release any attached balls
                 if (mBallWaitingForRelease)
