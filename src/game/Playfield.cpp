@@ -1906,4 +1906,26 @@ namespace nuvelocity::frs42
             }
         }
     }
+
+    void Playfield::DebugSpawnBomb(Game* game)
+    {
+        std::vector<Brick*> aliveBricks;
+        for (auto& collidable : mCollidables)
+        {
+            if (auto* brick = dynamic_cast<Brick*>(collidable.get()))
+            {
+                if (!brick->IsDestroyed())
+                {
+                    aliveBricks.push_back(brick);
+                }
+            }
+        }
+
+        if (!aliveBricks.empty())
+        {
+            std::uniform_int_distribution<> dis(0, static_cast<int>(aliveBricks.size()) - 1);
+            int index = dis(gGen);
+            SpawnPowerUp(game, aliveBricks[index]->GetPosition(), PowerUpType::TheBomb);
+        }
+    }
 } // namespace nuvelocity::frs42

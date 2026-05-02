@@ -420,6 +420,12 @@ namespace nuvelocity::frs42
                         mPlayfield.DebugDestroyAllBricks(game);
                         mCheatBuffer.clear();
                     }
+                    else if (mCheatBuffer.find("cheatbomb") != std::string::npos)
+                    {
+                        MarkCheated();
+                        mPlayfield.DebugSpawnBomb(game);
+                        mCheatBuffer.clear();
+                    }
                 }
                 else if (key == SDLK_BACKSPACE)
                 {

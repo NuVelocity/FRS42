@@ -220,6 +220,7 @@ namespace nuvelocity::frs42
 
         void ApplyPowerUp(Game* game, PowerUpType type);
         void DebugDestroyAllBricks(Game* game);
+        void DebugSpawnBomb(Game* game);
 
         void ToggleMouseBallControl();
         bool IsMouseBallControlEnabled() const
