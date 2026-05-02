@@ -40,7 +40,7 @@ namespace nuvelocity::frs42
             basePath = paths[mShipStyle];
         }
         mBaseSequence = game->mAsset->LoadSequence(basePath);
-        mExplodeSequence = game->mAsset->LoadSequence("Resources/Player Ship/RS Shipexplode");
+        mExplodeSequence = game->mAsset->LoadSequence("Resources/Player Ship/Shipexplode");
         mThrustLeftSequence = game->mAsset->LoadSequence("Resources/Player Ship/Thrust Left");
         mThrustRightSequence = game->mAsset->LoadSequence("Resources/Player Ship/Thrust Right");
 
