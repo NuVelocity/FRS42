@@ -14,6 +14,7 @@
 #include <system/ui/Button.h>
 #include <system/ui/Label.h>
 #include <system/ui/MdiManager.h>
+#include <system/ui/ScrollView.h>
 #include <system/ui/skin/JWindowSkin.h>
 
 namespace nuvelocity::frs42
@@ -88,7 +89,12 @@ namespace nuvelocity::frs42
         AddChild(hintLabel);
 
         auto& rsMgr = RoundSetManager::Get();
-        int ry = 110;
+        auto scrollView = std::make_shared<nuvelocity::ScrollView>();
+        scrollView->SetSkin(skin);
+        scrollView->SetRect({.x = 5, .y = 100, .w = 601, .h = 334});
+        AddChild(scrollView);
+
+        int ry = 0;
 
         // We need to iterate over sets to build the grid
         auto roundSets = game->mAsset->EnumerateRoundSets();
@@ -104,7 +110,9 @@ namespace nuvelocity::frs42
                 continue;
             }
 
-            int rx = margin;
+            SDL_Point buttonSize = {.x = 107, .y = 74};
+            int gap = 8;
+            int rx = setIdx == 0 ? 0 : buttonSize.x + gap; // 8 is spacing between sets
             int cpIdx = 0;
             for (auto* cp : rs->GetCheckPoints())
             {
@@ -116,7 +124,7 @@ namespace nuvelocity::frs42
                     std::to_string(setIdx + 1) + "-" + std::to_string(roundNum + 1);
 
                 auto btn = std::make_shared<frs42::CheckpointButton>(img, roundNum, labelStr);
-                btn->SetRect({.x = rx, .y = ry, .w = 107, .h = 74});
+                btn->SetRect({.x = rx, .y = ry, .w = buttonSize.x, .h = buttonSize.y});
                 btn->SetSkin(skin);
 
                 bool locked = false;
@@ -169,11 +177,11 @@ namespace nuvelocity::frs42
                         });
                 }
 
-                AddChild(btn);
-                rx += 115;
+                scrollView->AddChild(btn);
+                rx += buttonSize.x + gap;
                 cpIdx++;
             }
-            ry += 82;
+            ry += buttonSize.y + gap;
             setIdx++;
         }
     }
