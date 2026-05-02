@@ -56,22 +56,29 @@ namespace nuvelocity::frs42
 
         const SDL_Rect labelRect = label->GetRect();
         const int buttonY = labelRect.y + labelRect.h + 15;
-        const int buttonW = 133;
         const int buttonH = 21;
 
         if (showCancelButton)
         {
+            const int measuredConfirmW = skin->MeasureTextWidth(game, confirmText, 13);
+            const int measuredCancelW = skin->MeasureTextWidth(game, cancelText, 13);
+            const int targetButtonW = std::max({133, measuredConfirmW + 40, measuredCancelW + 40});
+            const int spacing = 20;
+            const int totalWidth = (targetButtonW * 2) + spacing;
+            const int startX = ((GetRect().w - totalWidth) / 2) - 10;
+
             auto cancelBtn = std::make_shared<Button>();
             cancelBtn->SetCaption(cancelText);
             cancelBtn->SetSkin(skin);
-            cancelBtn->SetRect({120, buttonY, buttonW, buttonH});
+            cancelBtn->SetRect({startX, buttonY, targetButtonW, buttonH});
             cancelBtn->SetOnClick([this](Game* g) { OnCancel(g); });
             AddChild(cancelBtn);
 
             auto confirmBtn = std::make_shared<Button>();
             confirmBtn->SetCaption(confirmText);
             confirmBtn->SetSkin(skin);
-            confirmBtn->SetRect({270, buttonY, buttonW, buttonH});
+            confirmBtn->SetRect(
+                {startX + targetButtonW + spacing, buttonY, targetButtonW, buttonH});
             confirmBtn->SetOnClick([this](Game* g) { OnConfirm(g); });
             AddChild(confirmBtn);
         }
