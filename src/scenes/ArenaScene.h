@@ -56,6 +56,7 @@ namespace nuvelocity::frs42
         BrickInfo* GetOrLoadBrickInfo(Game* game, const std::string& path);
         void ShowPauseMenu(Game* game);
         void ShowOptionsDialog(Game* game);
+        void MarkCheated();
     };
 } // namespace nuvelocity::frs42
 

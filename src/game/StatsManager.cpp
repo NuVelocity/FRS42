@@ -219,6 +219,8 @@ namespace nuvelocity::frs42
             current->mCareerTotals = new GameStats();
         }
 
+        // FIXME: behavior not yet checked for accuracy. Should cheated games count
+        // towards career totals?
         current->mCareerTotals->mSecondsPlayed += sessionStats->mSecondsPlayed;
         current->mCareerTotals->mPointsScored += sessionStats->mPointsScored;
         current->mCareerTotals->mBricksDestroyed += sessionStats->mBricksDestroyed;
@@ -228,20 +230,23 @@ namespace nuvelocity::frs42
             current->mCareerTotals->mGamesFinished++;
         }
 
-        if (current->mCareerBest == nullptr ||
-            sessionStats->mPointsScored > current->mCareerBest->mPointsScored)
+        if (!sessionStats->mUsedCheat)
         {
-            if (current->mCareerBest == nullptr)
+            if (current->mCareerBest == nullptr ||
+                sessionStats->mPointsScored > current->mCareerBest->mPointsScored)
             {
-                current->mCareerBest = new GameStats();
+                if (current->mCareerBest == nullptr)
+                {
+                    current->mCareerBest = new GameStats();
+                }
+                *current->mCareerBest = *sessionStats;
             }
-            *current->mCareerBest = *sessionStats;
-        }
 
-        // Record this game in player history for high score listing
-        auto* recordedGame = new GameStats();
-        *recordedGame = *sessionStats;
-        current->mAllGamesPlayed.push_back(recordedGame);
+            // Record this game in player history for high score listing
+            auto* recordedGame = new GameStats();
+            *recordedGame = *sessionStats;
+            current->mAllGamesPlayed.push_back(recordedGame);
+        }
 
         Save();
     }
@@ -310,7 +315,7 @@ namespace nuvelocity::frs42
         {
             for (auto* game : player->mAllGamesPlayed)
             {
-                if (difficulty >= 0 && game->mLevelOfDifficulty != difficulty)
+                if (game->mUsedCheat || (difficulty >= 0 && game->mLevelOfDifficulty != difficulty))
                 {
                     continue;
                 }

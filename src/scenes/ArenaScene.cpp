@@ -340,6 +340,7 @@ namespace nuvelocity::frs42
                     }
                     else if (mCheatBuffer.find("cheatnext") != std::string::npos)
                     {
+                        MarkCheated();
                         const auto* nextEntry =
                             RoundSetManager::Get().GetRoundEntry(mRoundEntry->globalIndex + 1);
                         if (nextEntry != nullptr)
@@ -352,62 +353,74 @@ namespace nuvelocity::frs42
                     }
                     else if (mCheatBuffer.find("cheatmouse") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ToggleMouseBallControl();
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatsmall") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::SmallBall);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatnormal") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::NormalBall);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatsplit") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::Multiply8);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatfire") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::FireBall);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatrail") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::RailBall);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatgun") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::Gun);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatmiss") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::BigGun);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatcatch") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::Catch);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatgrow") != std::string::npos ||
                              mCheatBuffer.find("cheatexpand") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::ExpandPaddle);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("cheatshrink") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.ApplyPowerUp(game, PowerUpType::ShrinkPaddle);
                         mCheatBuffer.clear();
                     }
                     else if (mCheatBuffer.find("debugfinishlevel") != std::string::npos)
                     {
+                        MarkCheated();
                         mPlayfield.DebugDestroyAllBricks(game);
                         mCheatBuffer.clear();
                     }
@@ -616,5 +629,18 @@ namespace nuvelocity::frs42
             game->mMdi->AddCenteredWindow(
                 game, std::make_shared<StatisticsWindow>(game, tabIndex, footer, selectedIndex));
         }
+    }
+
+    void ArenaScene::MarkCheated()
+    {
+        if (!mPlayfield.GetGameStats().mUsedCheat)
+        {
+            mPlayfield.MarkCheated();
+        }
+
+        std::vector<std::unique_ptr<nuvelocity::Label>> labels;
+        labels.push_back(std::make_unique<nuvelocity::Label>("You are", "Megovision"));
+        labels.push_back(std::make_unique<nuvelocity::Label>("cheating", "Megovision"));
+        mMegovision.ShowMessage(std::move(labels), 3.0F, false);
     }
 } // namespace nuvelocity::frs42

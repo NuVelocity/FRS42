@@ -82,6 +82,11 @@ namespace nuvelocity::frs42
             mIsStandAlone = isMainMenu;
         }
 
+        void MarkCheated()
+        {
+            mGameStats.mUsedCheat = true;
+        }
+
         void LoadBackground(Game* game, const std::string& path);
         void SetRoundEntry(const RoundEntry* entry)
         {
