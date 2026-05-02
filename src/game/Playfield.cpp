@@ -1211,16 +1211,18 @@ namespace nuvelocity::frs42
     {
         mGameStats.mBallsLost++;
 
-        if (mMegovision != nullptr && mIonSpheres <= 0)
+        if (mMegovision == nullptr || mIonSpheres > 0)
         {
-            game->mAudio->PlaySfx("Lost Ball.ogg");
-            mIsGameOver = true;
-            mIsSuspended = true;
-            game->mAudio->PlaySfx("Game Over.ogg");
-            auto label = std::make_unique<Label>("Game Over", "Megovision");
-            label->SetWrap(true);
-            mMegovision->ShowMessage(std::move(label), 1.75F, true);
+            return;
         }
+
+        game->mAudio->PlaySfx("Lost Ball.ogg");
+        mIsGameOver = true;
+        mIsSuspended = true;
+        game->mAudio->PlaySfx("Game Over.ogg");
+        auto label = std::make_unique<Label>("Game Over", "Megovision");
+        label->SetWrap(true);
+        mMegovision->ShowMessage(std::move(label), 1.75F, true);
     }
 
     void Playfield::SpawnPowerUpAt(Game* game, const SDL_FPoint& pos)
