@@ -254,17 +254,35 @@ namespace nuvelocity::frs42
                 game->mAudio->PlaySfx(mInfo->GetDestroyedSoundPath());
             }
 
-            if (mPlayfield != nullptr && mInfo->GetBreakParticleGen() != nullptr)
-            {
-                mPlayfield->SpawnParticleBurst(
-                    mInfo->GetBreakParticleGen(), GetPosition(), &mInfo->GetBreakParticleTypes());
-            }
-
             if (mInfo->GetDestroyedSeqPath() != "!None")
             {
                 mSequence =
                     game->mAsset->LoadSequence("Resources/Effects/" + mInfo->GetDestroyedSeqPath());
                 mAnimationStartTick = SDL_GetTicks();
+            }
+
+            if (mPlayfield != nullptr)
+            {
+                if (mInfo->GetBreakParticleGen() != nullptr)
+                {
+                    mPlayfield->SpawnParticleBurst(mInfo->GetBreakParticleGen(),
+                                                   GetPosition(),
+                                                   &mInfo->GetBreakParticleTypes());
+                }
+
+                if (mIsCompleted)
+                {
+                    return;
+                }
+
+                mPlayfield->AddScore(mInfo->GetScoreValue());
+                if (type == BrickType::PowerUp)
+                {
+                    mPlayfield->SpawnPowerUpAt(game, GetPosition());
+                }
+                mPlayfield->GetGameStats().mBricksDestroyed++;
+
+                mIsCompleted = true;
             }
         }
     }

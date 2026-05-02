@@ -71,6 +71,7 @@ namespace nuvelocity::frs42
         Sequence* mSequence = nullptr;
         uint64_t mAnimationStartTick = 0;
         bool mIsDestroyed = false; // Set to true after destruction animation finishes.
+        bool mIsCompleted = false;
 
         int mHitsRemaining = 1;
         bool mIsPlayingDestroyedAnimation = false;

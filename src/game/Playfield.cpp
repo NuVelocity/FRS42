@@ -1208,10 +1208,7 @@ namespace nuvelocity::frs42
         // 5.2. If it's destroyed, add score and spawn brick destroy particles.
         else if (brickInfo != nullptr)
         {
-            int brickScore = brickInfo->GetScoreValue();
-            AddScore(brickScore);
-            mGameStats.mBricksDestroyed++;
-            SpawnPowerUpAt(game, collidable->GetPosition());
+            // Brick already handled scoring and other effects.
         }
         else
         {
