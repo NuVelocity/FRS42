@@ -182,18 +182,60 @@
     ],
     "buildPresets": [
         {
-            "name": "build-clang-amd64-debug",
-            "description": "",
-            "displayName": "",
-            "configurePreset": "clang-amd64-debug",
-            "verbose": false
+            "name": "gcc-amd64-debug",
+            "configurePreset": "gcc-amd64-debug"
         },
         {
-            "name": "build-msvc-amd64-debug",
-            "description": "",
-            "displayName": "",
-            "configurePreset": "msvc-amd64-debug",
-            "verbose": false
+            "name": "gcc-amd64-release",
+            "configurePreset": "gcc-amd64-release"
+        },
+        {
+            "name": "gcc-i386-debug",
+            "configurePreset": "gcc-i386-debug"
+        },
+        {
+            "name": "gcc-i386-release",
+            "configurePreset": "gcc-i386-release"
+        },
+        {
+            "name": "clang-amd64-debug",
+            "configurePreset": "clang-amd64-debug"
+        },
+        {
+            "name": "clang-amd64-release",
+            "configurePreset": "clang-amd64-release"
+        },
+        {
+            "name": "clang-i386-debug",
+            "configurePreset": "clang-i386-debug"
+        },
+        {
+            "name": "clang-i386-release",
+            "configurePreset": "clang-i386-release"
+        },
+        {
+            "name": "msvc-amd64-debug",
+            "configurePreset": "msvc-amd64-debug"
+        },
+        {
+            "name": "msvc-amd64-release",
+            "configurePreset": "msvc-amd64-release"
+        },
+        {
+            "name": "msvc-i386-debug",
+            "configurePreset": "msvc-i386-debug"
+        },
+        {
+            "name": "msvc-i386-release",
+            "configurePreset": "msvc-i386-release"
+        },
+        {
+            "name": "gcc-amd64-debug-lint",
+            "configurePreset": "gcc-amd64-debug-lint"
+        },
+        {
+            "name": "clang-amd64-debug-lint",
+            "configurePreset": "clang-amd64-debug-lint"
         }
     ]
 }
