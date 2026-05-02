@@ -1869,12 +1869,16 @@ namespace nuvelocity::frs42
         {
             if (!mBalls.empty())
             {
+                BallType type = mBalls[0]->GetType();
+                bool isSmall = mBalls[0]->IsSmall();
                 SDL_FPoint pos = mBalls[0]->GetPosition();
                 SDL_FPoint vel = mBalls[0]->GetVelocity();
                 for (int i = 0; i < 2; ++i)
                 {
                     auto nb = std::make_unique<Ball>();
                     nb->SetPlayfield(this);
+                    nb->SetType(type);
+                    nb->SetIsSmall(isSmall);
                     nb->AttachSequence(game);
                     nb->SetPosition(pos);
                     nb->SetVelocity({vel.x + (i == 0 ? 50 : -50), vel.y});
@@ -1887,12 +1891,16 @@ namespace nuvelocity::frs42
         {
             if (!mBalls.empty())
             {
+                BallType type = mBalls[0]->GetType();
+                bool isSmall = mBalls[0]->IsSmall();
                 SDL_FPoint pos = mBalls[0]->GetPosition();
                 SDL_FPoint vel = mBalls[0]->GetVelocity();
                 for (int i = 0; i < 7; ++i)
                 {
                     auto nb = std::make_unique<Ball>();
                     nb->SetPlayfield(this);
+                    nb->SetType(type);
+                    nb->SetIsSmall(isSmall);
                     nb->AttachSequence(game);
                     nb->SetPosition(pos);
                     // Spread them out
