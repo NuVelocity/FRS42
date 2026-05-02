@@ -567,10 +567,10 @@ namespace nuvelocity::frs42
                             if (mMegovision)
                             {
                                 std::vector<std::unique_ptr<Label>> labels;
-                                labels.push_back(std::make_unique<Label>("Bonus", "Megovision"));
-                                labels.push_back(std::make_unique<Label>("Points", "Megovision"));
-                                labels.push_back(
-                                    std::make_unique<Label>("500 Points", "Small Blue"));
+                                auto label = std::make_unique<Label>("Bonus Points", "Megovision");
+                                label->SetWrap(true);
+                                labels.push_back(std::move(label));
+                                labels.push_back(std::make_unique<Label>("500 Points", "Small Blue"));
                                 mMegovision->ShowMessage(std::move(labels), 0.5F, false);
                             }
                             AddScore(500);
@@ -774,8 +774,9 @@ namespace nuvelocity::frs42
                     if (mMegovision)
                     {
                         std::vector<std::unique_ptr<Label>> labels;
-                        labels.push_back(std::make_unique<Label>("Bomb", "Megovision"));
-                        labels.push_back(std::make_unique<Label>("Destroyed", "Megovision"));
+                        auto label = std::make_unique<Label>("Bomb Destroyed", "Megovision");
+                        label->SetWrap(true);
+                        labels.push_back(std::move(label));
                         labels.push_back(std::make_unique<Label>("+1000 Points", "Small Blue"));
                         mMegovision->ShowMessage(std::move(labels), 1.5F, false);
                     }
@@ -793,10 +794,9 @@ namespace nuvelocity::frs42
                 game->mAudio->PlaySfx("Ship EXPLODE.ogg");
                 if (mMegovision)
                 {
-                    std::vector<std::unique_ptr<Label>> labels;
-                    labels.push_back(std::make_unique<Label>("Ship", "Megovision"));
-                    labels.push_back(std::make_unique<Label>("Destroyed", "Megovision"));
-                    mMegovision->ShowMessage(std::move(labels), 1.5F, false);
+                    auto label = std::make_unique<Label>("Ship Destroyed", "Megovision");
+                    label->SetWrap(true);
+                    mMegovision->ShowMessage(std::move(label), 1.5F, false);
                 }
                 mShip->Explode(game);
                 HandleBallOut(game, nullptr); // Lose a life
@@ -1134,7 +1134,9 @@ namespace nuvelocity::frs42
             game->mAudio->PlaySfx("Lost Ball.ogg");
             if (mMegovision != nullptr)
             {
-                mMegovision->ShowMessage({"Out of", "bounds", "penalty"}, 3.5F);
+                auto label = std::make_unique<Label>("Out of bounds penalty", "Megovision");
+                label->SetWrap(true);
+                mMegovision->ShowMessage(std::move(label), 3.5F);
             }
             mShip->SetShieldSize(game, 2); // Reset to Normal Shield
             mShip->SetWeapon(game, WeaponType::None);
@@ -1215,7 +1217,9 @@ namespace nuvelocity::frs42
             mIsGameOver = true;
             mIsSuspended = true;
             game->mAudio->PlaySfx("Game Over.ogg");
-            mMegovision->ShowMessage({"Game Over"}, 1.75F, true);
+            auto label = std::make_unique<Label>("Game Over", "Megovision");
+            label->SetWrap(true);
+            mMegovision->ShowMessage(std::move(label), 1.75F, true);
         }
     }
 

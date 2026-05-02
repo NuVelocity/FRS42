@@ -45,7 +45,7 @@ namespace nuvelocity::frs42
 
         void
         ShowMessage(std::vector<std::unique_ptr<Label>> labels, float duration, bool flash = false);
-        void ShowMessage(const std::vector<std::string>& lines, float duration, bool flash = false);
+        void ShowMessage(std::unique_ptr<Label> label, float duration, bool flash = false);
 
         void ForceAdTransition()
         {
@@ -58,6 +58,8 @@ namespace nuvelocity::frs42
         }
 
     private:
+        static const SDL_Rect kMessageAreaRect;
+ 
         StandAloneFrame* mScoreBoardFrame = nullptr;
 
         int mScore = 0;
@@ -82,6 +84,7 @@ namespace nuvelocity::frs42
         std::vector<std::unique_ptr<Label>> mMessageLabels;
         float mMessageTimer = 0.0f;
         bool mMessageFlash = false;
+        bool mMessageLayoutDirty = false;
     };
 } // namespace nuvelocity::frs42
 

@@ -12,6 +12,12 @@
 
 namespace nuvelocity::frs42
 {
+    constexpr int kMessageRectWidthAllowance = 20;
+    const SDL_Rect Megovision::kMessageAreaRect = {.x = 530 - (kMessageRectWidthAllowance / 2),
+                                                   .y = 35,
+                                                   .w = 90 + kMessageRectWidthAllowance,
+                                                   .h = 95};
+
     Megovision::Megovision() = default;
 
     void Megovision::Load(Game* game)
@@ -57,6 +63,45 @@ namespace nuvelocity::frs42
                     mMessageLabels.clear();
                 }
             }
+        }
+
+        if (mMessageLayoutDirty && game != nullptr && game->mFont != nullptr)
+        {
+            if (mMessageLabels.size() == 1)
+            {
+                auto& label = mMessageLabels[0];
+                label->SetAlignment(TextAlignment::Center);
+                label->SetVerticalCenter(true);
+                label->SetPointSize(kFontBitmapDefaultPointSize);
+                label->SetWrap(true);
+                label->SetRect(kMessageAreaRect);
+            }
+            else if (!mMessageLabels.empty())
+            {
+                for (auto& label : mMessageLabels)
+                {
+                    label->SetAlignment(TextAlignment::Center);
+                    label->SetVerticalCenter(false);
+                    label->SetPointSize(kFontBitmapDefaultPointSize);
+                    label->SetWrap(true);
+                }
+
+                int totalHeight = 0;
+                for (const auto& label : mMessageLabels)
+                {
+                    totalHeight += label->GetRequiredHeight(game, kMessageAreaRect.w);
+                }
+
+                int currentY = kMessageAreaRect.y + ((kMessageAreaRect.h - totalHeight) / 2);
+                for (auto& label : mMessageLabels)
+                {
+                    int h = label->GetRequiredHeight(game, kMessageAreaRect.w);
+                    SDL_Rect r = {kMessageAreaRect.x, currentY, kMessageAreaRect.w, h};
+                    label->SetRect(r);
+                    currentY += h;
+                }
+            }
+            mMessageLayoutDirty = false;
         }
 
         // Update Advertisements
@@ -233,57 +278,46 @@ namespace nuvelocity::frs42
         game->mSpriteBatch->SetClipRect(nullptr);
 
         // Messages
-        if (!mMessageLabels.empty())
+        if (game->mSpriteBatch->IsDrawBoundsEnabled())
         {
-            const SDL_Rect megRect = {.x = 530, .y = 35, .w = 90, .h = 95};
-            const int centerX = megRect.x + (megRect.w / 2);
-            const int lineSpacing = 16;
-            const int fontHeight = 12;
+            game->mSpriteBatch->OutlineRect(&kMessageAreaRect, Colors::Green);
+        }
 
-            uint8_t alpha = 255;
+        if (mMessageLabels.empty())
+        {
+            return;
+        }
 
-            if (mMessageTimer > 0.0F)
+        uint8_t alpha = 255;
+        if (mMessageTimer > 0.0F)
+        {
+            if (mMessageFlash)
             {
-                if (mMessageFlash)
+                if (mMessageTimer > 0.75F)
                 {
-                    if (mMessageTimer > 0.75F)
-                    {
-                        alpha = 255;
-                    }
-                    else if (mMessageTimer > 0.25F)
-                    {
-                        alpha = static_cast<uint8_t>(((mMessageTimer - 0.25F) / 0.5F) * 255.0F);
-                    }
-                    else
-                    {
-                        alpha = 0;
-                    }
+                    alpha = 255;
                 }
-                else if (mMessageTimer < 0.5F)
+                else if (mMessageTimer > 0.25F)
                 {
-                    alpha = static_cast<uint8_t>((mMessageTimer / 0.5F) * 255.0F);
+                    alpha = static_cast<uint8_t>(((mMessageTimer - 0.25F) / 0.5F) * 255.0F);
+                }
+                else
+                {
+                    alpha = 0;
                 }
             }
-
-            SDL_Color color = Colors::White;
-            color.a = alpha;
-
-            const int numLines = static_cast<int>(mMessageLabels.size());
-            const int totalTextHeight = ((numLines - 1) * lineSpacing) + fontHeight;
-            const int startY = megRect.y + ((megRect.h - totalTextHeight) / 2);
-
-            for (size_t i = 0; i < mMessageLabels.size(); ++i)
+            else if (mMessageTimer < 0.5F)
             {
-                const auto& label = mMessageLabels[i];
-                game->mFont->DrawStringWithFontAt(label->GetFont(),
-                                                  game->mSpriteBatch,
-                                                  label->GetText(),
-                                                  centerX,
-                                                  startY + static_cast<int>(i * lineSpacing),
-                                                  color,
-                                                  kFontBitmapDefaultPointSize,
-                                                  TextAlignment::Center);
+                alpha = static_cast<uint8_t>((mMessageTimer / 0.5F) * 255.0F);
             }
+        }
+
+        SDL_Color color = Colors::White;
+        color.a = alpha;
+        for (auto& label : mMessageLabels)
+        {
+            label->SetColor(color);
+            label->Draw(game);
         }
     }
 
@@ -301,16 +335,13 @@ namespace nuvelocity::frs42
         mMessageLabels = std::move(labels);
         mMessageTimer = duration;
         mMessageFlash = flash;
+        mMessageLayoutDirty = true;
     }
 
-    void Megovision::ShowMessage(const std::vector<std::string>& lines, float duration, bool flash)
+    void Megovision::ShowMessage(std::unique_ptr<Label> label, float duration, bool flash)
     {
         std::vector<std::unique_ptr<Label>> labels;
-        labels.reserve(lines.size());
-        for (const auto& line : lines)
-        {
-            labels.push_back(std::make_unique<Label>(line, "Megovision"));
-        }
+        labels.push_back(std::move(label));
         ShowMessage(std::move(labels), duration, flash);
     }
 } // namespace nuvelocity::frs42
