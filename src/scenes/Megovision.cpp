@@ -283,7 +283,7 @@ namespace nuvelocity::frs42
             game->mSpriteBatch->OutlineRect(&kMessageAreaRect, Colors::Green);
         }
 
-        if (mMessageLabels.empty())
+        if (mMessageLabels.empty() || mMessageLayoutDirty)
         {
             return;
         }
