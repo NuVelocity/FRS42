@@ -1315,7 +1315,7 @@ namespace nuvelocity::frs42
             ApplyBallSpeedUp(ball, pos, true);
         }
 
-        // 3. If it's a fire ball, apply hit effects to up tos 2 adjacent bricks.
+        // 3. If it's a fire ball, apply hit effects to up to 2 adjacent bricks.
         if (ball->GetType() == BallType::Fire)
         {
             int splashCount = 0;
@@ -1334,15 +1334,7 @@ namespace nuvelocity::frs42
                     // horizontally (dx <= 33)
                     if (dy < 20.0F && dx <= 33.0F)
                     {
-                        otherBrick->OnHit(game, mBounds);
-                        if (!otherBrick->IsDestroyed())
-                        {
-                            otherBrick->OnHit(game, mBounds);
-                        }
-                        if (!otherBrick->IsDestroyed())
-                        {
-                            otherBrick->OnHit(game, mBounds);
-                        }
+                        otherBrick->OnDestroy(game, mBounds);
                         splashCount++;
                         if (splashCount >= 2)
                         {
@@ -1358,7 +1350,7 @@ namespace nuvelocity::frs42
         // 4.1. If the ball is trapped, just bounce off bricks and do nothing.
         if (ball->IsTrapped())
         {
-            if (brick)
+            if (brick != nullptr)
             {
                 if (Brick::IsIndestructibleType(brickInfo->GetBrickType()))
                 {
@@ -1369,7 +1361,15 @@ namespace nuvelocity::frs42
             }
             return;
         }
-        // 4.2. Apply hit effects if it's not a trapped ball.
+        // 4.2. Immediate destruction with fire or rail balls.
+        else if (ball->GetType() == BallType::Fire || ball->GetType() == BallType::Rail)
+        {
+            if (brick != nullptr)
+            {
+                brick->OnDestroy(game, mBounds);
+            }
+        }
+        // 4.3. Apply hit effects if it's not a trapped ball.
         else
         {
             collidable->OnHit(game, mBounds);
