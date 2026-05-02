@@ -820,209 +820,8 @@ namespace nuvelocity::frs42
             }
         }
 
-        auto updateBalls = [&](std::vector<std::unique_ptr<Ball>>& balls)
-        {
-            for (auto& ball : balls)
-            {
-                if (!mBallsSuspended)
-                {
-                    ball->Update(game);
-                }
-                if (ball->IsAttached() || mBallsSuspended)
-                {
-                    continue;
-                }
-
-                const float radius = ball->GetRadius();
-                const float speed = ball->GetSpeed();
-                const float maxStepDist = radius * 0.5F;
-                const float moveDist = speed * deltaTime;
-
-                int numSteps = std::max(1, static_cast<int>(std::ceil(moveDist / maxStepDist)));
-                const float dt = deltaTime / static_cast<float>(numSteps);
-
-                for (int step = 0; step < numSteps; ++step)
-                {
-                    SDL_FPoint pos = ball->GetPosition();
-                    SDL_FPoint vel = ball->GetVelocity();
-
-                    pos.x += vel.x * dt;
-                    pos.y += vel.y * dt;
-                    ball->SetPosition(pos);
-
-                    if (mBounds.w > 0 && mBounds.h > 0)
-                    {
-                        CheckScreenBoundary(game, pos, radius, vel, ball);
-                        ball->SetVelocity(vel);
-                        ball->SetPosition(pos);
-
-                        if (ball->GetType() == BallType::Fire)
-                        {
-                            SpawnParticleBurst(
-                                game, "Particle Generators/Balls/Fire Ball", pos, 0.0F, 6.0F);
-                        }
-                        else if (ball->GetType() == BallType::Rail)
-                        {
-                            SpawnParticleBurst(
-                                game, "Particle Generators/Balls/Rail Ball", pos, 0.0F, 2.0F);
-                        }
-                    }
-
-                    pos = ball->GetPosition();
-                    vel = ball->GetVelocity();
-
-                    // Ship collision
-                    if (mShip && vel.y > 0)
-                    {
-                        if (MathUtils::ResolveCirclePolygonCollision(mShip->GetCollisionPolygon(),
-                                                                     mShip->GetPosition(),
-                                                                     pos,
-                                                                     radius,
-                                                                     vel))
-                        {
-                            ball->SetIsTrapped(false);
-                            ball->SetVelocity(vel);
-                            ball->SetPosition(pos);
-                            game->mAudio->PlaySfx("Bounce.ogg");
-                            mShip->ImpactRecoil();
-                            ApplyBallSpeedUp(ball.get(), pos, false);
-
-                            float angle = std::atan2(vel.y, vel.x);
-                            std::string pgen = ball->IsSmall()
-                                                   ? "Particle Generators/Bouce/Ball Hit Ship Small"
-                                                   : "Particle Generators/Bouce/Ball Hit Ship";
-                            SpawnParticleBurst(game, pgen, pos, angle);
-
-                            if (mShip->GetCatchMode())
-                            {
-                                mBallWaitingForRelease = true;
-                                ball->SetIsAttached(true);
-                            }
-                        }
-                    }
-
-                    for (const auto& collidable : mCollidables)
-                    {
-                        if (collidable->IsDestroyed())
-                        {
-                            continue;
-                        }
-
-                        if (MathUtils::ResolveCirclePolygonCollision(
-                                collidable->GetCollisionPolygon(),
-                                collidable->GetPosition(),
-                                pos,
-                                radius,
-                                vel))
-                        {
-                            if (ball->GetType() != BallType::Rail)
-                            {
-                                ball->SetVelocity(vel);
-                                ball->SetPosition(pos);
-                                ApplyBallSpeedUp(ball.get(), pos, true);
-                            }
-
-                            if (ball->GetType() == BallType::Fire)
-                            {
-                                // Splash damage: find up to 2 adjacent bricks
-                                int splashCount = 0;
-                                for (const auto& other : mCollidables)
-                                {
-                                    if (other.get() == collidable.get() || other->IsDestroyed())
-                                    {
-                                        continue;
-                                    }
-
-                                    if (auto* otherBrick = dynamic_cast<Brick*>(other.get()))
-                                    {
-                                        float dx = std::abs(otherBrick->GetPosition().x -
-                                                            collidable->GetPosition().x);
-                                        float dy = std::abs(otherBrick->GetPosition().y -
-                                                            collidable->GetPosition().y);
-                                        // Adjacent: Within 1 row (dy < 20) and touching
-                                        // horizontally (dx <= 33)
-                                        if (dy < 20.0F && dx <= 33.0F)
-                                        {
-                                            otherBrick->OnHit(game, mBounds);
-                                            if (!otherBrick->IsDestroyed())
-                                            {
-                                                otherBrick->OnHit(game, mBounds);
-                                            }
-                                            if (!otherBrick->IsDestroyed())
-                                            {
-                                                otherBrick->OnHit(game, mBounds);
-                                            }
-                                            splashCount++;
-                                            if (splashCount >= 2)
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (!ball->IsTrapped())
-                            {
-                                collidable->OnHit(game, mBounds);
-                                if (ball->GetType() == BallType::Fire)
-                                {
-                                    if (!collidable->IsDestroyed())
-                                    {
-                                        collidable->OnHit(game, mBounds);
-                                    }
-                                    if (!collidable->IsDestroyed())
-                                    {
-                                        collidable->OnHit(game, mBounds);
-                                    }
-                                }
-                            }
-
-                            auto* brick = dynamic_cast<Brick*>(collidable.get());
-                            if (ball->IsTrapped())
-                            {
-                                if (brick)
-                                {
-                                    if (Brick::IsIndestructibleType(
-                                            brick->GetInfo()->GetBrickType()))
-                                    {
-                                        float angle = std::atan2(vel.y, vel.x);
-                                        SpawnParticleBurst(
-                                            game,
-                                            "Particle Generators/Bouce/Ball Hit Wall Small",
-                                            pos,
-                                            angle);
-                                    }
-                                }
-                            }
-                            else if (!collidable->IsDestroyed())
-                            {
-                                float angle = std::atan2(vel.y, vel.x);
-                                std::string pgen =
-                                    ball->IsSmall()
-                                        ? "Particle Generators/Bouce/Ball Hit Brick Small"
-                                        : "Particle Generators/Bouce/Ball Hit Brick";
-                                SpawnParticleBurst(game, pgen, pos, angle);
-                            }
-                            else
-                            {
-                                int brickScore = (brick && brick->GetInfo())
-                                                     ? brick->GetInfo()->GetScoreValue()
-                                                     : 10;
-                                AddScore(brickScore);
-                                mGameStats.mBricksDestroyed++;
-                                SpawnPowerUpAt(game, collidable->GetPosition());
-                            }
-                        }
-                    }
-
-                    ball->SetPosition(pos);
-                }
-            }
-        };
-
-        updateBalls(mBalls);
-        updateBalls(mTrappedBalls);
+        UpdateBalls(game, mBalls);
+        UpdateBalls(game, mTrappedBalls);
 
         if (!mIsSuspended)
         {
@@ -1204,6 +1003,209 @@ namespace nuvelocity::frs42
                                            : "Particle Generators/Bouce/Ball Hit Wall";
                 }
                 SpawnParticleBurst(game, pgen, pos, angle);
+            }
+        }
+    }
+
+    void Playfield::UpdateBalls(Game* game, std::vector<std::unique_ptr<Ball>>& balls)
+    {
+        for (auto& ball : balls)
+        {
+            UpdateBall(game, ball.get());
+        }
+    }
+
+    void Playfield::UpdateBall(Game* game, Ball* ball)
+    {
+        const float deltaTime = game->GetDeltaTime();
+        if (!mBallsSuspended)
+        {
+            ball->Update(game);
+        }
+        if (ball->IsAttached() || mBallsSuspended)
+        {
+            return;
+        }
+
+        const float radius = ball->GetRadius();
+        const float speed = ball->GetSpeed();
+        const float maxStepDist = radius * 0.5F;
+        const float moveDist = speed * deltaTime;
+
+        int numSteps = std::max(1, static_cast<int>(std::ceil(moveDist / maxStepDist)));
+        const float dt = deltaTime / static_cast<float>(numSteps);
+
+        for (int step = 0; step < numSteps; ++step)
+        {
+            SDL_FPoint pos = ball->GetPosition();
+            SDL_FPoint vel = ball->GetVelocity();
+
+            pos.x += vel.x * dt;
+            pos.y += vel.y * dt;
+            ball->SetPosition(pos);
+
+            if (mBounds.w > 0 && mBounds.h > 0)
+            {
+                CheckScreenBoundary(game, pos, radius, vel, ball);
+                ball->SetVelocity(vel);
+                ball->SetPosition(pos);
+
+                if (ball->GetType() == BallType::Fire)
+                {
+                    SpawnParticleBurst(
+                        game, "Particle Generators/Balls/Fire Ball", pos, 0.0F, 6.0F);
+                }
+                else if (ball->GetType() == BallType::Rail)
+                {
+                    SpawnParticleBurst(
+                        game, "Particle Generators/Balls/Rail Ball", pos, 0.0F, 2.0F);
+                }
+            }
+
+            pos = ball->GetPosition();
+            vel = ball->GetVelocity();
+
+            // Ship collision
+            if (mShip && vel.y > 0)
+            {
+                if (MathUtils::ResolveCirclePolygonCollision(
+                        mShip->GetCollisionPolygon(), mShip->GetPosition(), pos, radius, vel))
+                {
+                    ball->SetIsTrapped(false);
+                    ball->SetVelocity(vel);
+                    ball->SetPosition(pos);
+                    game->mAudio->PlaySfx("Bounce.ogg");
+                    mShip->ImpactRecoil();
+                    ApplyBallSpeedUp(ball, pos, false);
+
+                    float angle = std::atan2(vel.y, vel.x);
+                    std::string pgen = ball->IsSmall()
+                                           ? "Particle Generators/Bouce/Ball Hit Ship Small"
+                                           : "Particle Generators/Bouce/Ball Hit Ship";
+                    SpawnParticleBurst(game, pgen, pos, angle);
+
+                    if (mShip->GetCatchMode())
+                    {
+                        mBallWaitingForRelease = true;
+                        ball->SetIsAttached(true);
+                    }
+                }
+            }
+
+            for (const auto& collidable : mCollidables)
+            {
+                HandleBallCollidableCollision(game, ball, collidable.get(), pos, vel, radius);
+            }
+            ball->SetPosition(pos);
+        }
+    }
+
+    void Playfield::HandleBallCollidableCollision(Game* game,
+                                                  Ball* ball,
+                                                  Collidable2D* collidable,
+                                                  SDL_FPoint& pos,
+                                                  SDL_FPoint& vel,
+                                                  float radius)
+    {
+        if (collidable->IsDestroyed())
+        {
+            return;
+        }
+
+        if (MathUtils::ResolveCirclePolygonCollision(
+                collidable->GetCollisionPolygon(), collidable->GetPosition(), pos, radius, vel))
+        {
+            if (ball->GetType() != BallType::Rail)
+            {
+                ball->SetVelocity(vel);
+                ball->SetPosition(pos);
+                ApplyBallSpeedUp(ball, pos, true);
+            }
+
+            if (ball->GetType() == BallType::Fire)
+            {
+                // Splash damage: find up to 2 adjacent bricks
+                int splashCount = 0;
+                for (const auto& other : mCollidables)
+                {
+                    if (other.get() == collidable || other->IsDestroyed())
+                    {
+                        continue;
+                    }
+
+                    if (auto* otherBrick = dynamic_cast<Brick*>(other.get()))
+                    {
+                        float dx =
+                            std::abs(otherBrick->GetPosition().x - collidable->GetPosition().x);
+                        float dy =
+                            std::abs(otherBrick->GetPosition().y - collidable->GetPosition().y);
+                        // Adjacent: Within 1 row (dy < 20) and touching
+                        // horizontally (dx <= 33)
+                        if (dy < 20.0F && dx <= 33.0F)
+                        {
+                            otherBrick->OnHit(game, mBounds);
+                            if (!otherBrick->IsDestroyed())
+                            {
+                                otherBrick->OnHit(game, mBounds);
+                            }
+                            if (!otherBrick->IsDestroyed())
+                            {
+                                otherBrick->OnHit(game, mBounds);
+                            }
+                            splashCount++;
+                            if (splashCount >= 2)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!ball->IsTrapped())
+            {
+                collidable->OnHit(game, mBounds);
+                if (ball->GetType() == BallType::Fire)
+                {
+                    if (!collidable->IsDestroyed())
+                    {
+                        collidable->OnHit(game, mBounds);
+                    }
+                    if (!collidable->IsDestroyed())
+                    {
+                        collidable->OnHit(game, mBounds);
+                    }
+                }
+            }
+
+            auto* brick = dynamic_cast<Brick*>(collidable);
+            if (ball->IsTrapped())
+            {
+                if (brick)
+                {
+                    if (Brick::IsIndestructibleType(brick->GetInfo()->GetBrickType()))
+                    {
+                        float angle = std::atan2(vel.y, vel.x);
+                        SpawnParticleBurst(
+                            game, "Particle Generators/Bouce/Ball Hit Wall Small", pos, angle);
+                    }
+                }
+            }
+            else if (!collidable->IsDestroyed())
+            {
+                float angle = std::atan2(vel.y, vel.x);
+                std::string pgen = ball->IsSmall()
+                                       ? "Particle Generators/Bouce/Ball Hit Brick Small"
+                                       : "Particle Generators/Bouce/Ball Hit Brick";
+                SpawnParticleBurst(game, pgen, pos, angle);
+            }
+            else
+            {
+                int brickScore =
+                    (brick && brick->GetInfo()) ? brick->GetInfo()->GetScoreValue() : 10;
+                AddScore(brickScore);
+                mGameStats.mBricksDestroyed++;
+                SpawnPowerUpAt(game, collidable->GetPosition());
             }
         }
     }
