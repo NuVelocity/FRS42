@@ -99,7 +99,7 @@ namespace nuvelocity::frs42
 
         float GetRadius() const
         {
-            return mIsSmall ? 4.0F : 8.0F;
+            return (mIsSmall || mIsTrapped) ? 4.0F : 8.0F;
         }
 
         void SetIsAttached(bool attached)
