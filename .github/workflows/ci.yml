@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
   pull_request:
-    branches: [ "**" ]
+    branches: ["**"]
 
 jobs:
   build-linux:
@@ -34,6 +34,9 @@ jobs:
               libegl1-mesa-dev libibus-1.0-dev libudev-dev libpipewire-0.3-dev \
               libdecor-0-dev liburing-dev libusb-1.0-0-dev libsamplerate0-dev \
               libaudio-dev libjack-dev libsndio-dev libthai-dev \
+              libfreetype6-dev libharfbuzz-dev \
+              libpng-dev libjpeg-dev libtiff-dev libwebp-dev libavif-dev \
+              libvorbis-dev libflac-dev libmpg123-dev libopus-dev libopusfile-dev \
               glslang-tools
 
       - name: Configure CMake
