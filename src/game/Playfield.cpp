@@ -34,6 +34,7 @@
 #include <system/AudioManager.h>
 #include <system/InputManager.h>
 #include <system/SpriteBatch.h>
+#include <system/ui/Label.h>
 
 namespace nuvelocity::frs42
 {
@@ -190,6 +191,24 @@ namespace nuvelocity::frs42
         ball->SetAttachmentOffset({20.0F, -38.0F});
         AddBall(std::move(ball));
         mBallWaitingForRelease = true;
+    }
+
+    void Playfield::SetRoundEntry(const RoundEntry* entry)
+    {
+        mRoundEntry = entry;
+        mRoundNameTimer = 3.0F;
+        mRoundNameAlpha = 255;
+    }
+
+    void Playfield::SetRoundDisplayName(const std::string& name)
+    {
+        mRoundDisplayName = name;
+        mRoundLabel = std::make_unique<Label>(name, "Big White");
+        mRoundLabel->SetPointSize(-1);
+        mRoundLabel->SetAlignment(TextAlignment::Center);
+        mRoundLabel->SetVerticalCenter(true);
+        mRoundLabel->SetWrap(true);
+        mRoundLabel->SetRect(mBounds);
     }
 
     void Playfield::LoadBackground(Game* game, const std::string& path)
@@ -515,35 +534,36 @@ namespace nuvelocity::frs42
             game->mSpriteBatch->Draw(mGameOverFrame, centerX, centerY);
         }
 
-        if (mRoundNameTimer > 0.0F && mRoundEntry != nullptr && mRoundEntry->globalIndex >= 0)
+        if (mRoundNameTimer > 0.0F && mRoundEntry != nullptr && mRoundEntry->globalIndex >= 0 &&
+            mRoundLabel != nullptr)
         {
-            const auto& roundName = mRoundDisplayName;
             SDL_Color textColor = {.r = 255, .g = 255, .b = 255, .a = mRoundNameAlpha};
-            SDL_Color bgColor = {
-                .r = 0, .g = 0, .b = 0, .a = static_cast<uint8_t>(mRoundNameAlpha / 2)};
-
-            int centerX = mBounds.x + mBounds.w / 2;
-            int centerY = mBounds.y + mBounds.h / 2;
+            mRoundLabel->SetColor(textColor);
 
             int tw = 0;
             int th = 0;
-            game->mFont->MeasureStringWithFont("Big White", roundName, -1, tw, th);
+            game->mFont->MeasureStringWithFont("Big White", mRoundDisplayName, -1, tw, th);
+
+            int maxWidth = mBounds.w - 5;
+            if (tw > maxWidth)
+            {
+                tw = maxWidth;
+                th = mRoundLabel->GetRequiredHeight(game, tw);
+            }
+
+            int centerX = mBounds.x + mBounds.w / 2;
+            int centerY = mBounds.y + mBounds.h / 2;
 
             const int padding = 5;
             SDL_Rect bgRect = {.x = centerX - (tw / 2) - padding,
                                .y = centerY - (th / 2) - padding,
                                .w = tw + padding * 2,
                                .h = th + padding * 2};
+            SDL_Color bgColor = {
+                .r = 0, .g = 0, .b = 0, .a = static_cast<uint8_t>(mRoundNameAlpha / 2)};
             game->mSpriteBatch->FillRect(&bgRect, bgColor);
 
-            game->mFont->DrawStringWithFontAt("Big White",
-                                              game->mSpriteBatch,
-                                              roundName,
-                                              centerX,
-                                              centerY,
-                                              textColor,
-                                              -1,
-                                              TextAlignment::Center);
+            mRoundLabel->Draw(game);
         }
 
         if (mBounds.w > 0 && mBounds.h > 0 && game->mSpriteBatch->IsDrawBoundsEnabled())

@@ -26,6 +26,7 @@ namespace nuvelocity
     class ParticleGeneratorInfo;
     class ParticleGenerator;
     class ParticleType;
+    class Label;
 } // namespace nuvelocity
 
 namespace nuvelocity::frs42
@@ -94,17 +95,10 @@ namespace nuvelocity::frs42
         }
 
         void LoadBackground(Game* game, const std::string& path);
-        void SetRoundEntry(const RoundEntry* entry)
-        {
-            mRoundEntry = entry;
-            mRoundNameTimer = 3.0F;
-            mRoundNameAlpha = 255;
-        }
 
-        void SetRoundDisplayName(const std::string& name)
-        {
-            mRoundDisplayName = name;
-        }
+        void SetRoundEntry(const RoundEntry* entry);
+
+        void SetRoundDisplayName(const std::string& name);
 
         void AddBall(std::unique_ptr<Ball> ball)
         {
@@ -382,6 +376,7 @@ namespace nuvelocity::frs42
         std::string mRoundDisplayName;
         float mRoundNameTimer = 0.0F;
         uint8_t mRoundNameAlpha = 0;
+        std::unique_ptr<Label> mRoundLabel;
 
         // Background state
         BackgroundDefinition* mBackgroundDef;
