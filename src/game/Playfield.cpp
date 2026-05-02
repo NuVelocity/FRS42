@@ -1104,106 +1104,113 @@ namespace nuvelocity::frs42
                                                   SDL_FPoint& vel,
                                                   float radius)
     {
+        // 0. Ignore destroyed collidables.
         if (collidable->IsDestroyed())
         {
             return;
         }
 
-        if (MathUtils::ResolveCirclePolygonCollision(
+        // 1. Check if we collide with the collidable's polygon. If not, skip.
+        if (!MathUtils::ResolveCirclePolygonCollision(
                 collidable->GetCollisionPolygon(), collidable->GetPosition(), pos, radius, vel))
         {
-            if (ball->GetType() != BallType::Rail)
-            {
-                ball->SetVelocity(vel);
-                ball->SetPosition(pos);
-                ApplyBallSpeedUp(ball, pos, true);
-            }
+            return;
+        }
 
-            if (ball->GetType() == BallType::Fire)
+        // 2. Bounce the ball and spawn particles. If it's a rail ball, don't apply speed up or hit
+        // effects.
+        if (ball->GetType() != BallType::Rail)
+        {
+            ball->SetVelocity(vel);
+            ball->SetPosition(pos);
+            ApplyBallSpeedUp(ball, pos, true);
+        }
+
+        // 3. If it's a fire ball, apply hit effects to up tos 2 adjacent bricks.
+        if (ball->GetType() == BallType::Fire)
+        {
+            int splashCount = 0;
+            for (const auto& other : mCollidables)
             {
-                // Splash damage: find up to 2 adjacent bricks
-                int splashCount = 0;
-                for (const auto& other : mCollidables)
+                if (other.get() == collidable || other->IsDestroyed())
                 {
-                    if (other.get() == collidable || other->IsDestroyed())
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    if (auto* otherBrick = dynamic_cast<Brick*>(other.get()))
+                if (auto* otherBrick = dynamic_cast<Brick*>(other.get()))
+                {
+                    float dx = std::abs(otherBrick->GetPosition().x - collidable->GetPosition().x);
+                    float dy = std::abs(otherBrick->GetPosition().y - collidable->GetPosition().y);
+                    // Adjacent: Within 1 row (dy < 20) and touching
+                    // horizontally (dx <= 33)
+                    if (dy < 20.0F && dx <= 33.0F)
                     {
-                        float dx =
-                            std::abs(otherBrick->GetPosition().x - collidable->GetPosition().x);
-                        float dy =
-                            std::abs(otherBrick->GetPosition().y - collidable->GetPosition().y);
-                        // Adjacent: Within 1 row (dy < 20) and touching
-                        // horizontally (dx <= 33)
-                        if (dy < 20.0F && dx <= 33.0F)
+                        otherBrick->OnHit(game, mBounds);
+                        if (!otherBrick->IsDestroyed())
                         {
                             otherBrick->OnHit(game, mBounds);
-                            if (!otherBrick->IsDestroyed())
-                            {
-                                otherBrick->OnHit(game, mBounds);
-                            }
-                            if (!otherBrick->IsDestroyed())
-                            {
-                                otherBrick->OnHit(game, mBounds);
-                            }
-                            splashCount++;
-                            if (splashCount >= 2)
-                            {
-                                break;
-                            }
+                        }
+                        if (!otherBrick->IsDestroyed())
+                        {
+                            otherBrick->OnHit(game, mBounds);
+                        }
+                        splashCount++;
+                        if (splashCount >= 2)
+                        {
+                            break;
                         }
                     }
                 }
             }
+        }
 
-            if (!ball->IsTrapped())
+        auto* brick = dynamic_cast<Brick*>(collidable);
+        // 4.1. If the ball is trapped, just bounce off bricks and do nothing.
+        if (ball->IsTrapped())
+        {
+            if (brick)
             {
-                collidable->OnHit(game, mBounds);
-                if (ball->GetType() == BallType::Fire)
+                if (Brick::IsIndestructibleType(brick->GetInfo()->GetBrickType()))
                 {
-                    if (!collidable->IsDestroyed())
-                    {
-                        collidable->OnHit(game, mBounds);
-                    }
-                    if (!collidable->IsDestroyed())
-                    {
-                        collidable->OnHit(game, mBounds);
-                    }
+                    float angle = std::atan2(vel.y, vel.x);
+                    SpawnParticleBurst(
+                        game, "Particle Generators/Bouce/Ball Hit Wall Small", pos, angle);
                 }
             }
-
-            auto* brick = dynamic_cast<Brick*>(collidable);
-            if (ball->IsTrapped())
+            return;
+        }
+        // 4.2. Apply hit effects if it's not a trapped ball.
+        else
+        {
+            collidable->OnHit(game, mBounds);
+            if (ball->GetType() == BallType::Fire)
             {
-                if (brick)
+                if (!collidable->IsDestroyed())
                 {
-                    if (Brick::IsIndestructibleType(brick->GetInfo()->GetBrickType()))
-                    {
-                        float angle = std::atan2(vel.y, vel.x);
-                        SpawnParticleBurst(
-                            game, "Particle Generators/Bouce/Ball Hit Wall Small", pos, angle);
-                    }
+                    collidable->OnHit(game, mBounds);
+                }
+                if (!collidable->IsDestroyed())
+                {
+                    collidable->OnHit(game, mBounds);
                 }
             }
-            else if (!collidable->IsDestroyed())
-            {
-                float angle = std::atan2(vel.y, vel.x);
-                std::string pgen = ball->IsSmall()
-                                       ? "Particle Generators/Bouce/Ball Hit Brick Small"
-                                       : "Particle Generators/Bouce/Ball Hit Brick";
-                SpawnParticleBurst(game, pgen, pos, angle);
-            }
-            else
-            {
-                int brickScore =
-                    (brick && brick->GetInfo()) ? brick->GetInfo()->GetScoreValue() : 10;
-                AddScore(brickScore);
-                mGameStats.mBricksDestroyed++;
-                SpawnPowerUpAt(game, collidable->GetPosition());
-            }
+        }
+
+        // 5.1. If it's not destroyed, spawn ball hit brick particles.
+        if (!collidable->IsDestroyed())
+        {
+            float angle = std::atan2(vel.y, vel.x);
+            std::string pgen = ball->IsSmall() ? "Particle Generators/Bouce/Ball Hit Brick Small"
+                                               : "Particle Generators/Bouce/Ball Hit Brick";
+            SpawnParticleBurst(game, pgen, pos, angle);
+        }
+        // 5.2. If it's destroyed, add score and spawn brick destroy particles.
+        else
+        {
+            int brickScore = (brick && brick->GetInfo()) ? brick->GetInfo()->GetScoreValue() : 10;
+            AddScore(brickScore);
+            mGameStats.mBricksDestroyed++;
+            SpawnPowerUpAt(game, collidable->GetPosition());
         }
     }
 
