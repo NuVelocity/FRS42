@@ -6,6 +6,7 @@
 #include "Brick.h"
 #include "BrickInfo.h"
 #include "Collidable2D.h"
+#include "EmitterType.h"
 #include "FishAI.h"
 #include "FontManager.h"
 #include "MainMenuScene.h"
@@ -570,7 +571,8 @@ namespace nuvelocity::frs42
                                 auto label = std::make_unique<Label>("Bonus Points", "Megovision");
                                 label->SetWrap(true);
                                 labels.push_back(std::move(label));
-                                labels.push_back(std::make_unique<Label>("500 Points", "Small Blue"));
+                                labels.push_back(
+                                    std::make_unique<Label>("500 Points", "Small Blue"));
                                 mMegovision->ShowMessage(std::move(labels), 0.5F, false);
                             }
                             AddScore(500);
@@ -1306,32 +1308,163 @@ namespace nuvelocity::frs42
         }
     }
 
-    void Playfield::SpawnParticleBurst(Game* game,
-                                       const std::string& path,
-                                       const SDL_FPoint& pos,
-                                       float baseAngle,
-                                       float posVariation,
-                                       float lifeMultiplier)
+    ParticleGenerator* Playfield::SpawnParticleBurst(Game* game,
+                                                     const std::string& path,
+                                                     const SDL_FPoint& pos,
+                                                     float baseAngle,
+                                                     float posVariation,
+                                                     float lifeMultiplier,
+                                                     bool doFadeOut)
     {
         std::string fullPath = "Resources/Effects/" + path;
-        auto* info = game->mAsset->LoadParticleGeneratorInfo(fullPath);
-        SpawnParticleBurst(info, pos, nullptr, baseAngle, posVariation, lifeMultiplier);
+        auto info = game->mAsset->LoadParticleGeneratorInfo(fullPath);
+        return SpawnParticleBurst(
+            info, pos, nullptr, baseAngle, posVariation, lifeMultiplier, doFadeOut);
     }
 
-    void Playfield::SpawnParticleBurst(const nuvelocity::ParticleGeneratorInfo* info,
-                                       const SDL_FPoint& pos,
-                                       const std::vector<nuvelocity::ParticleType*>* customTypes,
-                                       float baseAngle,
-                                       float posVariation,
-                                       float lifeMultiplier)
+    ParticleGenerator*
+    Playfield::SpawnParticleBurst(const nuvelocity::ParticleGeneratorInfo* info,
+                                  const SDL_FPoint& pos,
+                                  const std::vector<nuvelocity::ParticleType*>* customTypes,
+                                  float baseAngle,
+                                  float posVariation,
+                                  float lifeMultiplier,
+                                  bool doFadeOut)
     {
         if (info == nullptr)
         {
-            return;
+            return nullptr;
         }
-        auto gen = std::make_unique<nuvelocity::ParticleGenerator>();
-        gen->Burst(pos, info, customTypes, baseAngle, posVariation, lifeMultiplier);
+
+        auto gen = std::make_unique<ParticleGenerator>();
+        gen->Burst(pos, info, customTypes, baseAngle, posVariation, lifeMultiplier, doFadeOut);
+        auto* result = gen.get();
         mParticleGenerators.push_back(std::move(gen));
+        return result;
+    }
+
+    ParticleGenerator*
+    Playfield::SpawnParticleGenerator(const nuvelocity::ParticleGeneratorInfo* info,
+                                      const SDL_FPoint& pos,
+                                      nuvelocity::EmitterType type,
+                                      nuvelocity::EmitterShape shape,
+                                      float rateOrInterval,
+                                      float duration,
+                                      float width,
+                                      float height,
+                                      const std::vector<nuvelocity::ParticleType*>* customTypes,
+                                      float baseAngle,
+                                      float posVariation,
+                                      float lifeMultiplier,
+                                      bool doFadeOut)
+    {
+        if (info == nullptr)
+        {
+            return nullptr;
+        }
+
+        auto gen = std::make_unique<ParticleGenerator>();
+        gen->Start(pos,
+                   info,
+                   type,
+                   shape,
+                   rateOrInterval,
+                   duration,
+                   width,
+                   height,
+                   customTypes,
+                   baseAngle,
+                   posVariation,
+                   lifeMultiplier,
+                   doFadeOut);
+        auto* result = gen.get();
+        mParticleGenerators.push_back(std::move(gen));
+        return result;
+    }
+
+    ParticleGenerator*
+    Playfield::SpawnParticleGenerator(Game* game,
+                                      const std::string& path,
+                                      const SDL_FPoint& pos,
+                                      nuvelocity::EmitterType type,
+                                      nuvelocity::EmitterShape shape,
+                                      float rateOrInterval,
+                                      float duration,
+                                      float width,
+                                      float height,
+                                      const std::vector<nuvelocity::ParticleType*>* customTypes,
+                                      float baseAngle,
+                                      float posVariation,
+                                      float lifeMultiplier,
+                                      bool doFadeOut)
+    {
+        std::string fullPath = "Resources/Effects/" + path;
+        auto info = game->mAsset->LoadParticleGeneratorInfo(fullPath);
+        return SpawnParticleGenerator(info,
+                                      pos,
+                                      type,
+                                      shape,
+                                      rateOrInterval,
+                                      duration,
+                                      width,
+                                      height,
+                                      customTypes,
+                                      baseAngle,
+                                      posVariation,
+                                      lifeMultiplier,
+                                      doFadeOut);
+    }
+
+    ParticleGenerator* Playfield::SpawnParticleContinuous(Game* game,
+                                                          const std::string& path,
+                                                          const SDL_FPoint& pos,
+                                                          float rate,
+                                                          float duration,
+                                                          float baseAngle,
+                                                          float posVariation,
+                                                          float lifeMultiplier,
+                                                          bool doFadeOut)
+    {
+        return SpawnParticleGenerator(game,
+                                      path,
+                                      pos,
+                                      nuvelocity::EmitterType::Continuous,
+                                      nuvelocity::EmitterShape::Cone,
+                                      rate,
+                                      duration,
+                                      0.0F,
+                                      0.0F,
+                                      nullptr,
+                                      baseAngle,
+                                      posVariation,
+                                      lifeMultiplier,
+                                      doFadeOut);
+    }
+
+    ParticleGenerator* Playfield::SpawnParticlePulse(Game* game,
+                                                     const std::string& path,
+                                                     const SDL_FPoint& pos,
+                                                     float interval,
+                                                     float duration,
+                                                     float baseAngle,
+                                                     float posVariation,
+                                                     float lifeMultiplier,
+                                                     bool doFadeOut)
+    {
+        return SpawnParticleGenerator(game,
+                                      path,
+                                      pos,
+                                      nuvelocity::EmitterType::Pulse,
+                                      nuvelocity::EmitterShape::Cone,
+                                      interval,
+                                      duration,
+                                      0.0F,
+                                      0.0F,
+                                      nullptr,
+                                      baseAngle,
+                                      posVariation,
+                                      lifeMultiplier,
+                                      doFadeOut);
     }
     void Playfield::ApplyBallSpeedUp(Ball* ball, const SDL_FPoint& hitPos, bool isBrick)
     {

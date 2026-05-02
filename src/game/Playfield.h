@@ -4,6 +4,7 @@
 #include "Ball.h"
 #include "Bomb.h"
 #include "Collidable2D.h"
+#include "EmitterType.h"
 #include "GameStats.h"
 #include "ListEntries.h"
 #include "PowerUp.h"
@@ -212,18 +213,72 @@ namespace nuvelocity::frs42
             return mMouseBallControl;
         }
 
-        void SpawnParticleBurst(Game* game,
-                                const std::string& path,
-                                const SDL_FPoint& pos,
-                                float baseAngle = 0.0F,
-                                float posVariation = 0.0F,
-                                float lifeMultiplier = 1.0F);
-        void SpawnParticleBurst(const nuvelocity::ParticleGeneratorInfo* info,
-                                const SDL_FPoint& pos,
-                                const std::vector<nuvelocity::ParticleType*>* customTypes = nullptr,
-                                float baseAngle = 0.0F,
-                                float posVariation = 0.0F,
-                                float lifeMultiplier = 1.0F);
+        NVE_API ParticleGenerator* SpawnParticleBurst(Game* game,
+                                                      const std::string& path,
+                                                      const SDL_FPoint& pos,
+                                                      float baseAngle = 0.0F,
+                                                      float posVariation = 0.0F,
+                                                      float lifeMultiplier = 1.0F,
+                                                      bool doFadeOut = false);
+        NVE_API ParticleGenerator*
+        SpawnParticleBurst(const nuvelocity::ParticleGeneratorInfo* info,
+                           const SDL_FPoint& pos,
+                           const std::vector<nuvelocity::ParticleType*>* customTypes = nullptr,
+                           float baseAngle = 0.0F,
+                           float posVariation = 0.0F,
+                           float lifeMultiplier = 1.0F,
+                           bool doFadeOut = false);
+
+        NVE_API ParticleGenerator*
+        SpawnParticleGenerator(const nuvelocity::ParticleGeneratorInfo* info,
+                               const SDL_FPoint& pos,
+                               nuvelocity::EmitterType type,
+                               nuvelocity::EmitterShape shape = nuvelocity::EmitterShape::Cone,
+                               float rateOrInterval = 0.0F,
+                               float duration = 0.0F,
+                               float width = 0.0F,
+                               float height = 0.0F,
+                               const std::vector<nuvelocity::ParticleType*>* customTypes = nullptr,
+                               float baseAngle = 0.0F,
+                               float posVariation = 0.0F,
+                               float lifeMultiplier = 1.0F,
+                               bool doFadeOut = false);
+
+        NVE_API ParticleGenerator*
+        SpawnParticleGenerator(Game* game,
+                               const std::string& path,
+                               const SDL_FPoint& pos,
+                               nuvelocity::EmitterType type,
+                               nuvelocity::EmitterShape shape = nuvelocity::EmitterShape::Cone,
+                               float rateOrInterval = 0.0F,
+                               float duration = 0.0F,
+                               float width = 0.0F,
+                               float height = 0.0F,
+                               const std::vector<nuvelocity::ParticleType*>* customTypes = nullptr,
+                               float baseAngle = 0.0F,
+                               float posVariation = 0.0F,
+                               float lifeMultiplier = 1.0F,
+                               bool doFadeOut = false);
+
+        NVE_API ParticleGenerator* SpawnParticleContinuous(Game* game,
+                                                           const std::string& path,
+                                                           const SDL_FPoint& pos,
+                                                           float rate,
+                                                           float duration = 0.0F,
+                                                           float baseAngle = 0.0F,
+                                                           float posVariation = 0.0F,
+                                                           float lifeMultiplier = 1.0F,
+                                                           bool doFadeOut = false);
+
+        NVE_API ParticleGenerator* SpawnParticlePulse(Game* game,
+                                                      const std::string& path,
+                                                      const SDL_FPoint& pos,
+                                                      float interval,
+                                                      float duration = 0.0F,
+                                                      float baseAngle = 0.0F,
+                                                      float posVariation = 0.0F,
+                                                      float lifeMultiplier = 1.0F,
+                                                      bool doFadeOut = false);
 
         void SetBounds(const SDL_Rect& rect)
         {
