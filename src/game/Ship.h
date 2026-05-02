@@ -108,6 +108,23 @@ namespace nuvelocity::frs42
             mImpactRecoilTimer = 0.15F;
         }
 
+        SDL_FPoint GetElectricShipOffset1() const
+        {
+            return mElectricShipOffset1;
+        }
+        SDL_FPoint GetElectricShipOffset2() const
+        {
+            return mElectricShipOffset2;
+        }
+        SDL_FPoint GetElectricShieldOffset1() const
+        {
+            return mElectricShieldOffset1;
+        }
+        SDL_FPoint GetElectricShieldOffset2() const
+        {
+            return mElectricShieldOffset2;
+        }
+
         void DrawElectricLine(Game* game,
                               SDL_FPoint p1,
                               SDL_FPoint p2,

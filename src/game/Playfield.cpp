@@ -414,14 +414,6 @@ namespace nuvelocity::frs42
         {
             bomb->Draw(game);
         }
-        for (const auto& ball : mBalls)
-        {
-            ball->Draw(game);
-        }
-        for (const auto& ball : mTrappedBalls)
-        {
-            ball->Draw(game);
-        }
         if (!mIsStandAlone)
         {
             for (const auto& gen : mParticleGenerators)
@@ -433,6 +425,62 @@ namespace nuvelocity::frs42
         if (mShip)
         {
             mShip->Draw(game);
+        }
+
+        bool catchMode = (mShip != nullptr) && mShip->GetCatchMode();
+        SDL_FPoint shieldPos = {0, 0};
+        SDL_FPoint shipPos = {0, 0};
+        SDL_FPoint shipOff1 = {0, 0};
+        SDL_FPoint shipOff2 = {0, 0};
+        SDL_FPoint shieldOff1 = {0, 0};
+        SDL_FPoint shieldOff2 = {0, 0};
+
+        if (catchMode)
+        {
+            shieldPos = mShip->GetShieldPosition();
+            shipPos = mShip->GetPosition();
+            shipOff1 = mShip->GetElectricShipOffset1();
+            shipOff2 = mShip->GetElectricShipOffset2();
+            shieldOff1 = mShip->GetElectricShieldOffset1();
+            shieldOff2 = mShip->GetElectricShieldOffset2();
+        }
+
+        for (const auto& ball : mBalls)
+        {
+            if (catchMode)
+            {
+                bool shouldDrawLines = ball->IsAttached();
+                if (!shouldDrawLines)
+                {
+                    SDL_FPoint bPos = ball->GetPosition();
+                    float dx = bPos.x - shieldPos.x;
+                    float dy = bPos.y - shieldPos.y;
+                    float distSq = dx * dx + dy * dy;
+                    if (distSq < mElectricCatcherRadius * mElectricCatcherRadius)
+                    {
+                        shouldDrawLines = true;
+                    }
+                }
+
+                if (shouldDrawLines)
+                {
+                    SDL_FPoint ballCenter = ball->GetPosition();
+                    mShip->DrawElectricLine(
+                        game, {shipPos.x + shipOff1.x, shipPos.y + shipOff1.y}, ballCenter);
+                    mShip->DrawElectricLine(
+                        game, {shipPos.x + shipOff2.x, shipPos.y + shipOff2.y}, ballCenter);
+                    mShip->DrawElectricLine(
+                        game, {shieldPos.x + shieldOff1.x, shieldPos.y + shieldOff1.y}, ballCenter);
+                    mShip->DrawElectricLine(
+                        game, {shieldPos.x + shieldOff2.x, shieldPos.y + shieldOff2.y}, ballCenter);
+                }
+            }
+            ball->Draw(game);
+        }
+
+        for (const auto& ball : mTrappedBalls)
+        {
+            ball->Draw(game);
         }
 
         DrawForeground(game);

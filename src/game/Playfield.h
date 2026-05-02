@@ -427,6 +427,7 @@ namespace nuvelocity::frs42
         std::map<std::string, int> mPowerUpWeights;
         void ApplyBallSpeedUp(Ball* ball, const SDL_FPoint& hitPos, bool isBrick);
         bool mIsStandAlone = false;
+        float mElectricCatcherRadius = 100.0F;
     };
 } // namespace nuvelocity::frs42
 
