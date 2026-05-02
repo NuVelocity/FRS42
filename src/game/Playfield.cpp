@@ -1165,12 +1165,13 @@ namespace nuvelocity::frs42
         }
 
         auto* brick = dynamic_cast<Brick*>(collidable);
+        auto* brickInfo = (brick != nullptr) ? brick->GetInfo() : nullptr;
         // 4.1. If the ball is trapped, just bounce off bricks and do nothing.
         if (ball->IsTrapped())
         {
             if (brick)
             {
-                if (Brick::IsIndestructibleType(brick->GetInfo()->GetBrickType()))
+                if (Brick::IsIndestructibleType(brickInfo->GetBrickType()))
                 {
                     float angle = std::atan2(vel.y, vel.x);
                     SpawnParticleBurst(
@@ -1205,12 +1206,18 @@ namespace nuvelocity::frs42
             SpawnParticleBurst(game, pgen, pos, angle);
         }
         // 5.2. If it's destroyed, add score and spawn brick destroy particles.
-        else
+        else if (brickInfo != nullptr)
         {
-            int brickScore = (brick && brick->GetInfo()) ? brick->GetInfo()->GetScoreValue() : 10;
+            int brickScore = brickInfo->GetScoreValue();
             AddScore(brickScore);
             mGameStats.mBricksDestroyed++;
             SpawnPowerUpAt(game, collidable->GetPosition());
+        }
+        else
+        {
+            SDL_LogWarn(LogCategory::NVE_LOG_CATEGORY_PROPSYS,
+                        "Collidable destroyed but no brick info found!");
+            mGameStats.mBricksDestroyed++;
         }
     }
 
