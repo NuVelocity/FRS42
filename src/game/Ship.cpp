@@ -259,7 +259,7 @@ namespace nuvelocity::frs42
         float dt = game->GetDeltaTime();
         if (mMouseControlEnabled)
         {
-            SetPosition({static_cast<float>(mousePos.x), mPosition.y});
+            mPosition.x = static_cast<float>(mousePos.x);
         }
 
         mPosition.y = mTargetY;
