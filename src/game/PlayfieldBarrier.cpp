@@ -40,10 +40,10 @@ namespace nuvelocity::frs42
             const size_t next = (i + 1) % mCollisionPolygon.size();
 
             game->mSpriteBatch->DrawLine(
-                static_cast<int>(std::lround(mPosition.x + mCollisionPolygon[i].x)),
-                static_cast<int>(std::lround(mPosition.y + mCollisionPolygon[i].y)),
-                static_cast<int>(std::lround(mPosition.x + mCollisionPolygon[next].x)),
-                static_cast<int>(std::lround(mPosition.y + mCollisionPolygon[next].y)),
+                mPosition.x + mCollisionPolygon[i].x,
+                mPosition.y + mCollisionPolygon[i].y,
+                mPosition.x + mCollisionPolygon[next].x,
+                mPosition.y + mCollisionPolygon[next].y,
                 mHoverColor);
         }
     }

@@ -238,11 +238,7 @@ namespace nuvelocity::frs42
                 target.y += ny * offset;
             }
 
-            game->mSpriteBatch->DrawLine(static_cast<int>(std::lround(current.x)),
-                                         static_cast<int>(std::lround(current.y)),
-                                         static_cast<int>(std::lround(target.x)),
-                                         static_cast<int>(std::lround(target.y)),
-                                         color);
+            game->mSpriteBatch->DrawLine(current.x, current.y, target.x, target.y, color);
 
             current = target;
         }
@@ -568,12 +564,11 @@ namespace nuvelocity::frs42
             for (size_t i = 0; i < poly.size(); ++i)
             {
                 size_t next = (i + 1) % poly.size();
-                game->mSpriteBatch->DrawLine(
-                    static_cast<int>(std::lround(mPosition.x + poly[i].x)),
-                    static_cast<int>(std::lround(mPosition.y + poly[i].y)),
-                    static_cast<int>(std::lround(mPosition.x + poly[next].x)),
-                    static_cast<int>(std::lround(mPosition.y + poly[next].y)),
-                    Colors::Green);
+                game->mSpriteBatch->DrawLine(mPosition.x + poly[i].x,
+                                             mPosition.y + poly[i].y,
+                                             mPosition.x + poly[next].x,
+                                             mPosition.y + poly[next].y,
+                                             Colors::Green);
             }
         }
     }
