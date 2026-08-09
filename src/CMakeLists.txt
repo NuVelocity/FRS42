@@ -9,8 +9,12 @@ add_subdirectory(game)
 
 target_compile_definitions(
     frs42 PUBLIC
-    DEBUG
+    $<$<CONFIG:Debug>:DEBUG>
 )
+
+if(NVE_BUILD_STATIC)
+    target_compile_definitions(frs42 PRIVATE NVE_BUILD_STATIC)
+endif()
 
 target_link_libraries(
     frs42 PRIVATE
