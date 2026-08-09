@@ -1,32 +1,24 @@
 set(NVE_OBJECT_TYPES_DEF ${CMAKE_CURRENT_SOURCE_DIR}/GameObjectTypes.def)
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${NVE_OBJECT_TYPES_DEF})
-
-file(STRINGS ${NVE_OBJECT_TYPES_DEF} NVE_OBJECT_TYPE_LINES
-    REGEX "^NVE_REGISTER_TYPE\\([A-Za-z_][A-Za-z0-9_]*\\)$")
-
 set(FRS42_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
-set(NVE_GAME_OBJECT_REGISTRATION_CPP
-    ${FRS42_GENERATED_DIR}/GameObjectRegistration.generated.cpp)
+set(NVE_GAME_OBJECT_REGISTRATION_CPP ${FRS42_GENERATED_DIR}/GameObjectRegistration.generated.cpp)
+
 file(MAKE_DIRECTORY ${FRS42_GENERATED_DIR})
 
-file(WRITE ${NVE_GAME_OBJECT_REGISTRATION_CPP} "#include \"GameObjectRegistration.h\"\n\n")
+add_custom_command(
+    OUTPUT ${NVE_GAME_OBJECT_REGISTRATION_CPP}
+    COMMAND ${CMAKE_COMMAND} 
+        -D INPUT_DEF_FILE="${NVE_OBJECT_TYPES_DEF}"
+        -D OUTPUT_CPP_FILE="${NVE_GAME_OBJECT_REGISTRATION_CPP}"
+        -D HEADER_NAME="GameObjectRegistration.h"
+        -D NAMESPACE_NAME="nuvelocity::frs42"
+        -D FUNCTION_NAME="RegisterGameObjectTypes"
+        -P "${PROJECT_SOURCE_DIR}/engine/cmake/GenerateObjectRegistration.cmake"
+    DEPENDS ${NVE_OBJECT_TYPES_DEF} "${PROJECT_SOURCE_DIR}/engine/cmake/GenerateObjectRegistration.cmake"
+    COMMENT "Generating GameObjectRegistration.generated.cpp from .def file"
+)
 
-foreach(_line IN LISTS NVE_OBJECT_TYPE_LINES)
-    string(REGEX REPLACE "^NVE_REGISTER_TYPE\\(([A-Za-z_][A-Za-z0-9_]*)\\)$" "\\1" _type ${_line})
-    file(APPEND ${NVE_GAME_OBJECT_REGISTRATION_CPP} "#include \"${_type}.h\"\n")
-endforeach()
-
-file(APPEND ${NVE_GAME_OBJECT_REGISTRATION_CPP}
-    "\n#include \"model/ObjectRegistry.h\"\n\nnamespace nuvelocity::frs42\n{\n    void RegisterGameObjectTypes()\n    {\n")
-
-foreach(_line IN LISTS NVE_OBJECT_TYPE_LINES)
-    string(REGEX REPLACE "^NVE_REGISTER_TYPE\\(([A-Za-z_][A-Za-z0-9_]*)\\)$" "\\1" _type ${_line})
-    file(APPEND ${NVE_GAME_OBJECT_REGISTRATION_CPP}
-        "        ObjectRegistry::Get().Register(${_type}::GetClassInfo());\n")
-endforeach()
-
-file(APPEND ${NVE_GAME_OBJECT_REGISTRATION_CPP}
-    "    }\n} // namespace nuvelocity::frs42\n")
+add_custom_target(NuVelocityGameObjGen DEPENDS ${NVE_GAME_OBJECT_REGISTRATION_CPP})
+add_dependencies(NuVelocity NuVelocityGameObjGen)
 set_source_files_properties(${NVE_GAME_OBJECT_REGISTRATION_CPP} PROPERTIES GENERATED TRUE)
 
 target_sources(
