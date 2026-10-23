@@ -1,34 +1,34 @@
-# FreeRS42
+<div style="text-align:center">
+  <img src="logo.png" width="128" />
+  <h1>FreeRS42</h1>
+  <h3>An open source re-implementation of Ricochet Xtreme, a classic Breakout-style PC video game.</h3>
+</div>
 
-## Overview
-FreeRS42 is a modern C++ re-implementation of Ricochet Xtreme, originally developed by Reflexive Entertainment. Built on the NuVelocity engine, FreeRS42 aims for accuracy, performance, and maintainability, recreating the classic brick-breaking gameplay with modern code and tools.
-
-## Features
-- Ricochet Xtreme gameplay re-implementation
-- Modular, type-safe C++ codebase
-- Powered by NuVelocity engine
-- Modern build system (CMake)
-- Extensible for mods and enhancements
-
-## Directory Structure
-- `engine/` — NuVelocity engine source (see `engine/README.md`)
-- `src/` — Game logic, objects, and scenes
+Built on the [NuVelocity](https://github.com/NuVelocity/NuVelocity) engine, this project aims for accuracy, performance, extensibility, and maintainability, while recreating the with modern code and tools.
 
 ## Build Instructions
+
 1. Install dependencies (see `engine/README.md`)
 2. Clone repository and submodules
 3. Configure with CMake:
-  ```sh
-  cmake -S . -B build
-  ```
+
+```sh
+cmake -S . -B build
+```
+
 4. Build:
-  ```sh
-  cmake --build build
-  ```
+
+```sh
+cmake --build build
+```
+
+- Binary releases/CI artifacts from each commit are available under the **Actions** tab of this repository.
 
 ## License
+
 Main code and engine are licensed under the Mozilla Public License 2.0 (MPL 2.0).
 For third-party code, see the `third_party` directory for license information.
 
 ## Contact
-For questions or contributions, open an issue or pull request.
+
+For questions, open an issue. Code contribution guidelines are still being written.
