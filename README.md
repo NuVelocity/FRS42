@@ -1,4 +1,4 @@
-<div style="text-align:center">
+<div align="center">
   <img src="logo.png" width="128" />
   <h1>FreeRS42</h1>
   <h3>An open source re-implementation of Ricochet Xtreme, a classic Breakout-style PC video game.</h3>
