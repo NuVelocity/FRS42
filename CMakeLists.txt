@@ -1,4 +1,4 @@
-# FreeRS-42; a re-implementation of Ricochet Xtreme under SDL.
+# FreeRS42; a re-implementation of Ricochet Xtreme under SDL.
 #
 # Please see the file LICENSE in the source's root directory.
 
