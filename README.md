@@ -2,6 +2,7 @@
   <img src="logo.png" width="128" />
   <h1>FreeRS42</h1>
   <h3>An open source re-implementation of Ricochet Xtreme, a classic Breakout-style PC video game.</h3>
+  <img width="640" height="480" alt="image" src="https://github.com/user-attachments/assets/891444d2-a70a-4caa-ab51-e0a4b91fa422" />
 </div>
 
 Built on the [NuVelocity](https://github.com/NuVelocity/NuVelocity) engine, this project aims for accuracy, performance, extensibility, and maintainability, while recreating the with modern code and tools.
