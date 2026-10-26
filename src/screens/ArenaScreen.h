@@ -1,11 +1,11 @@
-#ifndef FRS42_ARENA_SCENE_H
-#define FRS42_ARENA_SCENE_H
+#ifndef FRS42_ARENA_SCREEN_H
+#define FRS42_ARENA_SCREEN_H
 
 #include "Difficulty.h"
 #include "Megovision.h"
 #include "Playfield.h"
 #include "RoundSet.h"
-#include <Scene.h>
+#include <Screen.h>
 #include <string>
 #include <system/ui/Label.h>
 
@@ -13,13 +13,13 @@ namespace nuvelocity::frs42
 {
     class BrickLayout;
     class BrickInfo;
-    class ArenaScene : public Scene
+    class ArenaScreen : public Screen
     {
     public:
-        ArenaScene(const RoundEntry* entry,
+        ArenaScreen(const RoundEntry* entry,
                    bool resetStartTime = false,
                    Difficulty diff = Difficulty::Normal);
-        ~ArenaScene() override = default;
+        ~ArenaScreen() override = default;
 
         void Load(Game* game) override;
         void Unload(Game* game) override;
@@ -35,7 +35,7 @@ namespace nuvelocity::frs42
 
         std::string GetName() const override
         {
-            return "ArenaScene";
+            return "ArenaScreen";
         }
 
     private:
@@ -60,4 +60,4 @@ namespace nuvelocity::frs42
     };
 } // namespace nuvelocity::frs42
 
-#endif // FRS42_ARENA_SCENE_H
+#endif // FRS42_ARENA_SCREEN_H

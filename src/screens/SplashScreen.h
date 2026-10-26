@@ -1,7 +1,7 @@
-#ifndef FRS42_SPLASH_SCENE_H
-#define FRS42_SPLASH_SCENE_H
+#ifndef FRS42_SPLASH_SCREEN_H
+#define FRS42_SPLASH_SCREEN_H
 
-#include <Scene.h>
+#include <Screen.h>
 
 #include <array>
 #include <cstddef>
@@ -14,7 +14,7 @@ namespace nuvelocity
 
 namespace nuvelocity::frs42
 {
-    class SplashScene : public Scene
+    class SplashScreen : public Screen
     {
     private:
         struct SplashFrame
@@ -35,7 +35,7 @@ namespace nuvelocity::frs42
         uint8_t GetBlackOverlayAlpha(float elapsedSeconds) const;
 
     public:
-        SplashScene() = default;
+        SplashScreen() = default;
         void Load(Game* game) override;
         void Update(Game* game) override;
         void Draw(Game* game) override;
@@ -44,4 +44,4 @@ namespace nuvelocity::frs42
     };
 } // namespace nuvelocity::frs42
 
-#endif // FRS42_SPLASH_SCENE_H
+#endif // FRS42_SPLASH_SCREEN_H

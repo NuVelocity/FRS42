@@ -1,9 +1,9 @@
-#include "ArenaScene.h"
+#include "ArenaScreen.h"
 #include "Brick.h"
 #include "BrickInfo.h"
 #include "BrickLayout.h"
 #include "Font.h"
-#include "MainMenuScene.h"
+#include "MainMenuScreen.h"
 #include "MathUtils.h"
 #include "PlayfieldBarrier.h"
 #include "RoundSetManager.h"
@@ -37,7 +37,7 @@ namespace nuvelocity::frs42
     static std::random_device gRd;
     static std::mt19937 gGen(gRd());
 
-    ArenaScene::ArenaScene(const RoundEntry* entry, bool resetStartTime, Difficulty diff)
+    ArenaScreen::ArenaScreen(const RoundEntry* entry, bool resetStartTime, Difficulty diff)
             : mRoundEntry(entry)
             , mPlayfieldRect({.x = 10, .y = 10, .w = 493, .h = 470})
             , mGameOverFrame(nullptr)
@@ -50,11 +50,11 @@ namespace nuvelocity::frs42
         }
     }
 
-    void ArenaScene::Load(Game* game)
+    void ArenaScreen::Load(Game* game)
     {
         if (mRoundEntry == nullptr)
         {
-            game->SetScene(new MainMenuScene());
+            game->SetScreen(new MainMenuScreen());
             return;
         }
 
@@ -125,7 +125,7 @@ namespace nuvelocity::frs42
         game->mAudio->PlaySfx("Ball In Play.ogg");
     }
 
-    void ArenaScene::PopulateBricks(Game* game, BrickLayout* layout)
+    void ArenaScreen::PopulateBricks(Game* game, BrickLayout* layout)
     {
         // Populate bricks from grid
         Frame* frame = layout->GetLayout();
@@ -270,7 +270,7 @@ namespace nuvelocity::frs42
         SDL_Log("Floating bricks loaded: %d", floatingBricksLoaded);
     }
 
-    void ArenaScene::BuildLevelUI(Game* game, BrickLayout* layout, const RoundEntry* entry)
+    void ArenaScreen::BuildLevelUI(Game* game, BrickLayout* layout, const RoundEntry* entry)
     {
         if (entry == nullptr)
         {
@@ -292,12 +292,12 @@ namespace nuvelocity::frs42
         mMegovision.ShowMessage(std::move(megoLabels), 0.0F, false);
     }
 
-    void ArenaScene::Unload(Game* game)
+    void ArenaScreen::Unload(Game* game)
     {
         (void)game;
     }
 
-    void ArenaScene::Update(Game* game)
+    void ArenaScreen::Update(Game* game)
     {
         const bool escapePressed = game->mInput->IsKeyPressed(SDL_SCANCODE_ESCAPE);
         const bool rightPressed = game->mInput->IsMouseButtonPressed(SDL_BUTTON_RIGHT);
@@ -450,7 +450,7 @@ namespace nuvelocity::frs42
                 }
                 else
                 {
-                    game->SetScene(new MainMenuScene());
+                    game->SetScreen(new MainMenuScreen());
                 }
                 return;
             }
@@ -458,13 +458,13 @@ namespace nuvelocity::frs42
         mMegovision.Update(game);
     }
 
-    void ArenaScene::Draw(Game* game)
+    void ArenaScreen::Draw(Game* game)
     {
         mPlayfield.Draw(game);
         mMegovision.Draw(game);
     }
 
-    BrickInfo* ArenaScene::GetOrLoadBrickInfo(Game* game, const std::string& path)
+    BrickInfo* ArenaScreen::GetOrLoadBrickInfo(Game* game, const std::string& path)
     {
         BrickInfo* info = static_cast<BrickInfo*>(game->mAsset->LoadBrickInfo(path));
         if (info != nullptr)
@@ -485,7 +485,7 @@ namespace nuvelocity::frs42
         return info;
     }
 
-    void ArenaScene::ShowPauseMenu(Game* game)
+    void ArenaScreen::ShowPauseMenu(Game* game)
     {
         if (mIsPaused || game == nullptr || game->mMdi == nullptr)
         {
@@ -516,7 +516,7 @@ namespace nuvelocity::frs42
         mMegovision.ShowMessage(std::move(labels), 1.75F, true);
     }
 
-    void ArenaScene::ShowOptionsDialog(Game* game)
+    void ArenaScreen::ShowOptionsDialog(Game* game)
     {
         if (game == nullptr || game->mMdi == nullptr)
         {
@@ -526,13 +526,13 @@ namespace nuvelocity::frs42
         game->mMdi->AddCenteredWindow(game, std::make_shared<OptionsWindow>(game));
     }
 
-    void ArenaScene::SetInitialStats(const GameStats& stats, int lives)
+    void ArenaScreen::SetInitialStats(const GameStats& stats, int lives)
     {
         mPlayfield.SetGameStats(stats);
         mPlayfield.SetIonSpheres(lives);
     }
 
-    void ArenaScene::SuspendGame()
+    void ArenaScreen::SuspendGame()
     {
         PlayerStats* player = StatsManager::Get().GetCurrentPlayer();
         if (player == nullptr)
@@ -554,7 +554,7 @@ namespace nuvelocity::frs42
         StatsManager::Get().Save();
     }
 
-    void ArenaScene::EndGame(Game* game, bool isGameOver)
+    void ArenaScreen::EndGame(Game* game, bool isGameOver)
     {
         if (mEnding)
         {
@@ -624,7 +624,7 @@ namespace nuvelocity::frs42
             }
         }
 
-        game->SetScene(new MainMenuScene());
+        game->SetScreen(new MainMenuScreen());
         if (score > 0)
         {
             // Tab 0: Players, Tab 1: High Scores (All), Tab 2: Easy, Tab 3: Normal, etc.
@@ -635,7 +635,7 @@ namespace nuvelocity::frs42
         }
     }
 
-    void ArenaScene::MarkCheated()
+    void ArenaScreen::MarkCheated()
     {
         if (!mPlayfield.GetGameStats().mUsedCheat)
         {

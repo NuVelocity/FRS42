@@ -1,14 +1,14 @@
 #define SDL_MAIN_USE_CALLBACKS
 
-#include "MainMenuScene.h"
-#include "SplashScene.h"
+#include "MainMenuScreen.h"
+#include "SplashScreen.h"
 #include "game/RoundSetManager.h"
 #include "game/StatsManager.h"
 #include <Game.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_main.h>
-#include <Scene.h>
+#include <Screen.h>
 #include <system/AssetManager.h>
 #include <system/AudioManager.h>
 
@@ -70,11 +70,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         if (game->GetArgs().get<bool>("--skip-splash"))
         {
-            game->SetScene(new MainMenuScene());
+            game->SetScreen(new MainMenuScreen());
         }
         else
         {
-            game->SetScene(new SplashScene());
+            game->SetScreen(new SplashScreen());
         }
         return SDL_APP_CONTINUE;
     }

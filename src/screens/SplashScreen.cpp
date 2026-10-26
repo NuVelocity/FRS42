@@ -5,12 +5,12 @@
 #include <system/InputManager.h>
 #include <system/SpriteBatch.h>
 
-#include "MainMenuScene.h"
-#include "SplashScene.h"
+#include "MainMenuScreen.h"
+#include "SplashScreen.h"
 
 namespace nuvelocity::frs42
 {
-    uint8_t SplashScene::GetBlackOverlayAlpha(float elapsedSeconds) const
+    uint8_t SplashScreen::GetBlackOverlayAlpha(float elapsedSeconds) const
     {
         if (mCurrentFrameIndex >= mFrames.size())
         {
@@ -39,7 +39,7 @@ namespace nuvelocity::frs42
         return static_cast<uint8_t>(progress * 255.0F);
     }
 
-    void SplashScene::Load(Game* game)
+    void SplashScreen::Load(Game* game)
     {
         game->mAudio->PlayBgm("Theme.ogg");
 
@@ -56,7 +56,7 @@ namespace nuvelocity::frs42
         mTransitioned = false;
     }
 
-    void SplashScene::Update(Game* game)
+    void SplashScreen::Update(Game* game)
     {
         if (mTransitioned)
         {
@@ -91,10 +91,10 @@ namespace nuvelocity::frs42
         }
 
         mTransitioned = true;
-        game->SetScene(new MainMenuScene());
+        game->SetScreen(new MainMenuScreen());
     }
 
-    void SplashScene::Draw(Game* game)
+    void SplashScreen::Draw(Game* game)
     {
         if (game == nullptr || game->mSpriteBatch == nullptr)
         {
@@ -120,8 +120,8 @@ namespace nuvelocity::frs42
         }
     }
 
-    std::string SplashScene::GetName() const
+    std::string SplashScreen::GetName() const
     {
-        return "SplashScene";
+        return "SplashScreen";
     }
 } // namespace nuvelocity::frs42

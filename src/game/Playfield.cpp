@@ -1,5 +1,5 @@
 #include "Playfield.h"
-#include "ArenaScene.h"
+#include "ArenaScreen.h"
 #include "BackgroundDefinition.h"
 #include "Ball.h"
 #include "Bomb.h"
@@ -9,7 +9,7 @@
 #include "EmitterType.h"
 #include "FishAI.h"
 #include "FontManager.h"
-#include "MainMenuScene.h"
+#include "MainMenuScreen.h"
 #include "MathUtils.h"
 #include "Megovision.h"
 #include "ParticleGenerator.h"
@@ -23,7 +23,7 @@
 #include "StatsManager.h"
 #include "TextAlignment.h"
 #include <Game.h>
-#include <Scene.h>
+#include <Screen.h>
 #include <Sequence.h>
 #include <StandAloneFrame.h>
 #include <algorithm>
@@ -686,7 +686,7 @@ namespace nuvelocity::frs42
             mGameOverTimer += deltaTime;
             if (mGameOverTimer >= 3.0F)
             {
-                auto arena = dynamic_cast<ArenaScene*>(game->GetScene());
+                auto arena = dynamic_cast<ArenaScreen*>(game->GetScreen());
                 if (arena)
                 {
                     arena->EndGame(game, true);
@@ -694,7 +694,7 @@ namespace nuvelocity::frs42
                 else
                 {
                     StatsManager::Get().UpdateCareerStats(&mGameStats, true);
-                    game->SetScene(new MainMenuScene());
+                    game->SetScreen(new MainMenuScreen());
                 }
                 return;
             }
@@ -1587,7 +1587,7 @@ namespace nuvelocity::frs42
             brick->SetBrickInfoPath(infoPath);
 
             // Ensure particle gen and types are loaded/resolved (Logic from
-            // ArenaScene::GetOrLoadBrickInfo)
+            // ArenaScreen::GetOrLoadBrickInfo)
             BrickInfo* mutableInfo = const_cast<BrickInfo*>(info);
             if (mutableInfo->GetBreakParticleGen() == nullptr &&
                 mutableInfo->GetBreakParticleGenPath() != "!None")

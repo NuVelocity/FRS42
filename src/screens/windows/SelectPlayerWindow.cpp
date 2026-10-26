@@ -1,5 +1,5 @@
 #include "SelectPlayerWindow.h"
-#include "ArenaScene.h"
+#include "ArenaScreen.h"
 #include "ConfirmWindow.h"
 #include "NewGameOptionsWindow.h"
 #include "NewPlayerWindow.h"
@@ -90,7 +90,7 @@ namespace nuvelocity::frs42
                     if (entry == nullptr)
                         return;
 
-                    auto arena = new ArenaScene(entry);
+                    auto arena = new ArenaScreen(entry);
                     arena->SetInitialStats(*player->mSuspendedGame,
                                            player->mSuspendedGame->mBallsLeft);
 
@@ -99,7 +99,7 @@ namespace nuvelocity::frs42
                     player->mSuspendedGame = nullptr;
                     StatsManager::Get().Save();
 
-                    g->SetScene(arena);
+                    g->SetScreen(arena);
                 },
                 [](Game* g)
                 { g->mMdi->AddCenteredWindow(g, std::make_shared<SelectPlayerWindow>(g)); },

@@ -1,13 +1,13 @@
 target_sources(
     frs42 PRIVATE
-    MainMenuScene.cpp
-    MainMenuScene.h
+    MainMenuScreen.cpp
+    MainMenuScreen.h
     MainMenuButton.cpp
     MainMenuButton.h
-    SplashScene.cpp
-    SplashScene.h
-    ArenaScene.cpp
-    ArenaScene.h
+    SplashScreen.cpp
+    SplashScreen.h
+    ArenaScreen.cpp
+    ArenaScreen.h
     Megovision.cpp
     Megovision.h
 )

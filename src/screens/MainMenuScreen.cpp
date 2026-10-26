@@ -1,5 +1,5 @@
-#include "MainMenuScene.h"
-#include "ArenaScene.h"
+#include "MainMenuScreen.h"
+#include "ArenaScreen.h"
 #include "CheckpointButton.h"
 #include "Colors.h"
 #include "MathUtils.h"
@@ -50,7 +50,7 @@ namespace nuvelocity::frs42
         return SDL_Point{.x = width, .y = height};
     }
 
-    void MainMenuScene::Load(Game* game)
+    void MainMenuScreen::Load(Game* game)
     {
         game->mAudio->PlayBgm("Theme.ogg");
         mBarriers.clear();
@@ -88,11 +88,11 @@ namespace nuvelocity::frs42
             button.SetOnClick(std::bind(clickHandler, this, std::placeholders::_1));
         };
 
-        initButton(mPlayButton, "&Play Game", &MainMenuScene::OnPlayClick);
-        initButton(mStatsButton, "&Statistics", &MainMenuScene::OnStatsClick);
-        initButton(mFriendButton, "&Tell A Friend", &MainMenuScene::OnFriendClick);
-        initButton(mOptionsButton, "&Options", &MainMenuScene::OnOptionsClick);
-        initButton(mExitButton, "E&xit Game", &MainMenuScene::OnExitClick);
+        initButton(mPlayButton, "&Play Game", &MainMenuScreen::OnPlayClick);
+        initButton(mStatsButton, "&Statistics", &MainMenuScreen::OnStatsClick);
+        initButton(mFriendButton, "&Tell A Friend", &MainMenuScreen::OnFriendClick);
+        initButton(mOptionsButton, "&Options", &MainMenuScreen::OnOptionsClick);
+        initButton(mExitButton, "E&xit Game", &MainMenuScreen::OnExitClick);
 
         mMenuButtonPointers[0] = &mPlayButton;
         mMenuButtonPointers[1] = &mStatsButton;
@@ -198,7 +198,7 @@ namespace nuvelocity::frs42
         mEntryFadeStartTick = nowTick;
     }
 
-    void MainMenuScene::Update(Game* game)
+    void MainMenuScreen::Update(Game* game)
     {
         if (mFocusContainer == nullptr || game->mInput == nullptr)
         {
@@ -212,7 +212,7 @@ namespace nuvelocity::frs42
         UpdatePlayfield(game);
     }
 
-    void MainMenuScene::UpdatePlayfield(Game* game)
+    void MainMenuScreen::UpdatePlayfield(Game* game)
     {
         // Apply gravity-like follow behavior if any barrier is hovered
         const SDL_Point mousePosition = game->mInput->GetMousePosition();
@@ -246,7 +246,7 @@ namespace nuvelocity::frs42
         mPlayfield.Update(game);
     }
 
-    void MainMenuScene::Draw(Game* game)
+    void MainMenuScreen::Draw(Game* game)
     {
         if (game == nullptr || game->mSpriteBatch == nullptr)
         {
@@ -300,12 +300,12 @@ namespace nuvelocity::frs42
                                           8);
     }
 
-    std::string MainMenuScene::GetName() const
+    std::string MainMenuScreen::GetName() const
     {
-        return "MainMenuScene";
+        return "MainMenuScreen";
     }
 
-    void MainMenuScene::OnPlayClick(Game* game)
+    void MainMenuScreen::OnPlayClick(Game* game)
     {
         if (game == nullptr || game->mMdi == nullptr)
         {
@@ -319,7 +319,7 @@ namespace nuvelocity::frs42
         game->mMdi->AddCenteredWindow(game, playWindow);
     }
 
-    void MainMenuScene::OnStatsClick(Game* game)
+    void MainMenuScreen::OnStatsClick(Game* game)
     {
         if (game == nullptr || game->mMdi == nullptr)
         {
@@ -333,7 +333,7 @@ namespace nuvelocity::frs42
         game->mMdi->AddWindow(statsWindow);
     }
 
-    void MainMenuScene::OnFriendClick(Game* game)
+    void MainMenuScreen::OnFriendClick(Game* game)
     {
         if (game == nullptr || game->mMdi == nullptr)
         {
@@ -345,7 +345,7 @@ namespace nuvelocity::frs42
         game->mMdi->AddCenteredWindow(game, confirm);
     }
 
-    void MainMenuScene::OnOptionsClick(Game* game)
+    void MainMenuScreen::OnOptionsClick(Game* game)
     {
         if (game == nullptr || game->mMdi == nullptr)
         {
@@ -359,7 +359,7 @@ namespace nuvelocity::frs42
         game->mMdi->AddCenteredWindow(game, optionsWindow);
     }
 
-    void MainMenuScene::OnExitClick(Game* game)
+    void MainMenuScreen::OnExitClick(Game* game)
     {
         SDL_Event quit_event;
         quit_event.type = SDL_EVENT_QUIT;

@@ -1,5 +1,5 @@
 #include "LevelSelectWindow.h"
-#include "ArenaScene.h"
+#include "ArenaScreen.h"
 #include "RoundSetManager.h"
 #include <Game.h>
 #include <system/AssetManager.h>
@@ -71,7 +71,7 @@ namespace nuvelocity::frs42
         {
             const auto* entry = &allRounds[selected];
             game->mMdi->Clear();
-            game->SetScene(new ArenaScene(entry));
+            game->SetScreen(new ArenaScreen(entry));
         }
     }
 } // namespace nuvelocity::frs42

@@ -1,8 +1,8 @@
-#ifndef FRS42_MAIN_MENU_SCENE_H
-#define FRS42_MAIN_MENU_SCENE_H
+#ifndef FRS42_MAIN_MENU_SCREEN_H
+#define FRS42_MAIN_MENU_SCREEN_H
 
 #include <Image.h>
-#include <Scene.h>
+#include <Screen.h>
 #include <ui/Button.h>
 #include <ui/FocusContainer.h>
 
@@ -21,7 +21,7 @@ namespace nuvelocity::frs42
 {
     class PlayfieldBarrier;
 
-    class MainMenuScene : public Scene
+    class MainMenuScreen : public Screen
     {
     private:
         static constexpr uint64_t kEntryFadeDurationMs = 600;
@@ -49,7 +49,7 @@ namespace nuvelocity::frs42
         void OnExitClick(Game* game);
 
     public:
-        MainMenuScene() = default;
+        MainMenuScreen() = default;
         void Load(Game* game) override;
         void Update(Game* game) override;
         void UpdatePlayfield(Game* game);
@@ -59,4 +59,4 @@ namespace nuvelocity::frs42
     };
 } // namespace nuvelocity::frs42
 
-#endif // FRS42_MAIN_MENU_SCENE_H
+#endif // FRS42_MAIN_MENU_SCREEN_H

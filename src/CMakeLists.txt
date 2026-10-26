@@ -4,7 +4,7 @@ add_executable(
     App.h
 )
 
-add_subdirectory(scenes)
+add_subdirectory(screens)
 add_subdirectory(game)
 
 target_compile_definitions(

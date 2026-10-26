@@ -1,7 +1,7 @@
 #include "PauseWindow.h"
-#include "ArenaScene.h"
+#include "ArenaScreen.h"
 #include "ConfirmWindow.h"
-#include "MainMenuScene.h"
+#include "MainMenuScreen.h"
 #include "OptionsWindow.h"
 #include "StatisticsWindow.h"
 #include <Game.h>
@@ -59,7 +59,7 @@ namespace nuvelocity::frs42
         abortBtn->SetOnClick(
             [this](Game* game)
             {
-                auto arena = dynamic_cast<ArenaScene*>(game->GetScene());
+                auto arena = dynamic_cast<ArenaScreen*>(game->GetScreen());
                 if (arena && arena->GetScore() > 0)
                 {
                     std::string title = "End Game Confirmation";
@@ -70,7 +70,7 @@ namespace nuvelocity::frs42
                         message,
                         [this](Game* g)
                         {
-                            auto arena = dynamic_cast<ArenaScene*>(g->GetScene());
+                            auto arena = dynamic_cast<ArenaScreen*>(g->GetScreen());
                             if (arena)
                             {
                                 arena->EndGame(g, false);
@@ -111,14 +111,14 @@ namespace nuvelocity::frs42
                     message,
                     [this](Game* g)
                     {
-                        auto arena = dynamic_cast<ArenaScene*>(g->GetScene());
+                        auto arena = dynamic_cast<ArenaScreen*>(g->GetScreen());
                         if (arena)
                         {
                             arena->SuspendGame();
                         }
                         this->Close();
-                        auto mainmenu = new MainMenuScene();
-                        g->SetScene(mainmenu);
+                        auto mainmenu = new MainMenuScreen();
+                        g->SetScreen(mainmenu);
 
                         std::string alertTitle = "Game Suspended";
                         std::string alertMessage =

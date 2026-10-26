@@ -1,5 +1,5 @@
 #include "NewGameOptionsWindow.h"
-#include "ArenaScene.h"
+#include "ArenaScreen.h"
 #include "CheckpointButton.h"
 #include "ConfirmWindow.h"
 #include "Difficulty.h"
@@ -173,7 +173,7 @@ namespace nuvelocity::frs42
                             this->Close();
                             Difficulty diff =
                                 DifficultyFromInt(this->mDifficultyGroup.GetSelectedIndex());
-                            g->SetScene(new ArenaScene(foundEntry, true, diff));
+                            g->SetScreen(new ArenaScreen(foundEntry, true, diff));
                         });
                 }
 
