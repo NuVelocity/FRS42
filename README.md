@@ -30,6 +30,11 @@ cmake --build build
 Main code and engine are licensed under the Mozilla Public License 2.0 (MPL 2.0).
 For third-party code, see the `third_party` directory for license information.
 
+FreeRS42 and NuVelocity are not affiliated with or endorsed by Reflexive
+Entertainment. They are unofficial community projects run by fans of the series
+with an interest in preserving the legacy. All product names, logos, and brands
+are property of their respective owners.
+
 ## Contact
 
 For questions, open an issue. Code contribution guidelines are still being written.
